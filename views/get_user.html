@@ -1,0 +1,159 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} User {% endblock %}
+
+{% block content %}
+
+    <div class="container" id="app">
+       
+        <div class="row" style="margin-top: 2em;">
+            <div class="col-md-12">
+                <h5>User</h5>
+                <b-table striped hover :fields="fields" stacked :items="items">
+                    <template #cell(id)="data">
+                        [[data.item.id]]
+                    </template>
+              
+                    <template #cell(name)="data">
+                     
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.name]]</span>
+                      <input v-show="isEditable" v-model="data.item.name" type="text" />
+                      
+                    </template>
+    
+                    <template #cell(username)="data">
+                       
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.username]]</span>
+                        <input v-show="isEditable" v-model="data.item.username" type="text" />
+                        
+                    </template>
+              
+                    <template #cell(usertype)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable"> [[ data.item.usertype ]]</span>
+                        
+                        <b-select  v-model="data.item.usertype"  class="b-form-select" v-show="isEditable">
+                            <option v-for="usertype in usertypeOptions" :key="usertype" :value="usertype">[[usertype]]</option>
+                        </b-select>
+            
+                    </template>
+    
+                    
+                    <template #cell(show)="data">
+                        <b-link href="/item/9103"><i class="fas fa-chevron-right"></i></span></b-link>
+                    </template>
+        
+                </b-table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <b-button  variant="outline-primary" href="/manage_user">Back</b-button>
+                <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
+                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success">Save Changes</b-button>
+            
+            </div>
+        </div>
+
+        </div>
+     
+        
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: "#app",
+            data: {
+                fields: [ 'id', 'name', 'username', 'userType',],
+                items: [
+                    
+                ],
+                usercode : window.location.pathname.split("/")[2],
+                filter: null,
+                filterOn: [],
+                currentPage: 1,
+                totalRows: 1,
+                perPage: 10,
+                isEditable: false,
+                usertypeOptions: ['Administrator', 'Cashier','Staff'],
+            },
+            mounted: async function(){
+                if(!this.isAdminLogin()){
+                    this.logout()
+                }
+                this.getUser()
+              
+            },
+            methods: {
+                async getU(){
+                   
+                },
+
+                async getUser(){
+                    //console.log("window.location::",this.idcode)
+                    const response = await fetch("/user_api/" + this.usercode);
+                    const data = await response.json();
+                    let id = data["Id"]
+                    let name = data["name"]
+                    let username = data["username"]
+                    let usertype = data["userType"]
+                    this.items = []
+                    console.log({ id: id, name: name, username: username, usertype: usertype, editName: false, editUsername: false, editUserType: false, show: 'test', id: id})
+                    this.items.push({ id: id, name: name, username: username, usertype: usertype, editName: false, editUsername: false, editUserType: false, show: 'test', id: id})
+                },
+
+                isAdminLogin : function(){
+                   
+                   return localStorage.getItem("usertype") == "Administrator"
+                },
+                logout:function(){
+                      window.localStorage.clear()
+                      console.log("You don't have access to view this page")
+                      window.location.href = "/login"
+   
+                },
+
+
+
+                async toggleEditMode(){
+                    this.isEditable = !this.isEditable
+                    if(!this.isEditable){
+                        this.Cancel()
+                    }
+
+                }, 
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+                async SaveChanges(){
+            
+                    data = this.items[0]
+                    id = data.id
+                    name = data.name
+                    username = data.username
+                    usertype = data.usertype
+                    let response = await fetch("/api/update_user/"+id+"/"+name+"/"+username+"/"+usertype)
+                    this.usercode = username
+                    this.toggleEditMode()
+
+                },
+                async Cancel(){
+                    console.log("cancell")
+                    if(!this.isAdminLogin()){
+                         this.logout()
+                    }
+                    this.getUser()
+                },
+
+            }
+        })
+
+    </script>
+
+
+
+{% endblock %}s

@@ -1,0 +1,285 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+   
+    <div class="container" id="app">
+
+        <div style="margin-top: 2em;">
+            <div class="row">
+                <div class="col-2">
+                    <b-button @click="exportAll()" variant="primary">Export All</b-button>
+                </div>
+                <div class="col-2">
+                    <b-form-input v-model="selectedItem" placeholder="Item" options="itemOptions" ></b-form-input>
+                </div>
+                <div class="col-2">
+                    <b-button @click="exportItem()" variant="outline-primary">Export Item</b-button>
+                </div>
+               
+
+            </div>
+            
+        
+            <div class="row">
+                <div class="col-md-6">
+                    <b-form-group
+                        label=""
+                        label-for="filter-input"
+                        label-cols-sm="3"
+                        label-align-sm="right"
+                        label-size="sm"
+                        class="mb-0">
+                        <b-input-group size="sm">
+                            <b-form-input
+                                id="filter-input"
+                                v-model="filter"
+                                type="search"
+                                placeholder="Filter..."
+                            ></b-form-input>
+    
+                            <b-input-group-append>
+                                <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                               
+                            </b-input-group-append>
+                            
+                        </b-input-group>
+                    </b-form-group>
+                </div>
+               
+                <div class="col-md-3"> 
+                    <label for="from-datepicker">From</label>
+                    <b-form-datepicker id="from-datepicker" 
+                            size="sm" 
+                            v-model="from_datepicker" 
+                            class="mb-2"
+                            today-button
+                            reset-button
+                            close-button
+                            @input="dateChanged()"
+                            >
+                    </b-form-datepicker>    
+                </div>
+                <div class="col-md-3"> 
+                    <label for="to-datepicker">To</label>
+                    <b-form-datepicker id="to-datepicker" 
+                                size="sm" 
+                                v-model="to_datepicker"  
+                                value-as-date 
+                                class="mb-2"
+                                today-button
+                                reset-button
+                                close-button
+                                @input="dateChanged()"
+                                >
+                    </b-form-datepicker>    
+                </div>
+            </div>
+
+            <b-table striped hover 
+                    :fields="fields" 
+                    :items="transactions"
+                    :filter="filter"
+                    :filter-included-fields="filterOn"
+                    @filtered="onFiltered"
+                    :current-page="currentPage"
+                    :per-page="perPage"
+                    :sort-by.sync="sortBy"
+                    >
+
+                    <template #cell(invoiceId)="data">
+                        <span><b-link :href=" '/invoice/' + data.item.invoice "><i v-on:click="" >[[data.item.invoice]]</i></b-link></span>   
+                      </template>
+            </b-table>
+
+            <b-row>
+                <b-col sm="5" md="6"></b-col>
+                <b-col sm="7" md="6" class="my-1">
+                    <b-pagination
+                        v-model="currentPage"
+                        :total-rows="totalRows"
+                        :per-page="perPage"
+                        align="fill"
+                        size="sm"
+                        class="my-0"
+                        v-show="totalRows > perPage"
+                    >
+                    </b-pagination>
+                </b-col>
+            </b-row>
+           
+            
+        </div>
+
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: '#app',
+            data: {
+              fields: [ {key: 'transactionId', label:'Transaction Id'}, 
+                        {key: 'invoiceId', label:'Invoice'}, 
+                        {key: 'dateTime', label:'Transaction Date Time', sortable: true}, 
+                        {key: 'itemId', label:'Item Id'},
+                        {key: 'itemName', label:'Item Name'},
+                        {key: 'price', label:'Item Price', sortable: true}, 
+                        {key: 'quantity', label:'Quantity Sold', sortable: true}],
+              transactions: [
+               
+              ],
+              all_transactions: null,
+              filter: null,
+              filterOn: ["itemName", "itemId"],
+              currentPage: 1,
+              totalRows: 0,
+              perPage: 10,
+              sortBy: 'dateTime',
+              datepicker: "",
+              from_datepicker: "",
+              to_datepicker: new Date(),
+
+              selectedCategory: '',
+              categoryOptions: [],
+              selectedItem: '',
+              itemOptions: []
+             
+            },
+            mounted: async function(){
+                let date = new Date()
+                date.setFullYear(date.getFullYear() - 1)
+                this.from_datepicker = date
+
+                const response = await fetch("/transactions_api");
+                const data = await response.json();
+               
+                let transactions = data["transactions"]
+                //Trans_ID,Creation_datetime,item_idcode,item_price,sold_item_qty
+                for( var i in transactions){
+                    let transaction = transactions[i]
+                    let id = transaction[0]
+                   
+                    let dateTime = transaction[1]
+                    let item_idcode = transaction[2]
+                    let item_price = transaction[3]
+                    let qty = transaction[4]
+                    let name = transaction[5]
+                    //let cat =transaction[6]
+                    let inv =transaction[6]
+                    
+                    this.itemOptions.push(item_idcode)
+                    this.transactions.push({ transactionId: id, dateTime: dateTime, itemId: item_idcode, itemName: name, 
+                        price: item_price, quantity: qty, invoice:inv})
+                }
+                this.totalRows = this.transactions.length
+                this.itemOptions =[...new Set(this.itemOptions)]
+                this.selectedItem = this.itemOptions[0]
+                this.all_transactions = this.transactions
+                
+            },
+            methods: {
+                onContext(ctx) {
+                    if(ctx.selectedYMD != ""){
+                        this.datepicker = ctx.selectedYMD;
+                        let dp = this.datepicker
+                        this.datepicker = dp.replaceAll("-", "");
+                        
+                        this.filter = this.datepicker;
+                    }
+                },
+
+                changeDateFormat(d){
+
+                    let date = new Date(d)
+                    let year = date.getFullYear()
+                    let month = ('0' + (date.getMonth() + 1)).slice(-2)
+                    let day = ('0' + date.getDate()).slice(-2)
+                    return `${year}${month}${day}`
+
+                },
+
+                dateChanged(){
+
+                    let from = this.changeDateFormat(this.from_datepicker)
+                    let to = this.changeDateFormat(this.to_datepicker)
+                    
+                    this.transactions = this.all_transactions.filter((trans, index)=>{ 
+                        return parseInt(trans.dateTime.toString().substring(0,8)) >= parseInt(from) && parseInt(trans.dateTime.toString().substring(0,8)) <= parseInt(to)
+                    })
+                    this.totalRows = this.transactions.length;
+                },
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+
+                exportAll(){
+                    this.exportToCSV(this.transactions, "Transactions")
+                },
+
+                exportItem(){
+                    let exportedItems = this.transactions.filter(trans=>trans.itemId == this.selectedItem)
+                    this.exportToCSV(exportedItems, "Transactions-"+this.selectedItem)
+                },
+
+                exportCategory(){
+                    let exportedItems = this.transactions.filter(trans=>trans.itemId == this.selectedCategory)
+                },
+
+                objectToCSVRow(dataObject) {
+                    var dataArray = new Array;
+                    for (var o in dataObject) {
+                        var innerValue = dataObject[o]===null?'':dataObject[o].toString();
+                        var result = innerValue.replaceAll(/"/g, '""');
+                       
+                        dataArray.push(result);
+                    }
+                    return dataArray.join(',') + '\r\n';
+                },
+
+                exportToCSV(arrayOfObjects,fileName) {
+
+                    if (!arrayOfObjects.length) {
+                        return;
+                    }
+
+                    var csvContent = "data:text/csv;charset=utf-8,";
+
+                    // headers
+                    csvContent += this.objectToCSVRow(Object.keys(arrayOfObjects[0]));
+
+                    var self = this
+                    arrayOfObjects.forEach(function(item){
+                        csvContent += self.objectToCSVRow(item);
+                    }); 
+
+                    var encodedUri = encodeURI(csvContent);
+                    var link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", fileName+".csv");
+                    document.body.appendChild(link); // Required for FF
+                    link.click();
+                    document.body.removeChild(link); 
+                },
+                isAdminLogin : function(){
+                   
+                   return localStorage.getItem("usertype") == "Administrator"
+               },
+               logout:function(){
+                      window.localStorage.clear()
+                      console.log("You don't have access to view this page")
+                      window.location.href = "/login"
+   
+                   }
+            }
+        })
+
+    </script>
+    
+
+{% endblock %}

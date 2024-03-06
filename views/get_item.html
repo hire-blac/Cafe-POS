@@ -1,0 +1,352 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Item {% endblock %}
+
+{% block content %}
+
+    <div class="container" id="app">
+       
+        <div class="row" style="margin-top: 2em;">
+            <div class="col-md-12">
+                <h5>Item </h5>
+                <b-table striped hover :fields="fields" stacked :items="items">
+
+                    <template #cell(del)="data">
+                     
+                      <b-link v-on:click="removeItem(data.index)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
+                    </template>
+
+                    <template #cell(id)="data">
+                        [[data.item.id]]
+                    </template>
+              
+                    <template #cell(name)="data">
+                      <span @click="toggleEdit(data.item.name, data.index, data.item.editName, 'name' )" v-show="!data.item.editName">[[data.item.name]]</span>
+                      <input  v-show="data.item.editName" v-model="data.item.name" type="text" />
+                    </template>
+    
+                    <template #cell(category)="data">
+                        <span @click="toggleEdit(data.item.category, data.index, data.item.editCat, 'category')" v-show="!data.item.editCat"> [[ data.item.category ]]</span>
+                        
+                        <b-select  v-model="data.item.category"  class="b-form-select" v-show="data.item.editCat">
+                            <option v-for="category in categoryOptions" :key="category" :value="category">[[category]]</option>
+                        </b-select>
+                    </template>
+              
+                    <template #cell(price)="data">
+                        <span @click="toggleEdit(data.item.price, data.index, data.item.editPrice, 'price')" v-show="!data.item.editPrice">[[ data.item.price ]]</span>
+                      <input v-show="data.item.editPrice" v-model="data.item.price" type="text" />
+                    </template>
+        
+                    <template #cell(quantity)="data">
+                        <span @click="toggleEdit(data.item.quantity, data.index, data.item.editQty, 'quantity')" v-show="!data.item.editQty">[[ data.item.quantity]]</span>
+                      <input v-show="data.item.editQty" v-model="data.item.quantity" type="text" />
+                    </template>
+                    
+                    <template #cell(show)="data">
+                        <b-link href="/item/9103"><i class="fas fa-chevron-right"></i></span></b-link>
+                    </template>
+
+                  
+        
+                </b-table>
+                <template>
+                <div class="row">
+                    <div class="col-md-4">
+                        <b-button  variant="outline-primary" href="/items">Back</b-button>
+                        <b-button v-on:click="toggleEditMode()" type="submit" variant="primary">[[ isEditable ? 'Cancel' : 'Edit']]</b-button>
+                       
+                        <b-button v-on:click="saveChanges()" v-if="isEdit()" type="submit" variant="success">Save Changes</b-button>
+                    </div>
+                </div>
+                </template>
+            </div>
+
+      
+            <div class="row" style="margin-top: 2em;">
+            </div>
+        </div>
+        <h5>Item Transactions</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <b-form-group
+                    label=""
+                    label-for="filter-input"
+                    label-cols-sm="3"
+                    label-align-sm="right"
+                    label-size="sm"
+                    class="mb-0">
+                    <b-input-group size="sm">
+                        <b-form-input
+                            id="filter-input"
+                            v-model="filter"
+                            type="search"
+                            placeholder="Filter..."
+                        ></b-form-input>
+
+                        <b-input-group-append>
+                        <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                        </b-input-group-append>
+                    </b-input-group>
+                </b-form-group>
+            </div>
+           
+        </div>
+       
+        <div>
+            <b-table striped hover 
+                     :fields="tfields" 
+                     :items="transactions"
+                     :filter="filter"
+                     :filter-included-fields="filterOn"
+                     @filtered="onFiltered"
+                     :current-page="currentPage"
+                     :per-page="perPage">
+
+            </b-table>
+
+            <b-row>
+                <b-col sm="5" md="6"></b-col>
+                <b-col sm="7" md="6" class="my-1">
+                    <b-pagination
+                        v-model="currentPage"
+                        :total-rows="totalRows"
+                        :per-page="perPage"
+                        align="fill"
+                        size="sm"
+                        class="my-0"
+                        v-show="totalRows > perPage"
+                    >
+                    </b-pagination>
+                </b-col>
+            </b-row>
+
+        </div>
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: "#app",
+            data: {
+                fields: [ 'id', 'name', 'price', 'quantity', 'category', {key: 'edit_r', label: ''}],
+                items: [
+                    
+                ],
+                tfields: [ {key: 'transactionId', label:'Transaction Id'}, 
+                        {key: 'dateTime', label:'Transaction DateTime'}, 
+                        {key: 'itemId', label:'Item Id'},
+                        {key: 'price', label:'Item Price'}, 
+                        {key: 'quantity', label:'Quantity Sold'}],
+                transactions: [
+                
+                ],
+                idcode : window.location.pathname.split("/")[2],
+                filter: null,
+                filterOn: [],
+                currentPage: 1,
+                totalRows: 1,
+                perPage: 10,
+                validationMessage: '', // Validation message
+            // Add more data properties as needed
+            isEditable: false, // Indicates whether the form is in edit mode
+            categoryOptions: [],
+            },
+            mounted: async function(){
+                if(!this.isAdminLogin()){
+                  this.logout();
+                }
+                this.getItem()
+                this.getItemTransactions()
+                this.totalRows = this.transactions.length
+                this.getCategories()
+            },
+            methods: {
+                async getItemTransactions(){
+                    const response = await fetch("/get_item_transaction_api/" + this.idcode);
+                    const data = await response.json();
+                
+                    let transactions = data["transactions"]
+                    console.log("transactions::", transactions)
+                    this.transactions =[]
+                    //Trans_ID,Creation_datetime,item_idcode,item_price,sold_item_qty
+                    for( var i in transactions){
+                        let transaction = transactions[i]
+                        let id = transaction[0]
+                        let dateTime = new Date(transaction[1] ).toDateString();'kljk'//transaction[1]
+                        let item_idcode = transaction[2]
+                        let item_price = transaction[3]
+                        let qty = transaction[4]
+                        this.transactions.push({ transactionId: id, dateTime: dateTime, itemId: item_idcode, price: item_price, quantity: qty})
+                    }
+                },
+
+                async getItem(){
+                    //console.log("window.location::",this.idcode)
+                    const response = await fetch("/item_api/" + this.idcode);
+                    const data = await response.json();
+                    let id = data["Id"]
+                    let name = data["name"]
+                    let cat = data["Category"]
+                    let price = data["Price"]
+                    let qty = data["Qty"]
+                    this.items =[]
+                    this.items.push({ del: 'test', id: id, name: name, category: cat, price: price, quantity: qty, editName: false, editCat: false, editPrice: false, editQty: false, show: 'test', id: id})
+                },
+
+                async getCategories(){
+                    const response = await fetch("/category_api");
+                    const data = await response.json();
+               
+                    let categories = data["categories"]
+                    this.categoryOptions = []
+                    for( var i in categories){
+                        this.categoryOptions.push(categories[i])
+                    }
+
+                },
+
+                toggleEdit: function(val,index,ed,section){
+                  //console.log("Item:", parseInt(index))
+                  /*if(section == 'name'){
+                    this.items[index].editName = !ed
+                  }
+                  else if(section == 'category'){
+                    this.items[index].editCat = !ed
+                  }
+                  else if(section == 'price'){
+                    this.items[index].editPrice = !ed
+                  }
+                  else if(section == 'quantity'){
+                    this.items[index].editQty = !ed
+                  }*/
+
+                  this.toggleEditMode()
+                  //console.log("NewEd:", ed)
+                },
+
+                saveEdit: async function(self,val,index,ed, section, itemId){
+
+                    if(section == 'name'){
+                        this.items[index].editName = !ed
+                        let response = await fetch("/api/update_item_name/"+itemId+"/"+val)
+                    }
+                    else if(section == 'category'){
+                        console.log('saving category')
+                        this.items[index].editCat = !ed
+                        let response = await fetch("/api/update_item_category/"+itemId+"/"+val)
+                    }
+                    else if(section == 'price'){
+                        this.items[index].editPrice = !ed
+                        let response = await fetch("/api/update_item_price/"+itemId+"/"+val)
+                    }
+                    else if(section == 'quantity'){
+                        this.items[index].editQty = !ed
+                        let response = await fetch("/api/update_item_quantity/"+itemId+"/"+val)
+                    }
+                    this.toggleEdit(val, index, ed)
+                    
+                  //this.items[index].total = this.getTotal(index)
+                },
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+                saveChanges() {
+                    
+                   
+                   data = this.items[0]
+                   name = data.name
+                   category = data.category
+                   price = data.price
+                   quantity = data.quantity
+
+                   editName = data.editName
+                   editCat = data.editCat
+                   editPrice = data.editPrice
+                   editQty = data.editQty
+                   index = 0
+                   id = data.id
+                   
+
+                   console.log(name, price, category, quantity, editName,editCat, editPrice,editQty, index)
+                   if (editName == true){
+                   this.saveEdit(this,name, index, editName, 'name', id)
+                   }
+                   if(editCat == true){
+                    this.saveEdit(this, category, index, editCat, 'category', id)
+                   }
+                   if( editPrice == true){
+                    this.saveEdit(this, price, index, editPrice, 'price', id)
+                   }
+                   if(editQty == true){
+                    this.saveEdit(this, quantity, index, editQty, 'quantity', id)
+                   }
+                   this.toggleEditMode()
+                
+                
+                },
+                toggleEditMode() {
+                // Toggle the edit mode
+                this.isEditable = !this.isEditable;
+                data = this.items[0]
+       
+                  if(!this.isEditable){
+                    data.editName = false
+                    data.editCat =false
+                    data.editPrice =false
+                    data.editQty =false
+                    this.getItem()
+                    this.getItemTransactions()
+                    this.totalRows = this.transactions.length
+                    this.getCategories()
+                  }
+                  else{
+                    data.editName = true
+                    data.editCat =true
+                    data.editPrice =true
+                    data.editQty =true
+                  }
+
+                //this.validationMessage = ''; // Clear validation message when toggling edit mode
+                },
+                isEdit(){
+
+                   data = this.items[0]
+                   if (!data){
+                    return true
+                   }
+                   console.log(data)
+                   editName = data.editName
+                   editCat = data.editCat
+                   editPrice = data.editPrice
+                   editQty = data.editQty
+                   if( editCat || editName || editPrice || editQty){
+                    return true
+                   }
+                   else{
+                    return false
+                   }
+                },
+                isAdminLogin : function(){
+                   
+                   return localStorage.getItem("usertype") == "Administrator"
+               },
+               logout:function(){
+                      window.localStorage.clear()
+                      console.log("You don't have access to view this page")
+                      window.location.href = "/login"
+   
+                   }
+
+            }
+        })
+
+    </script>
+
+
+
+{% endblock %}

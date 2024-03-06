@@ -1,0 +1,359 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} New Sale {% endblock %}
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- BootstrapVue (JS and CSS) -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css" rel="stylesheet">
+
+<style>
+
+
+   
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+    }
+
+    .section {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .section.half {
+        flex: 2;
+    }
+
+    .section.full {
+        flex: 4;
+        margin-right: 20px;
+    }
+
+    .section h2 {
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .item {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+    }
+
+    .item-card {
+        background-color: #d78f6d;
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+        max-width: 100px;
+        margin: auto;
+        position: relative;
+    }
+
+    .item-category {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #ffffff;
+        padding: 0 5px;
+        font-size: 12px;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        color: #007bff;
+    }
+
+    .item-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+
+    .item-card h4 {
+        font-size: 14px;
+        margin: 5px 0;
+    }
+
+    .item-card p {
+        margin: 5px 0;
+    }
+
+    .item-card button {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .cart {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .cart h2 {
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .cart-items {
+        list-style: none;
+        padding: 0;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #ced4da;
+        padding: 10px 0;
+    }
+
+    .cart-item img {
+        max-width: 50px;
+        height: auto;
+        margin-right: 10px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .page-link {
+        cursor: pointer;
+        color: #007bff;
+        margin: 0 5px;
+    }
+
+    .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+    .page-item.disabled .page-link {
+        pointer-events: none;
+    }
+
+    .search-input {
+        margin-bottom: 20px;
+    }
+
+    .category-nav {
+        margin-top: 10px;
+        display: flex;
+        overflow-x: auto;
+        max-height: 50px; /* Set the maximum height */
+    }
+
+    .category-item {
+        padding: 10px;
+        cursor: pointer;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        margin-right: 10px;
+        color: #007bff;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    .category-item.active {
+        background-color: #007bff;
+        color: #fff;
+    }
+</style>
+{% block content %}
+<div id="app" class="container_cart">
+    <!-- Items Section -->
+    <div class="section full">
+        <h2>Items</h2>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <input v-model="searchQuery" class="form-control search-input" placeholder="Search items...">
+            </div>
+            <div class="category-nav">
+                <div class="category-item" v-for="(category, index) in displayedCategories" :key="index"
+                    @click="selectCategory(category)" :class="{ 'active': category === selectedCategory }">
+                    [[ category ]]
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="item-card" v-for="(item, index) in paginatedItems" :key="index">
+                
+                <img :src="item.image" alt="Item">
+                <h4>[[ item.name ]]</h4>
+                <h6>[[ item.price ]]</h6>
+               
+            </div>
+        </div>
+        <div class="pagination">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" @click="goToPage(1)" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" @click="prevPage" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item" :class="{ 'active': currentPage === page }" v-for="page in totalPages"
+                        :key="page">
+                        <a class="page-link" @click="setCurrentPage(page)">[[ page ]]</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" @click="nextPage" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" @click="goToPage(totalPages)" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="section half">
+        <h2>Cart</h2>
+        <div class="cart">
+            <ul class="cart-items" id="cartItems">
+                <li class="cart-item" v-for="(cartItem, index) in cartItems" :key="index">
+                    <img :src="cartItem.image" alt="Cart Item">
+                    <div>
+                        <p>[[ cartItem.name ]]</p>
+                        <p>[[ cartItem.price ]]</p>
+                    </div>
+                    <b-button @click="removeItemFromCart(index)" variant="danger">Remove</b-button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        delimiters : ['[[',']]'],
+        data: {
+            itemsPerPage: 15,
+            currentPage: 1,
+            items: [],
+            cartItems: [],
+            searchQuery: '',
+            selectedCategory: '',
+            categoryOptions: [],
+            maxDisplayedCategories: 5, // Set the maximum number of displayed categories
+        },
+        computed: {
+            filteredItems() {
+                return this.items.filter(item =>
+                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            },
+            paginatedItems() {
+                const start = (this.currentPage - 1) * this.itemsPerPage;
+                const end = start + this.itemsPerPage;
+                return this.filteredItems.slice(start, end);
+            },
+            totalPages() {
+                return Math.ceil(this.filteredItems.length / this.itemsPerPage);
+            },
+            displayedCategories() {
+                return this.categoryOptions.slice(0, this.maxDisplayedCategories);
+            },
+        },
+        methods: {
+            addItemToCart(item) {
+                this.cartItems.push(item);
+            },
+            removeItemFromCart(index) {
+                this.cartItems.splice(index, 1);
+            },
+            setCurrentPage(page) {
+                this.currentPage = page;
+            },
+            prevPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                }
+            },
+            nextPage() {
+                if (this.currentPage < this.totalPages) {
+                    this.currentPage++;
+                }
+            },
+            goToPage(page) {
+                this.currentPage = page;
+            },
+            async generateItems() {
+                const response =  await fetch("/items_api");
+                const data =  await response.json();
+                let items = data["items"]
+                for( var i in items){
+                    let item = items[i]
+                    let id = item[0]
+                    let name = item[1]
+                    let cat = item[2]
+                    let price = item[3]
+                    let qty = item[4]
+                    this.items.push({
+                        name: name,
+                        price: price,
+                        image: `https://via.placeholder.com/150?text=${name}`,
+                        category: i % 2 === 0 ? 'Coffee' : 'Snacks',//,
+                    });
+                }
+                
+                /*for (let i = 1; i <= 100; i++) {
+                    this.items.push({
+                        name: `Item ${i}`,
+                        price: `$${(Math.random() * 50).toFixed(2)}`,
+                        image: `https://via.placeholder.com/150?text=Item${i}`,
+                        category: i % 2 === 0 ? 'Coffee' : 'Snacks',
+                    });
+                }*/
+            },
+            generateCategories() {
+                const categories = new Set(this.items.map(item => item.category));
+                this.categoryOptions = Array.from(categories);
+            },
+            selectCategory(category) {
+                this.currentPage = 1;
+                this.selectedCategory = category;
+                this.filterItems();
+            },
+            filterItems() {
+                const filteredBySearch = this.items.filter(item =>
+                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+                //this.filteredItems = this.selectedCategory
+                 //   ? filteredBySearch.filter(item => item.category === this.selectedCategory)
+                 //   : filteredBySearch;
+            },
+        },
+        mounted() {
+            this.generateItems();
+            this.generateCategories();
+        },
+    });
+</script>
+
+    
+{% endblock %}

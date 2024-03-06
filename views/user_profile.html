@@ -1,0 +1,212 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} User {% endblock %}
+
+{% block content %}
+
+    <div class="container" id="app">
+       
+        <div class="row" style="margin-top: 2em;">
+            <div class="col-md-12">
+                <h5>Account</h5>
+                <b-alert v-if="pwdChangedMsg" show variant="success">[[pwdChangedMsg]]</b-alert>
+                <b-alert v-if="errMsg" show variant="danger">[[errMsg]]</b-alert>
+                <b-table striped hover :fields="fields" stacked :items="items">
+                    <template #cell(id)="data">
+                        [[data.item.id]]
+                    </template>
+              
+                    <template #cell(name)="data">
+                     
+                      <span>[[ data.item.name]]</span>
+                      
+                    </template>
+    
+                    <template #cell(username)="data">
+                       
+                        <span >[[ data.item.username]]</span>
+                        
+                    </template>
+              
+                    <template #cell(usertype)="data">
+                        <span> [[ data.item.usertype ]]</span>
+                    </template>
+      
+                </b-table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="row"  v-show="isPwdChange" >
+                <div class="col-md-3">
+                    <label for="password1" class="form-label">New Password</label>
+                </div>
+                <div class="col-md-6">
+                    <input v-model="password1" type="password" />
+                </div>
+
+            </div>
+            <div class="row"  v-show="isPwdChange" >
+                <div class="col-md-3">
+                   <label for="password2" class="form-label">Confirm Password</label>
+                </div>
+                <div class="col-md-4">
+                   <input v-model="password2" type="password" />
+                </div>
+               
+            </div>
+
+            <div class="col-md-12" style="margin-top: 1em;">
+                <b-button @click="toggleEditMode" variant="primary">[[ isPwdChange ? 'Cancel' : 'Change Password' ]]</b-button>
+                <b-button  @click="ChangePassword" v-if="isPwdChange" type="submit" variant="success">Change</b-button>
+            
+            </div>
+        </div>
+
+        </div>
+     
+        
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: "#app",
+            data: {
+                fields: [ 'id', 'name', 'username', 'userType',
+                        ],
+                items: [
+                    
+                ],
+                usercode : localStorage.getItem("cashierId"),
+                username :localStorage.getItem("username"),
+                filter: null,
+                filterOn: [],
+                currentPage: 1,
+                totalRows: 1,
+                perPage: 10,
+                isPwdChange: false,
+                usertypeOptions: ['Administrator', 'Cashier','Staff'],
+                password1:'',
+                password2:'',
+                pwdChangedMsg:'',
+                errMsg:'',
+            },
+            mounted: async function(){
+              console.log("window.location::",this.username)
+              this.pwdChangedMsg =''
+              this.errMsg = ''
+              const response = await fetch("/user_api/" + this.username);
+                    const data = await response.json();
+                    let id = data["Id"]
+                    let name = data["name"]
+                    let username = data["username"]
+                    let usertype = data["userType"]
+                    this.items = []
+                    this.items.push({ id: id,
+                                    name: name,
+                                    username:
+                                    username,
+                                    usertype:
+                                    usertype})
+
+              
+            },
+            methods: {
+
+                isLogin : function(){
+                   
+                   return localStorage.getItem("usertype")
+                },
+                logout:function(){
+                      window.localStorage.clear()
+                      console.log("You don't have access to view this page")
+                      window.location.href = "/login"
+   
+                },
+
+
+
+                async toggleEditMode(){
+                    this.pwdChangedMsg =''
+                    this.errMsg = ''
+                    this.isPwdChange = !this.isPwdChange
+                    if(!this.isPwdChange){
+                        this.Cancel()
+                    }
+
+                }, 
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+                async ChangePassword(){
+                    if(!this.password1){
+                        this.errMsg ='Please enter password'
+                        return
+                    }
+                    data = this.items[0]
+                    if(this.password1 != this.password2){
+                        this.errMsg ='Passwords do not match'
+                        return
+                    }
+                    id = data.id
+                    name = data.name
+                    username = data.username
+                    pwd = this.password1
+
+
+                    const apiUrl = '/pwd_upd';
+                    const postData = {
+                                      username: username,
+                                      password: pwd,
+                                      cashierId:id
+                    };
+                    try {
+                            const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: {
+                                          'Content-Type': 'application/json',
+                                },
+                                 body: JSON.stringify(postData),
+                            });
+              
+                      if (!response.ok) {
+                        throw new Error('Response was not ok');
+                      }
+
+                      const responseData = await response.json();
+                      console.log(responseData);
+                      if(responseData['message'] == 'success'){
+                          this.password1 =''
+                          this.password2 =''
+                          this.toggleEditMode()
+                          this.pwdChangedMsg='Password changed'
+                      }
+                      else{
+                        this.errMsg = responseData['message']
+                      }
+                    } catch (error) {
+                        // Handle errors
+                        console.error('Error sending POST request:', error);
+                        this.errMsg = 'Error'
+                    }
+                    
+                  
+                    
+
+                },
+                async Cancel(){
+                    console.log("cancel")
+                },
+
+            }
+        })
+
+    </script>
+
+
+
+{% endblock %}

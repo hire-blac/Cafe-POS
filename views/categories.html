@@ -1,0 +1,284 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Manage Categories{% endblock %}
+
+{% block content %}
+
+<div class="container" id="app">
+
+    <div style="margin-top: 2em;">
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <b-form-group
+                    label=""
+                    label-for="filter-input"
+                    label-cols-sm="3"
+                    label-align-sm="right"
+                    label-size="sm"
+                    class="mb-0">
+                    
+                </b-form-group>
+            </div>
+           
+        </div>
+
+       
+    
+        <h4>Categories</h4>
+        <b-alert v-if="errMsg" show variant="danger">[[errMsg]]</b-alert>
+        <b-alert v-if="successMsg" show variant="success">[[successMsg]]</b-alert>
+        <b-table hover 
+                :fields="fields" 
+                :items="items"
+                :filter="filter"
+                :filter-included-fields="filterOn"
+                @filtered="onFiltered"
+                :current-page="currentPage"
+                :per-page="perPage"
+                :sort-by.sync="sortBy"
+                thead-class="green-bg bg-secondary text-white"
+                >
+      
+            <template #cell(id)="data">
+                [[data.item.id]]
+              </template>
+
+            <template #cell(name)="data">
+                <span @click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit, 'name' )" v-show="!data.item.tog_edit">[[data.item.name]]</span>
+                <input  v-show="data.item.tog_edit" v-model="data.item.upd_name" type="text" />
+             
+            </template>
+        
+            <template #cell(delete)="data">
+                <b-link v-on:click="removeCategory(data.item.name, data.index, data.item.id)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
+            </template>
+            <template #cell(edit)="data">
+                <b-link><i v-show="!data.item.tog_edit"  v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" class="fas fa-edit"></i></span></b-link>
+                
+                <b-button v-show="data.item.tog_edit" v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" size="sm">Cancel</b-button>
+                <b-button v-show="data.item.tog_edit" v-on:click="SaveEdit(data.item.upd_name, data.item.id, data.item.tog_edit )" size="sm">Save</b-button>
+                
+            </template>
+          
+        </b-table>
+       
+        <b-row>
+            <b-col sm="5" md="6"></b-col>
+            <b-col sm="7" md="6" class="my-1">
+                <b-pagination
+                    v-model="currentPage"
+                    :total-rows="totalRows"
+                    :per-page="perPage"
+                    align="fill"
+                    size="sm"
+                    class="my-0"
+                    v-show="totalRows > perPage"
+                >
+                </b-pagination>
+            </b-col>
+        </b-row>
+        <b-modal v-model="modalShow" @ok="handleOk" title="Delete Category">Are you sure you want to delete this Category?</b-modal>
+        <div style="margin-top: 1em;">
+          <div v-show="isAddCategory">
+           <label for="newCatName" class="form-label">New Category</label>
+           <input type="text" required class="form-control" id="newCatName" v-model="newCatName" name="newCatName" placeholder="Enter New Category Name" />
+          </div>
+
+
+          <div style="margin-top: 1em;" class="float-left">
+            <span ><a  disabled="!isAddCategory" v-on:click="toggleNewSave()" class="btn btn-primary">[[ isAddCategory ? 'Cancel' : 'New Category']]</a></span>
+      
+       
+            <span v-show="isAddCategory" ><a v-on:click="newSave()" class="btn btn-success">Save</a></span>
+      
+          </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="application/javascript">
+
+    new Vue({
+        delimiters : ['[[',']]'],
+        el: '#app',
+        data: {
+          fields: [
+                    {key:'id',sortable: true},
+                    {key:'name'},
+                    {key: 'delete', label: ''},
+                    {key:'edit', label: ''},
+        ],
+          items: [
+           
+          ],
+          currentDeleteId: -1,
+          currentDeleteIndex: -1,
+          modalShow: false,
+          filter: null,
+          filterOn: [],
+          currentPage: 1,
+          totalRows: 1,
+          perPage: 10,
+          sortBy: '',
+          isAddCategory:false,
+          newCatName:'',
+          is_edit:false,
+          errMsg:'',
+          successMsg:'',
+          
+        },
+        mounted: async function(){
+
+            // if(!this.isAdminLogin()){
+            //    this.logout();
+            // }
+            this.successMsg =''
+            const response = await fetch("/categories_api");
+            const data = await response.json();
+           
+            let items = data["categories"]
+            for( var i in items){
+                let item = items[i]
+                let id = item[0]
+                let name = item[1]
+                this.items.push({ del: 'test', id: id, name: name,upd_name:name,
+                   delete: 'test',  editName: false, edit: "test", tog_edit:false})
+            }
+            this.totalRows = this.items.length
+
+        },
+        methods: {
+            removeCategory : async function(name, index, id){
+                const response = await fetch("/api/get_cat_item_count/" + id);
+                const data = await response.json();
+                this.successMsg =''
+                let res = data["res"]
+                if(res != 'success'){
+                    this.errMsg = 'Error'
+                    return
+                }
+
+                let count = data["count"]
+                console.log("selected cat count: ", count)
+
+                if(count>0){
+                    this.errMsg = 'Cannot delete category. Please delete Items of the category first.'
+                    return;
+                }
+                this.errMsg = ''
+                this.modalShow = !this.modalShow
+                this.currentDeleteId = id
+                this.currentDeleteIndex = index
+                console.log("Hello::",alert("Do you want to delete this Category?"))
+            },
+
+            handleOk: async function(){
+                let id = this.currentDeleteId
+                let index = this.currentDeleteIndex
+                this.items.splice(index,1)
+                const response = await fetch("/api/delete_category/" + id);
+                const data = await response.json();
+                this.successMsg = 'Category deleted'
+            },
+            Edit(){
+                //redirect()
+
+            },
+
+            onFiltered(filteredItems) {
+                // Trigger pagination to update the number of buttons/pages due to filtering
+                this.totalRows = filteredItems.length
+                this.currentPage = 1
+            },
+            isAdminLogin : function(){
+                   
+                return localStorage.getItem("usertype") == "Administrator"
+            },
+            logout:function(){
+                   window.localStorage.clear()
+                   console.log("You don't have access to view this page")
+                   window.location.href = "/login"
+
+            },
+            toggleEdit: function(name, id, ed){
+                  
+                this.errMsg = ''
+                this.successMsg =''
+                this.is_edit = false
+                const index = this.items.findIndex(function(item){
+                  return item.id === id
+                })
+                this.items[index].tog_edit = !ed
+                if (this.items[index].tog_edit == true){
+                    this.is_edit = true
+                }
+            },
+            toggleNewSave:function(){
+                this.successMsg =''
+                this.isAddCategory = !this.isAddCategory
+                this.newCatName = ''
+                this.errMsg =''
+
+            },
+
+            newSave: async function(){
+                if (this.newCatName == ''){
+                    alert("Please enter new category name")
+                }
+
+                const response = await fetch("api/add_category1/" + this.newCatName);
+                const data =  await response.json()
+                this.isAddCategory = !this.isAddCategory
+
+                catname = this.newCatName
+                this.newCatName = ''
+                console.log(data["res"])
+                let idcode = ''
+                if (data['res'] == 'IntegrityError'){
+                    alert( data['res'])
+                }
+                else {
+                    idcode = data['idcode']
+                    console.log(data)
+                    //alert("Caregory Saved"+ data)
+                }
+                this.errMsg =''
+                this.items.push({ del: 'test', id: idcode, name: catname,upd_name:catname, delete: 'test',  editName: false, edit: "test", tog_edit:false})
+                this.successMsg = 'Category added'
+
+            },
+
+            SaveEdit: async function(name, id, ed){
+                
+                if (name == ''){
+                    this.errMsg="Please enter category name"
+                    return
+                }
+                const response = await fetch("api/update_category/" + id+"/"+name);
+                const data =  await response.json()
+                console.log(data["res"])
+                if (data['res'] == 'error'){
+                        this.errMsg = 'Error'
+                }
+                else {
+                        const index = this.items.findIndex(function(item){
+                            return item.id === id
+                        })
+                        this.items[index].tog_edit = !ed
+                        this.items[index].name =  this.items[index].upd_name
+                        this.errMsg = ''
+                        this.successMsg = 'Category updated'
+                }
+            },
+
+        }
+    })
+
+</script>
+
+
+{% endblock %}

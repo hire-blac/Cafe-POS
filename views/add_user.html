@@ -1,0 +1,89 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Create New User's Account {% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row" style="margin-top: 2em;" id="users">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                
+                
+                <form method="post" action="/pregister">
+                    <div class="mb-3">
+                        <label for="userType" class="form-label">User Type</label>
+                        <select class="form-select" aria-label="Default select" name="userType" id="userType">
+                            <option selected>Select User Type</option>
+                            <option value="Administrator">Administrator</option>
+                            <option value="Cashier">Cashier</option>
+                            <option value="Staff">Staff</option>
+                          </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cashierId" class="form-label">User ID</label>
+                        <input type="text" class="form-control" name='cashierId' id="cashierId" placeholder="Enter User Id">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" name='name' id="name" placeholder="Enter name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">User Name</label>
+                        <input type="text" class="form-control" name='username' id="username" placeholder="Enter username">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" name='password' id="password" placeholder="Enter password">
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="submit" value="Create Account" class="btn btn-primary"/>
+                    </div>
+    
+                </form>
+                
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+
+    </div>
+
+    <script type="application/javascript">
+       
+        new Vue({
+           delimiters : ['[[',']]'],
+           el: "#users",
+           data: {
+              
+           },
+           mounted : function(){
+            
+            if(!this.isAdminLogin()){
+               this.logout();
+            }
+              
+           },
+           computed: {
+           
+           },
+           methods: {
+            isAdminLogin : function(){
+                   return localStorage.getItem("usertype") == "Administrator"
+            },
+            logout:function(){
+                   window.localStorage.clear()
+                   console.log("You don't have access to view this page")
+                   window.location.href = "/login"
+
+                }
+            
+           }
+        })          
+
+      </script>
+
+{% endblock %}

@@ -1,0 +1,725 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% block content %}
+
+   
+    <div class="container" id="app">
+      <div style="margin-top: 2em;">
+          <div class="d-inline p-2 bg-white text-dark" style="float: left; width: 70%" id ="items" >
+            <div style="text-align:center; background-color: lightgray; color: black;"><span style="display: inline-block; ">Items</span></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <b-form-group
+                        label=""
+                        label-for="filter-input"
+                        label-cols-sm="3"
+                        label-align-sm="right"
+                        label-size="sm"
+                        class="mb-0">
+                        <b-input-group size="sm">
+                            <b-form-input
+                                id="filter-input"
+                                v-model="filter"
+                                type="search"
+                                placeholder="Filter by Item Id or Item Name"
+                            ></b-form-input>
+    
+                            <b-input-group-append>
+                            <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                            </b-input-group-append>
+                        </b-input-group>
+                    </b-form-group>
+                </div>
+               
+            </div>
+
+            <div class="float-end">
+              
+            </div>
+            
+            <b-table striped hover 
+                    :fields="fields" 
+                    :items="items"
+                    :filter="filter"
+                    :filter-included-fields="filterOn"
+                    @filtered="onFiltered"
+                    :current-page="currentPage"
+                    :per-page="perPage"
+                    :sort-by.sync="sortBy"
+                    >
+          
+                <template #cell(name)="data" >
+                  [[data.item.name]]
+                </template>
+
+                <template #cell(category)="data">
+                    [[data.item.category]]
+                  </template>
+          
+                <template #cell(price)="data">
+                  [[ data.item.price ]]
+                </template>
+    
+          
+                
+                <template #cell(show)="data">
+                    <b-link v-on:click="addToCart(data)"><i class="fas fa-chevron-right"></i></span></b-link>
+                </template>
+    
+            </b-table>
+            <b-row>
+                <b-col sm="5" md="6"></b-col>
+                <b-col sm="7" md="6" class="my-1">
+                    <b-pagination
+                        v-model="currentPage"
+                        :total-rows="totalRows"
+                        :per-page="perPage"
+                        align="fill"
+                        size="sm"
+                        class="my-0"
+                        v-show="totalRows > perPage"
+                    >
+                    </b-pagination>
+                </b-col>
+            </b-row>
+          </div>
+          <div class="d-inline p-2 bg-light text-dark" style="float: right; width: 30%;" id ="cart">
+              <div style="text-align:center; background-color: lightgray; color: black;">
+                <span style="display: inline-block; ">Cart Details</span>
+              </div>
+              <div v-show="cart.length > 0">
+                <span v-show="cart.orderCompleted==true"><h3>Order Completed</h3></span>   
+                  <div id="carttable" >
+                   <b-table striped hover responsive sticky-header head-variant="light"
+                   :fields="fields" 
+                   :items="items"
+                   :filter="filter"
+                   :filter-included-fields="filterOn"
+                   :current-page="currentPage"
+                   :per-page="perPage"
+                   :sort-by.sync="sortBy"
+                   >
+         
+                   <template #cell(name)="data" >
+                     [[data.item.name]]
+                   </template>
+         
+                   <template #cell(quantity)="data">
+                     <i v-on:click="DecQuantity(data.index, data.item.id)" class="fas fa-minus"></i>  
+                     <span style="float:none 10px;">  [[data.item.quantity]]</span>
+                       <i v-on:click="IncQuantity(data.index, data.item.id)" class="fas fa-plus"></i>
+                     
+                     </template>
+             
+                   <template #cell(price)="data">
+                     [[ data.item.price ]]
+                   </template>
+         
+             
+                   
+                   <template #cell(del)="data">
+                   
+                     <span><i v-on:click="removeCartItem(data.index, data.item.id)" class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span>   
+            
+                   </template>
+                  </b-table>
+                  </div>
+                  <div id ="cartprices" >
+                  <div class="row">
+                    <div class="col-md-8">
+                      <h6>Live Total:</h6>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="cartLiveTotal" class="form-label" >[[cartLiveTotal]]</label>
+                    </div> 
+                  </div>
+
+                  <div class="row">
+                
+                    <div class="col-md-8">
+                      <h6>Tax:</h6>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="taxTotal" class="form-label" >[[taxTotal]]</label>
+                    </div> 
+                  </div>
+                  <div class="row">
+                
+                    <div class="col-md-8">
+                      <h6>Total (includingTax):</h6>
+                    </div>
+                    <div class="col-md-4">
+                      <label for="cartTotal" class="form-label" >[[cartTotal]]</label>
+                    </div> 
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="paidAmount" class="form-label">Paid Amount</label>
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" required class="form-control form-control-sm" id="paidAmount" @input="checkPaidAmount()" v-model="paidAmount" name="paidAmount" placeholder="Enter Paid Amount" />
+                          <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
+                        
+                    </div> 
+                    <div class="col-md-6">
+                      <label for="remainingAmount" class="form-label">Remaining Amount</label>
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />
+                          <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
+                        
+                    </div> 
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="customerPNO" class="form-label">Customer PNO</label>
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" required class="form-control form-control-sm" id="customerPNO" v-model="inv.customerPNO" name="customerPNO" placeholder="" />
+                    </div> 
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="payment" class="form-label">Payment Method</label>
+                    </div>
+                    <div class="col-md-6">
+                      <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
+                        <option selected>Select Payment Method</option>
+                        <option value="cash">Cash</option>
+                        <option value="visa">Visa</option>
+                        <option value="mada">Mada</option>
+                      </select>
+                    </div> 
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <label for="paymentId" class="form-label">Payment Id</label>
+                    </div>
+                    <div class="col-md-6">
+                      <input type="text" class="form-control form-control-sm" id="paymentId" v-model="inv.paymentId" name="paymentId" placeholder="Enter Payment Id" />
+                    </div> 
+                  </div>
+
+                  
+                  
+                  <div class="row" v-show="cart.length > 0">
+                      
+                     
+                          <div class="d-grid gap-2">
+                              <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal || remainingAmount < 0 " type="button">Complete Order</button>
+                          </div>
+                      
+                      
+                    
+                  </div>
+
+
+                  </div>
+              </div>
+                  
+          </div>
+          <div id="invoicediv">
+         
+            <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
+             
+              <div id="invoice-POS" ref="invoice" v-show="cart.show_receipt">
+          
+                <center id="top">
+                  <div class="logo"></div>
+                  <div class="info"> 
+                    <h2>SBISTechs Inc</h2>
+                    <p align="center"> 
+                        street city, state 0000</br>
+                      JohnDoe@gmail.com</br>
+                      555-555-5555</br>
+                    </p>
+                  </div><!--End Info-->
+                </center><!--End InvoiceTop-->
+                
+                <div id="mid" >
+                  <div class="info">
+                    <p align="left"> 
+                      Invoice ID: [[ cart.inv.invoiceId ]] </br>
+                       Invoice Date Time: [[ cart.cdateTime ]]
+                     
+                      
+                    </p>
+                    
+                  </div>
+                </div><!--End Invoice Mid-->
+                
+                <div id="bot">
+            
+                      <div id="table">
+                        <table>
+                          <tr class="tabletitle">
+                            <td class="item"><h2>Item</h2></td>
+                            <td class="Hours"><h2>Qty</h2></td>
+                            <td class="Rate"><h2>Sub Total</h2></td>
+                          </tr>
+            
+                          <tr class="service" v-for="it in cart.items">
+                            <td class="tableitem"><p class="itemtext">[[it.name]]</p></td>
+                            <td class="tableitem"><p class="itemtext">[[ it.quantity ]]</p></td>
+                            <td class="tableitem"><p class="itemtext">[[ it.price * it.quantity ]]</p></td>
+                          </tr>
+            
+                          <td></td>
+            
+                          <tr class="tabletitle"> 
+            
+                            <td class="Rate" ><h2>Total Ex. TAX</h2></td>
+                            <td class="payment"> <h2>[[ cart.cartLiveTotal ]]</h2></td>
+                            <td></td>
+            
+                          </tr>
+                          <div style=" height: 0px;border-bottom:solid 3px #000;"></div>
+            
+                          <tr class="tabletitle">
+                            <td class="Rate"><h2>TAX</h2></td>
+                            <td class="payment">
+                              <h2>[[ cart.taxTotal ]]</h2>
+                            </td>
+                            <td></td>
+            
+                          </tr>
+            
+            
+                          <tr class="tabletitle">
+                            <td class="Rate" style='font-size: 12px;'><h2>Total Inc. TAX</h2></td>
+                            <td class="payment" style='font-size: 12px;'><h2>[[ cart.cartTotal ]]</h2></td>
+                                            <td></td>
+            
+                          </tr>
+            
+                        </table>
+                      </div><!--End Table-->
+            
+                      <div style=" height: 0px;
+                        border-bottom:solid 0.4px #000;"></div>
+                        <div align="left" style='font-size: 11px;'>
+                        - Paid amount: [[ cart.paidAmount ]]
+                        <br/>
+            
+                        - Change: [[ cart.paidAmount - cart.cartTotal ]]
+                        <br/>
+                        <br/>
+            
+                        - Payment Method: [[ cart.inv.paymentMethod ]]
+                        <br/>
+                      - Cashier: [[ cart.inv.cashier ]]
+                          
+                        </div>
+                                <div id="legalcopy">
+                                <div style=" height: 0px;
+                        border-bottom:solid 3px #000;"></div>
+                                  <p class="legal"><strong>Thank you for your Purchase!</strong>
+            
+                                  </p>
+                                               QR CODE AREA
+            
+                                </div>
+            
+                </div><!--End InvoiceBot-->
+              </div><!--End Invoice-->
+            <!-- partial -->
+      
+            </div>
+          </div>
+     
+      </div>
+    </div>
+
+    <script type="application/javascript">
+
+        itemsv = new Vue({
+            delimiters : ['[[',']]'],
+            el: '#items',
+            data: {
+              fields: [
+                        {key:'id',sortable: false},
+                        {key:'name'}, 
+                        {key:'price', sortable: false}, 
+                        {key:'category', sortable: false}, 
+                        {key: 'show', label: ''}],
+              items: [
+               
+              ],
+              currentDeleteId: -1,
+              currentDeleteIndex: -1,
+              modalShow: false,
+              filter: null,
+              filterOn: [],
+              currentPage: 1,
+              totalRows: 1,
+              perPage: 10,
+              sortBy: '',
+              selectedCategory: null,
+              categoryOptions: []
+            ,
+            }
+              ,
+            mounted: async function(){
+                const response = await fetch("/items_api");
+                const data = await response.json();
+               
+                let items = data["items"]
+                
+                for( var i in items){
+                    let item = items[i]
+                    let id = item[0]
+                    let name = item[1]
+                    let cat = item[2]
+                    let price = item[3]
+                    let qty = item[4]
+                    this.categoryOptions.push(cat)
+                    this.items.push({id: id, name: name, category: cat, price: price, edit: false, show: 'test', id: id})
+                    console.log("Array::i ",i,items[i])
+                }
+                this.totalRows = this.items.length
+
+                this.categoryOptions = [...new Set(this.categoryOptions)]
+                this.selectedCategory = this.categoryOptions[0]
+            },
+            methods: {
+                removeItem : function(index, id){
+                    this.modalShow = !this.modalShow
+                    this.currentDeleteId = id
+                    this.currentDeleteIndex = index
+                    console.log("Hello::",alert("Do you want to delete this Itemhh?"))
+                },
+
+                handleOk: async function(){
+                    let id = this.currentDeleteId
+                    let index = this.currentDeleteIndex
+                    this.items.splice(index,1)
+                    const response = await fetch("/delete_item_api/" + id);
+                    const data = await response.json();
+                },
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+
+                 addToCart(dataobj) {
+
+                   cartv.addToCart(dataobj)
+                
+
+                },
+                testfun(item) {
+
+                    
+                  console.log("Hello::",alert("test?"))
+                  
+
+                }
+
+            }
+        })
+
+    </script>
+    
+
+    <script type="application/javascript">
+
+          cartv = new Vue({
+          delimiters : ['[[',']]'],
+          el: '#cart',
+          data: {
+            fields: [
+            {key:'id'},
+              {key:'name'},
+              {key:'quantity'},
+              {key:'price'},
+              {key:'del', label: ''},
+                    ],
+            items: [
+             
+            ],
+            currentDeleteId: -1,
+            currentDeleteIndex: -1,
+            modalShow: false,
+            filter: null,
+            filterOn: [],
+            currentPage: 1,
+            totalRows: 1,
+            perPage: 10,
+            sortBy: '',
+            selectedCategory: null,
+            categoryOptions: [],
+            cartLiveTotal:0,
+            taxTotal:0,
+            cartTotal:0,
+            paidAmount:0,
+            remainingAmount:0,
+            inv: {
+                  invoiceId: '',
+                  cashier: '',
+                  customerPNO: '',
+                  paymentId: '-1',
+                  paymentMethod: '',
+                  store: ''
+              },
+            cart:{
+              length:0,
+              orderCompleted:false
+            },
+            cdateTime: '',
+              download_invoice: true,
+              show_receipt: false,
+              paidAmount: 0,
+              quantity_check: false,
+              paid_amount_check: false,
+            
+          }
+            ,
+          mounted: async function(){
+             
+          },
+          watch: {
+            paidAmount: function(amt) {
+    
+            //this.remainingAmount = this.cartTotal - amt
+          }
+        },
+          methods: {
+              
+
+               addToCart(dataobj) {
+
+                //console.log("Hello::",alert("test cart?"))
+                
+                  let item = dataobj.item.name
+              
+                  
+                  let id = dataobj.item.id
+                  let name = dataobj.item.name
+                  let qty = 1
+                  let price = dataobj.item.price
+                  let totalQty = dataobj.item.quantity
+                  for( i in this.items){
+                    if (this.items[i]['id'] == id){
+                      this.items[i]['quantity'] = this.items[i]['quantity'] + 1;
+                      this.cartLiveTotal = this.cartLiveTotal +   dataobj.item.price
+                      this.taxTotal = (0.05 * (this.cartLiveTotal))
+                      this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
+                      this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                      this.cart.length = this.cart.length + 1
+                        return;
+                    }
+                    //console.log("Hello::",alert("test cart?"+ this.items[i]['id']))
+                  }
+                  
+           
+                  this.items.push({id: id, name:name, quantity: qty, price: price, totalQty:totalQty})
+                  //console.log("Hello::",alert("test cart?"+name))
+                  
+                  this.cartLiveTotal = this.cartLiveTotal +   dataobj.item.price
+                  this.taxTotal = (0.05 * (this.cartLiveTotal))
+                  this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                  
+                  this.cart.length = this.cart.length + 1
+                  //console.log("Hello::",alert("test cart?"+id))
+                  //this.cart.push({ del: 'test', name: answ['name'], price: answ['price'],
+                 // totalQty: answ['totalQty'], quantity: this.quantity, total: 0, edit: false, id: answ['id'].toString()})
+
+              },
+              test() {
+               return false
+
+              },
+              checkPaidAmount(){
+                this.remainingAmount = this.paidAmount - this.cartTotal
+
+              },
+              IncQuantity(ind, id){
+                this.items[ind]['quantity'] = this.items[ind]['quantity'] + 1;
+                this.cartLiveTotal = this.cartLiveTotal +   this.items[ind]['price']
+                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
+                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cart.length = this.cart.length + 1
+              },
+              DecQuantity(ind, id){
+                this.items[ind]['quantity'] = this.items[ind]['quantity'] - 1;
+                this.cartLiveTotal = this.cartLiveTotal -   this.items[ind]['price']
+                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
+                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cart.length = this.cart.length -  1
+                if(this.items[ind]['quantity'] == 0){
+                  this.items.splice(ind,1)
+                }
+              },
+              removeCartItem(ind, id){
+               
+                this.cartLiveTotal = this.cartLiveTotal -   (this.items[ind]['price'] *this.items[ind]['quantity'])
+                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
+                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cart.length = this.cart.length -  this.items[ind]['quantity'] 
+                this.items[ind]['quantity'] = 0
+                this.items.splice(ind,1)
+              },
+
+              downloadInvoice(){
+                  const { jsPDF } = window.jspdf;
+                  var doc = new jsPDF('p', 'pt', 'A4');
+                  margins = {
+                      top: 80,
+                      bottom: 60,
+                      left: 40,
+                      width: 200
+                  };
+
+                  doc.html(this.$refs.invoice, 
+                      {
+                          callback: function(doc) {
+                              doc.save(new Date().getTime() + '.pdf');
+                          },
+                      x: 150,
+                      y: 100
+                      }
+                  );   
+              },
+
+              async  saveInvoice(){
+                // /api/save_invoice/<invId>/<cartItems>/<cartPrices>/<cartQty>/<totalPrice>/<Tax>/
+                //<customerPNO>"+
+                // "/<paymentMethod>/<paymentId>/<cashierIdName>
+                
+                  let cartItems = ''
+                  let cartPrices = ''
+                  let cartQty = ''
+                  
+                  for(let k in this.items){
+                     let cc = this.items[k]
+                     console.log("CC:", cc, cc['id'], cc['price'], cc['quantity'])
+                     cartItems +=  cc['id'].toString() + ")"
+                     cartPrices += cc['price'].toString() + ")"
+                     cartQty +=  cc['quantity'].toString() + ')'
+                  }
+                  console.log("JJJ:", cartItems, cartPrices, cartQty)
+                  //let invoiceId = new Date().getTime() + Math.floor(Math.random() * 1000);
+                  invoiceId = this.inv.invoiceId
+                  
+                  let totalPrice = this.cartTotal
+                  let tax = 0.05
+                  let customerPNO = '0'
+                  if( this.inv.customerPNO != ''){
+                    let customerPNO = this.inv.customerPNO
+                  }
+                  let paymentMethod = this.inv.paymentMethod
+                  let paymentId = this.inv.paymentId 
+                  let cashierIdName = window.localStorage.getItem("cashierId")
+                  this.inv.cashier = cashierIdName
+                  this.cdateTime = new Date()
+                 
+                  let url = "/api/save_invoice/"+invoiceId+"/"+cartItems+"/"+cartPrices+"/" 
+                                                +cartQty+"/"+totalPrice+"/"+tax+"/" + this.cdateTime + "/"
+                                                +customerPNO+"/"+paymentMethod+"/" + this.paidAmount + "/"
+                                                +paymentId + "/" + cashierIdName
+                                                //alert(url)
+                  
+                  const response = await fetch(url);
+                  const data = await response.json();
+              },
+
+              async saveItemTransaction(items){
+
+                //create invoice id
+                let invoiceId = new Date().getTime() + Math.floor(Math.random() * 1000);
+                this.inv.invoiceId = invoiceId
+               
+                for(var i in items){
+                    let item  = items[i]
+                    let idcode = item['id']
+                    let itemPrice = item['price']
+                    let soldItemQty = item['quantity']
+                    
+                    let totalQty = item['totalQty']
+
+                    let newQty = totalQty - soldItemQty
+                    if(newQty<=0){
+                      alert("Quntity must less than total quantity")
+                    }
+                    let update_url = `/api/update_item_quantity/${idcode}/${newQty}`
+                    const response1 = await fetch(update_url)
+                    const data1 = await response1.json();
+                    console.log("item:", item, "totalQty:", totalQty, "NewQty:", newQty, data1)
+
+                    let url = "/api/save_transaction/"+ invoiceId+ "/"+ idcode + "/"+itemPrice+"/"+soldItemQty
+                    //alert(this.inv.invoiceId)
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    console.log(data["res"])
+                    if (data['res'] == 'error'){
+                      alert( "Error in transaction")
+                      return 'error'
+                    }
+                }
+                //transaction completed
+              },
+
+             
+              saveItemAndInvoice(){
+                 
+                 this.show_receipt = true
+                 this.saveItemTransaction(this.items)
+                 this.saveInvoice()
+                 this.downloadInvoice()
+                 //this.show_receipt = false
+                 this.orderCompleted = true
+              },
+
+              startNewCart(){
+                 window.location.reload();
+              }
+
+
+          }
+      })
+
+  </script>
+
+<script type="application/javascript">
+
+  invoice = new Vue({
+      delimiters : ['[[',']]'],
+      el: '#invoicediv',
+      data: {
+        fields: [
+                  {},
+                 ],
+        items: [
+         
+        ],
+        cart : cartv,
+        orderCompleted:false
+       
+      }
+        ,
+      mounted: async function(){
+          
+      },
+      methods: {
+          testfun(item) {
+            console.log("Hello::",alert("test?"))
+            
+
+          }
+
+      }
+  })
+
+</script>
+
+
+{% endblock %}
