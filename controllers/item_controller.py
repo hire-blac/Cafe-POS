@@ -6,30 +6,33 @@ Session = sessionmaker(bind=engine)
 
 
 def create_item(data):
-    item = Item(
-        name=data['name'],
-        price=data['price'],
-        quantity=data['quantity'],
-        category_id=data['category_id'],
-    )
+    try:
+        item = Item(
+            name=data['name'],
+            price=data['price'],
+            quantity=data['quantity'],
+            category_id=data['category_id'],
+        )
 
-    with Session() as session:
-        session.add(item)            
-        session.commit()    
-        return {
-            'id': item.id, 
-            'name': item.name,
-            'price': str(item.price),
-            'quantity': item.quantity,
-            'category': item.category.name,
-        }
+        with Session() as session:
+            session.add(item)            
+            session.commit()    
+            return {
+                'id': item.id, 
+                'name': item.name,
+                'price': str(item.price),
+                'quantity': item.quantity,
+                'category': item.category.name,
+            }
+    except:
+        return {'message': "an error occured"}
 
 
 def all_items():
     with Session() as session:
         items = session.query(Item).all()
-        data = []
         if items:
+            data = []
             for item in items:
                 data.append({
                     'id': item.id, 
@@ -45,7 +48,7 @@ def all_items():
             }
         else:
             return {
-                'message': 'no items',
+                'message': "No items found",
                 'items_count': len(items)
             }
 
@@ -53,16 +56,13 @@ def all_items():
 def get_item(item_id):
     with Session() as session:
         item = session.query(Item).get(item_id)
-        if item:
-            return item
-        
-            # return {
-            #     'id': item.id, 
-            #     'name': item.name,
-            #     'price': str(item.price),
-            #     'quantity': item.quantity,
-            #     'category': item.category.name,
-            #     }
+        if item:        
+            return {
+                'id': item.id, 
+                'name': item.name,
+                'price': str(item.price),
+                'quantity': item.quantity,
+                'category': item.category.name,
+                }
         else:
-            return None
             return {'message': 'Item not found'}

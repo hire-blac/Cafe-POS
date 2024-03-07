@@ -8,8 +8,8 @@ Session = sessionmaker(bind=engine)
         
 def all_invoices():
     with Session() as session:
-        try:
-            invoices = session.query(Invoice).all()
+        invoices = session.query(Invoice).all()
+        if invoices:
             data = []
             for invoice in invoices:
                 # get all transactions for each invoice
@@ -37,8 +37,8 @@ def all_invoices():
 
             return {'invoices': data, 'invoices_count': len(invoices)}
             
-        except SQLAlchemyError as e:
-            return {'message': str(e), 'invoices_count': 0}
+        else:
+            return {'message': "no invoices found", 'invoices_count': 0}
 
 def create_invoice(data):
     try:
@@ -93,14 +93,14 @@ def create_invoice(data):
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
             }
         
-    except SQLAlchemyError as e:
-        return {'message': e}
+    except:
+        return {'message': "An error occured"}
 
 
 def get_invoice(invoice_id):
     with Session() as session:
-        try:
-            invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.query(Invoice).get(invoice_id)
+        if invoice:
             # get all transactions for each invoice
             purchase_items = [{
                 'id': transaction.id,
@@ -122,27 +122,28 @@ def get_invoice(invoice_id):
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
             }
 
-        except SQLAlchemyError as e:
-            return {'message': str(e)}
+        else:
+            return {'message': "Invoice not found"}
         
 
 def update_invoice(data, invoice_id):
     with Session() as session:
-        try:
-            invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.query(Invoice).get(invoice_id)
+        if invoice:
             # edit invoice
-        except SQLAlchemyError as e:
-            return {'message': str(e)}
+            pass
+        else:
+            return {'message': "invoice not found"}
         
 
 def delete_invoice(invoice_id):
     with Session() as session:
-        try:
-            invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.query(Invoice).get(invoice_id)
+        if invoice:
             session.delete(invoice)
             session.commit()
             return f'Invoice with ID {invoice_id} deleted successfully'
         
-        except SQLAlchemyError as e:
-            return {'message': str(e)}
+        else:
+            return {'message': "invoice not found"}
         
