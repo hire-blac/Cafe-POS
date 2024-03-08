@@ -12,7 +12,7 @@
             
         </b-table>
 
-        <b-table striped hover :fields="invfields" :items="invdetails">
+        <b-table striped hover :fields="itemsFields" :items="invoiceItems">
             
         </b-table>
 
@@ -52,10 +52,10 @@
                                 <td class="Rate"><h2>Sub Total</h2></td>
                             </tr>
 
-                            <tr class="service" v-for="it in invdetails">
-                              <td class="tableitem"><p class="itemtext">[[it.invoiceItems]]</p></td>
-                              <td class="tableitem"><p class="itemtext">[[ it.invoiceQty ]]</p></td>
-                              <td class="tableitem"><p class="itemtext">[[ parseInt(it.invoicePrices) * parseInt(it.invoiceQty) ]]</p></td>
+                            <tr class="service" v-for="it in invoiceItems">
+                              <td class="tableitem"><p class="itemtext">[[it.item]]</p></td>
+                              <td class="tableitem"><p class="itemtext">[[ it.quantity ]]</p></td>
+                              <td class="tableitem"><p class="itemtext">[[ parseInt(it.price) * parseInt(it.quantity) ]]</p></td>
                             </tr>
 
                             <td></td>
@@ -64,15 +64,15 @@
 
                                 <td class="Rate" ><h2>Total Ex. TAX</h2></td>
                                 <td class="payment"> <h2>[[ wTaxTotal ]]</h2></td>
-                                                                <td></td>
+                                <td></td>
 
                             </tr>
                             <div style=" height: 0px;border-bottom:solid 3px #000;"></div>
 
                             <tr class="tabletitle">
                                 <td class="Rate"><h2>TAX</h2></td>
-                                <td class="payment"><h2>[[ tax * wTaxTotal ]]</h2></td>
-                                                                <td></td>
+                                <td class="payment"><h2>[[ tax ]]</h2></td>
+                                <td></td>
 
                             </tr>
 
@@ -80,7 +80,7 @@
                             <tr class="tabletitle">
                                 <td class="Rate" style='font-size: 12px;'><h2>Total Inc. TAX</h2></td>
                                 <td class="payment" style='font-size: 12px;'><h2>[[ taxTotal ]]</h2></td>
-                                                                <td></td>
+                                <td></td>
 
                             </tr>
 
@@ -119,32 +119,28 @@
 </div>
 
 <script type="application/javascript">
-    //TransID,Invoice_datetime,Cart_items_idcodes,Cart_items_prices,Cart_items_Qty,totall_price,
-    //TAXs,Payment_ID,Costumer_PNO,CashierID_Name,Payment_Method
     new Vue({
         delimiters : ['[[',']]'],
         el: '#app',
         data: {
-          fields: [ {key: 'transId', label:'Transaction Id'}, 
-                    {key: 'invDate', label:'Invoice DateTime'},  
-                    {key: 'subtotalPrice', label:'Subtotal Price'},
-                    {key: 'tax', label:'Tax'},
-                    {key: 'paymentId', label:'Payment Id'},
-                    {key: 'customerPNO', label:'Customer PNO'},
-                    {key: 'cashier', label:'Cashier'},
-                    {key: 'paymentMethod', label:'Payment Method'},
-                    ],
-          invoice: [
-           
+          fields: [ 
+            {key: 'id', label:'Transaction Id'}, 
+            {key: 'invDate', label:'Invoice DateTime'},  
+            {key: 'total', label:'Total Price'},
+            {key: 'tax', label:'Tax'},
+            {key: 'paymentId', label:'Payment Id'},
+            {key: 'customerPNO', label:'Customer PNO'},
+            {key: 'cashier', label:'Cashier'},
+            {key: 'paymentMethod', label:'Payment Method'},
           ],
-          invfields: [
-              {key: "invoiceItems", label: "Invoice Items"},
-              {key: "invoicePrices", label: "Prices"},
-              {key: "invoiceQty", label:"Quantity"}
+          invoice: [],
+          itemsFields: [
+            {key: "item", label: "Invoice Item"},
+            {key: "price", label: "Price"},
+            {key: "quantity", label:"Quantity"},
+            {key: "subtotal", label:"Sub Total"}
           ],
-          invdetails: [
-
-          ],
+          invoiceItems: [],
           invId:  window.location.pathname.split("/")[2],
           
           wTaxTotal: 0,
@@ -165,71 +161,51 @@
         },
         mounted: async function(){
        
-            const response = await fetch("/api/invoice/" + this.invId );
-            const data = await response.json();
-            console.log("Invoice:data:", data)
+            const response = await fetch("/api/invoices/" + this.invId );
+            const invoice = await response.json();
+            const invoiceItems = invoice['transactions']
+
+            invoiceItems.forEach(item => {
+              this.invoiceItems.push({
+                item: item['item'],
+                price: item['item_price'],
+                quantity: item['quantity_sold'],
+                subtotal: item['subtotal']
+              })
+            })
            
-            let invoice = data["invoice"]
-            console.log('invoice', invoice)
-            let transId = invoice[0]
-            let cartItemsId = invoice[1].replace(/,/g, "").replace('(', "")
-            let cartItemPrices = invoice[2].replace(/,/g, "").replace('(', "")
-            let cartItemQty = invoice[3].replace(/,/g, "").replace('(', "")
-            let subtotalPrice = invoice[4]
-            let tax = invoice[5]
-            let dateTime = invoice[6]
+            let id = invoice['id']
+            let total = invoice['total_price']
+            let tax = invoice['tax']
+            let dateTime = invoice['created_at']
             this.cdateTime = dateTime
-            let paymentId = invoice[10]
-            let customerPNO = invoice[7]
-            let cashier = invoice[11]
-            let paymentMethod = invoice[8]
-            let paidAmount = invoice[9]
 
-            this.inv.invoiceId = transId
+            let paymentId = invoice['payment_id']
+            let customerPNO = invoice['customer_PNO']
+            let cashier = invoice['cashier_name']
+            let paymentMethod = invoice['payment_method']
+            let paidAmount = invoice['amount_paid']
+
+            this.inv.invoiceId = id
             this.inv.cashier = cashier
-            this.wTaxTotal = subtotalPrice
-            this.tax = tax
-            //wTaxTotal + (tax * wTaxTotal)
-            this.taxTotal = (this.wTaxTotal + (this.tax * this.wTaxTotal))
+            this.wTaxTotal = parseFloat(total)
+            this.tax = parseFloat(tax)
+            this.taxTotal = (parseFloat(this.wTaxTotal) + (parseFloat(this.tax) * parseFloat(this.wTaxTotal)))
             this.inv.paymentMethod = paymentMethod
-            this.inv.paidAmount = paidAmount
-            this.remainingAmount = this.inv.paidAmount - this.taxTotal
+            this.inv.paidAmount = parseFloat(paidAmount)
+            this.remainingAmount = parseFloat(this.inv.paidAmount) - parseFloat(this.taxTotal)
             this.remainingAmount = (Math.round((this.remainingAmount+Number.EPSILON)*100)/100)
-            //TransID,Invoice_datetime,Cart_items_idcodes,Cart_items_prices,Cart_items_Qty,totall_price,
-            //TAXs,Payment_ID,Costumer_PNO,CashierID_Name,Payment_Method
+
             this.invoice.push({ 
-                                    transId: transId, 
-                                    invDate: dateTime, 
-                                    subtotalPrice: subtotalPrice, 
-                                    tax: tax,
-                                    paymentId: paymentId,
-                                    customerPNO: customerPNO,
-                                    cashier: cashier,
-                                    paymentMethod: paymentMethod,
-                                })
-            
-            let cid = cartItemsId.split(")")
-            let cip = cartItemPrices.split(")")
-            let ciq = cartItemQty.split(")")
-
-            for(let c in cid){
-              if(cid[c] != ''){
-                let itemId = cid[c]
-                const response = await fetch("/item_api/" + itemId );
-                const data = await response.json();
-                let itemName = data["name"]
-
-                this.invdetails.push({
-                  transId: transId,
-                  invoiceItems: itemName,
-                  invoicePrices: cip[c],
-                  invoiceQty: ciq[c]
-                })
-              }
-            }
-
-            
-            
+              id: id, 
+              invDate: dateTime, 
+              total: total, 
+              tax: tax,
+              paymentId: paymentId,
+              customerPNO: customerPNO,
+              cashier: cashier,
+              paymentMethod: paymentMethod,
+            })
         },
         methods: {
             downloadInvoice(){

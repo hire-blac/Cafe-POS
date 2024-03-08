@@ -90,7 +90,7 @@
                     >
 
                     <template #cell(invoiceId)="data">
-                        <span><b-link :href=" '/invoice/' + data.item.invoice "><i v-on:click="" >[[data.item.invoice]]</i></b-link></span>   
+                        <span><b-link :href=" '/invoice/' + data.item.invoiceId "><i v-on:click="" >[[data.item.invoiceId]]</i></b-link></span>   
                       </template>
             </b-table>
 
@@ -121,16 +121,16 @@
             delimiters : ['[[',']]'],
             el: '#app',
             data: {
-              fields: [ {key: 'transactionId', label:'Transaction Id'}, 
-                        {key: 'invoiceId', label:'Invoice'}, 
-                        {key: 'dateTime', label:'Transaction Date Time', sortable: true}, 
-                        {key: 'itemId', label:'Item Id'},
-                        {key: 'itemName', label:'Item Name'},
-                        {key: 'price', label:'Item Price', sortable: true}, 
-                        {key: 'quantity', label:'Quantity Sold', sortable: true}],
-              transactions: [
-               
+              fields: [ 
+                {key: 'id', label:'Transaction Id'}, 
+                {key: 'invoiceId', label:'Invoice'}, 
+                {key: 'dateTime', label:'Transaction Date Time', sortable: true}, 
+                {key: 'itemId', label:'Item Id'},
+                {key: 'itemName', label:'Item Name'},
+                {key: 'price', label:'Item Price', sortable: true}, 
+                {key: 'quantity', label:'Quantity Sold', sortable: true}
               ],
+              transactions: [],
               all_transactions: null,
               filter: null,
               filterOn: ["itemName", "itemId"],
@@ -153,32 +153,37 @@
                 date.setFullYear(date.getFullYear() - 1)
                 this.from_datepicker = date
 
-                const response = await fetch("/transactions_api");
+                const response = await fetch("/api/transactions");
                 const data = await response.json();
                
                 let transactions = data["transactions"]
                 //Trans_ID,Creation_datetime,item_idcode,item_price,sold_item_qty
-                for( var i in transactions){
-                    let transaction = transactions[i]
-                    let id = transaction[0]
-                   
-                    let dateTime = transaction[1]
-                    let item_idcode = transaction[2]
-                    let item_price = transaction[3]
-                    let qty = transaction[4]
-                    let name = transaction[5]
-                    //let cat =transaction[6]
-                    let inv =transaction[6]
-                    
-                    this.itemOptions.push(item_idcode)
-                    this.transactions.push({ transactionId: id, dateTime: dateTime, itemId: item_idcode, itemName: name, 
-                        price: item_price, quantity: qty, invoice:inv})
-                }
+                
+                transactions.forEach(transaction => {
+                  let id = transaction['id']
+                  let dateTime = transaction['created_at']
+                  let item_id = transaction['item_id']
+                  let item_price = transaction['item_price']
+                  let qty = transaction['quantity_sold']
+                  let item_name = transaction['item']
+                  let invoice_id =transaction['invoice_id']
+                  
+                  this.itemOptions.push(item_id)
+                    this.transactions.push({ 
+                      id: id, 
+                      dateTime: dateTime, 
+                      itemId: item_id, 
+                      itemName: item_name, 
+                      price: item_price, 
+                      quantity: qty, 
+                      invoiceId:invoice_id
+                    })
+                })
+
                 this.totalRows = this.transactions.length
                 this.itemOptions =[...new Set(this.itemOptions)]
                 this.selectedItem = this.itemOptions[0]
                 this.all_transactions = this.transactions
-                
             },
             methods: {
                 onContext(ctx) {

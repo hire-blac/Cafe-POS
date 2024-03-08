@@ -38,6 +38,11 @@ def categories():
     categories = category_controller.all_categories()
     return categories
 
+@get("/api/delete_category/<id>")
+def categories(id):
+    categories = category_controller.delete(id)
+    return categories
+
 # add new category from api
 @post("/api/categories")
 def new_categories():
@@ -201,7 +206,7 @@ def invoice(invoice_id):
 @get('/api/invoices/<invoice_id>')
 def get_invoice(invoice_id):
     invoice = invoice_controller.get_invoice(invoice_id)
-    return invoice, 200
+    return invoice
 
 @put("/api/invoices/<invoice_id>")
 def update_invoice(invoice_id):

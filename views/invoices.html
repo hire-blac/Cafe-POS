@@ -62,7 +62,7 @@
                  :per-page="perPage"
                  >
             <template #cell(show)="data">
-                <b-link :href=" '/invoice/' + data.item.transId "><i class="fas fa-chevron-right"></i></span></b-link>
+                <b-link :href=" '/invoice/' + data.item.id "><i class="fas fa-chevron-right"></i></span></b-link>
             </template>
         </b-table>
 
@@ -88,25 +88,24 @@
 </div>
 
 <script type="application/javascript">
-    //TransID,Invoice_datetime,Cart_items_idcodes,Cart_items_prices,Cart_items_Qty,totall_price,
+    //id,Invoice_datetime,Cart_items_idcodes,Cart_items_prices,Cart_items_Qty,totall_price,
     //TAXs,Payment_ID,Costumer_PNO,CashierID_Name,Payment_Method
     new Vue({
         delimiters : ['[[',']]'],
         el: '#app',
         data: {
-          fields: [ {key: 'transId', label:'Invoice Id'}, 
-                    {key: 'invDate', label:'Invoice DateTime', sortable: true},  
-                    {key: 'subtotalPrice', label:'Subtotal Price', sortable: true},
-                    {key: 'tax', label:'Tax', },
-                    {key: 'paymentId', label:'Payment Id'},
-                    {key: 'customerPNO', label:'Customer PNO', sortable: true},
-                    {key: 'cashier', label:'Cashier Id', sortable: true},
-                    {key: 'paymentMethod', label:'Payment Method'},
-                    {key: 'show', label: '-'}
-                    ],
-          invoices: [
-           
+          fields: [ 
+            {key: 'id', label:'Invoice Id'}, 
+            {key: 'created_at', label:'Invoice DateTime', sortable: true},  
+            {key: 'total', label:'Total Price', sortable: true},
+            {key: 'tax', label:'Tax', },
+            {key: 'paymentId', label:'Payment Id'},
+            {key: 'customerPNO', label:'Customer PNO', sortable: true},
+            {key: 'cashier', label:'Cashier Id', sortable: true},
+            {key: 'paymentMethod', label:'Payment Method'},
+            {key: 'show', label: '-'}
           ],
+          invoices: [],
           all_invoices: null,
           filter: null,
           filterOn: [],
@@ -130,37 +129,35 @@
             const data = await response.json();
            
             let invoices = data["invoices"]
-            for( var i in invoices){
-                
-                let invoice = invoices[i]
-                console.log("New Invoice ", invoice)
-                let transId = invoice[0]
-                let invDateTime = invoice[6]
-                let cartItemsId = invoice[2]
-                let cartItemPrices = invoice[3]
-                let cartItemQty = invoice[4]
-                let subtotalPrice = invoice[4]
-                let tax = invoice[5]
-                let paymentId = invoice[10]
-                let customerPNO = invoice[7]
-                let cashier = invoice[11]
-                let paymentMethod = invoice[8]
-                //TransID,Invoice_datetime,Cart_items_idcodes,Cart_items_prices,Cart_items_Qty,totall_price,
-                //TAXs,Payment_ID,Costumer_PNO,CashierID_Name,Payment_Method
-               
-                this.invoices.push({ 
-                                     transId: transId, 
-                                     invDate: invDateTime, 
-                                     subtotalPrice: subtotalPrice, 
-                                     tax: tax,
-                                     paymentId: paymentId,
-                                     customerPNO: customerPNO,
-                                     cashier: cashier,
-                                     paymentMethod: paymentMethod,
-                                  })
-                this.totalRows = this.invoices.length
-                this.all_invoices = this.invoices
-            }
+
+            invoices.forEach(invoice => {              
+              let id = invoice['id']
+              let created_at = invoice['created_at']
+              let transactions = invoice['transactions']
+              let total = invoice['total_price']
+              let tax = invoice['tax']
+              // let paymentId = invoice['payment_id']
+              let paymentId = 1
+              let customerPNO = invoice['costumer_PNO']
+              let cashier = invoice['cashier_name']
+              let paymentMethod = invoice['payment_method']
+
+              
+              this.invoices.push({ 
+                    id: id, 
+                    created_at: created_at, 
+                    total: total, 
+                    tax: tax,
+                    paymentId: paymentId,
+                    customerPNO: customerPNO,
+                    cashier: cashier,
+                    paymentMethod: paymentMethod,
+                })
+
+            })
+
+            this.totalRows = this.invoices.length
+            this.all_invoices = this.invoices
         },
         methods: {
             onContext(ctx) {
@@ -193,7 +190,7 @@
                 let to = this.changeDateFormat(this.to_datepicker)
 
                 this.invoices = this.all_invoices.filter((inv, index)=>{ 
-                    let dt = this.changeDateFormat(inv.invDate)
+                    let dt = this.changeDateFormat(inv.created_at)
                     console.log("DT::", dt)
                     return parseInt(dt.toString().substring(0,8)) >= parseInt(from) && parseInt(dt.toString().substring(0,8)) <= parseInt(to)
                 })

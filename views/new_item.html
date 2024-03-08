@@ -93,6 +93,9 @@
             if(!this.isAdminLogin()){
               // this.logout();
             }
+            
+            this.categoryOptions.push({id: 'New Category', name: 'New Category'})
+            
             const response = await fetch("/category_api");
             const data = await response.json();
             
@@ -100,7 +103,6 @@
             categories.forEach(category => {
               this.categoryOptions.push(category)
             })
-            this.categoryOptions.push({id: 'New Category', name: 'New Category'})
           },
           methods: {
             importFromExcel(){

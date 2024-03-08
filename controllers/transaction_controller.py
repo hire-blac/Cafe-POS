@@ -15,10 +15,10 @@ def all_transactions():
                     'invoice_id': transaction.invoice_id,
                     'item_id': transaction.item_id,
                     'item': transaction.item.name,
-                    'item_price': transaction.item_price,
+                    'item_price': str(transaction.item_price),
                     'quantity_sold': transaction.quantity_sold,
-                    'subtotal': transaction.subtotal,
-                    'created_at': transaction.created_at,
+                    'subtotal': str(transaction.subtotal),
+                    'created_at': transaction.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 })
             return {
                 'transactions': data,
@@ -40,10 +40,10 @@ def get_transaction(transaction_id):
             'invoice_id': transaction.invoice_id,
             'item_id': transaction.item_id,
             'item': transaction.item.name,
-            'item_price': transaction.item_price,
+            'item_price': str(transaction.item_price),
             'quantity_sold': transaction.quantity_sold,
-            'subtotal': transaction.subtotal,
-            'created_at': transaction.created_at,
+            'subtotal': str(transaction.subtotal),
+            'created_at': transaction.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         else:
             return {'message': 'transaction not found'}

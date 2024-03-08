@@ -31,7 +31,7 @@
         <b-alert v-if="successMsg" show variant="success">[[successMsg]]</b-alert>
         <b-table hover 
                 :fields="fields" 
-                :items="items"
+                :items="categories"
                 :filter="filter"
                 :filter-included-fields="filterOn"
                 @filtered="onFiltered"
@@ -42,23 +42,23 @@
                 >
       
             <template #cell(id)="data">
-                [[data.item.id]]
-              </template>
+              [[data.item.id]]
+            </template>
 
             <template #cell(name)="data">
-                <span @click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit, 'name' )" v-show="!data.item.tog_edit">[[data.item.name]]</span>
-                <input  v-show="data.item.tog_edit" v-model="data.item.upd_name" type="text" />
-             
+              <span @click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit, 'name' )" v-show="!data.item.tog_edit">[[data.item.name]]</span>
+              <input  v-show="data.item.tog_edit" v-model="data.item.upd_name" type="text" />
             </template>
         
             <template #cell(delete)="data">
-                <b-link v-on:click="removeCategory(data.item.name, data.index, data.item.id)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
+              <b-link v-on:click="removeCategory(data.item.name, data.index, data.item.id)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
             </template>
+            
             <template #cell(edit)="data">
-                <b-link><i v-show="!data.item.tog_edit"  v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" class="fas fa-edit"></i></span></b-link>
-                
-                <b-button v-show="data.item.tog_edit" v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" size="sm">Cancel</b-button>
-                <b-button v-show="data.item.tog_edit" v-on:click="SaveEdit(data.item.upd_name, data.item.id, data.item.tog_edit )" size="sm">Save</b-button>
+              <b-link><i v-show="!data.item.tog_edit"  v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" class="fas fa-edit"></i></span></b-link>
+              
+              <b-button v-show="data.item.tog_edit" v-on:click="toggleEdit(data.item.name, data.item.id, data.item.tog_edit )" size="sm">Cancel</b-button>
+              <b-button v-show="data.item.tog_edit" v-on:click="SaveEdit(data.item.upd_name, data.item.id, data.item.tog_edit )" size="sm">Save</b-button>
                 
             </template>
           
@@ -97,7 +97,6 @@
         </div>
 
     </div>
-
 </div>
 
 <script type="application/javascript">
@@ -107,14 +106,12 @@
         el: '#app',
         data: {
           fields: [
-                    {key:'id',sortable: true},
-                    {key:'name'},
-                    {key: 'delete', label: ''},
-                    {key:'edit', label: ''},
+            {key:'id',sortable: true},
+            {key:'name'},
+            {key: 'delete', label: ''},
+            {key:'edit', label: ''},
         ],
-          items: [
-           
-          ],
+          categories: [],
           currentDeleteId: -1,
           currentDeleteIndex: -1,
           modalShow: false,
@@ -137,19 +134,29 @@
             //    this.logout();
             // }
             this.successMsg =''
-            const response = await fetch("/categories_api");
+            const response = await fetch("/api/categories");
             const data = await response.json();
            
-            let items = data["categories"]
-            for( var i in items){
-                let item = items[i]
-                let id = item[0]
-                let name = item[1]
-                this.items.push({ del: 'test', id: id, name: name,upd_name:name,
-                   delete: 'test',  editName: false, edit: "test", tog_edit:false})
-            }
-            this.totalRows = this.items.length
+            let categories = data["categories"]
+            categories.forEach(category => {
 
+              let id = category['id']
+              let name = category['name']
+
+              this.categories.push({ 
+                del: 'test', 
+                id: id, 
+                name: name,
+                upd_name: name,
+                delete: 'test',  
+                editName: false, 
+                edit: "test", 
+                tog_edit:false
+               })
+  
+            })
+
+            this.totalRows = this.categories.length
         },
         methods: {
             removeCategory : async function(name, index, id){
@@ -179,7 +186,7 @@
             handleOk: async function(){
                 let id = this.currentDeleteId
                 let index = this.currentDeleteIndex
-                this.items.splice(index,1)
+                this.categories.splice(index,1)
                 const response = await fetch("/api/delete_category/" + id);
                 const data = await response.json();
                 this.successMsg = 'Category deleted'
@@ -209,11 +216,11 @@
                 this.errMsg = ''
                 this.successMsg =''
                 this.is_edit = false
-                const index = this.items.findIndex(function(item){
-                  return item.id === id
+                const index = this.categories.findIndex(function(category){
+                  return category.id === id
                 })
-                this.items[index].tog_edit = !ed
-                if (this.items[index].tog_edit == true){
+                this.categories[index].tog_edit = !ed
+                if (this.categories[index].tog_edit == true){
                     this.is_edit = true
                 }
             },
@@ -230,25 +237,68 @@
                     alert("Please enter new category name")
                 }
 
-                const response = await fetch("api/add_category1/" + this.newCatName);
-                const data =  await response.json()
-                this.isAddCategory = !this.isAddCategory
+                let cat_data = {name: this.newCatName}
 
-                catname = this.newCatName
-                this.newCatName = ''
-                console.log(data["res"])
-                let idcode = ''
-                if (data['res'] == 'IntegrityError'){
-                    alert( data['res'])
+                try {
+                  const response = await fetch("/api/categories", {
+                    method: "POST", // or 'PUT'
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(cat_data),
+                  });
+
+                  const result = await response.json();
+                  this.isAddCategory = !this.isAddCategory
+
+                  catname = this.newCatName
+                  this.newCatName = ''
+                  if (result['res'] == 'IntegrityError'){
+                    alert( result['res'])
+                  }
+                  else {
+                    let id = result['id']
+                    let name = result['name']
+                    this.errMsg =''
+                    this.categories.push({ 
+                      del: 'test', 
+                      id: id, 
+                      name: name,
+                      upd_name: name, 
+                      delete: 'test',  
+                      editName: false, 
+                      edit: "test", 
+                      tog_edit:false
+                    })
+                    this.successMsg = 'Category added'
+                  }
+
+
+                } catch (error) {
+                  console.error("Error:", error);
                 }
-                else {
-                    idcode = data['idcode']
-                    console.log(data)
-                    //alert("Caregory Saved"+ data)
-                }
-                this.errMsg =''
-                this.items.push({ del: 'test', id: idcode, name: catname,upd_name:catname, delete: 'test',  editName: false, edit: "test", tog_edit:false})
-                this.successMsg = 'Category added'
+
+
+
+                // const response = await fetch("api/add_category1/" + this.newCatName);
+                // const data =  await response.json()
+                // this.isAddCategory = !this.isAddCategory
+
+                // catname = this.newCatName
+                // this.newCatName = ''
+                // console.log(data["res"])
+                // let idcode = ''
+                // if (data['res'] == 'IntegrityError'){
+                //     alert( data['res'])
+                // }
+                // else {
+                //     idcode = data['idcode']
+                //     console.log(data)
+                //     //alert("Caregory Saved"+ data)
+                // }
+                // this.errMsg =''
+                // this.categories.push({ del: 'test', id: idcode, name: catname,upd_name:catname, delete: 'test',  editName: false, edit: "test", tog_edit:false})
+                // this.successMsg = 'Category added'
 
             },
 
@@ -265,11 +315,11 @@
                         this.errMsg = 'Error'
                 }
                 else {
-                        const index = this.items.findIndex(function(item){
-                            return item.id === id
+                        const index = this.categories.findIndex(function(category){
+                            return category.id === id
                         })
-                        this.items[index].tog_edit = !ed
-                        this.items[index].name =  this.items[index].upd_name
+                        this.categories[index].tog_edit = !ed
+                        this.categories[index].name =  this.categories[index].upd_name
                         this.errMsg = ''
                         this.successMsg = 'Category updated'
                 }
