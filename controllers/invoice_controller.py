@@ -1,5 +1,5 @@
 from sqlalchemy.orm import sessionmaker
-from controllers import transaction_controller
+from controllers import item_controller, transaction_controller
 from models.models import Invoice, Transaction, engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -29,8 +29,8 @@ def all_invoices():
                     'tax': str(invoice.tax),
                     'amount_paid': str(invoice.amount_paid),
                     'payment_method': str(invoice.payment_method),
-                    # 'cashier_id': invoice.cashier_id,
-                    'cashier_name': invoice.cashier_name,
+                    'cashier_id': invoice.cashier_id,
+                    'cashier_name': invoice.cashier.name,
                     # 'customer_PNO': invoice.customer_PNO,
                     'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
                 })
@@ -47,10 +47,10 @@ def create_invoice(data):
             tax=data['tax'],
             amount_paid=data['amount_paid'],
             payment_method=data['payment_method'],
+            payment_id=data['payment_id'],
             # costumer_id=data['costumer_id'],
             costumer_PNO=data['costumer_PNO'],
-            # cashier_id=data['cashier_id'],
-            cashier_name=data['cashier_name']
+            cashier_id=data['cashier_id']
         )
 
         with Session() as session:
@@ -80,6 +80,9 @@ def create_invoice(data):
                     'subtotal': str(transaction.subtotal)
                 })
 
+                # update item quantity
+                item_controller.reduce_quantity(item['item_id'], item['quantity_sold'])
+
             return {
                 'id': invoice.id,
                 'cart_items': inv_transactions,
@@ -87,9 +90,9 @@ def create_invoice(data):
                 'tax': str(invoice.tax),
                 'amount_paid': str(invoice.amount_paid),
                 'payment_method': str(invoice.payment_method),
-                # 'costumer_PNO': invoice.costumer_PNO,
-                # 'cashier_id': invoice.cashier_id,
-                'cashier_name': invoice.cashier_name,
+                'costumer_PNO': invoice.costumer_PNO,
+                'cashier_id': invoice.cashier_id,
+                'cashier_name': invoice.cashier.name,
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
             }
         
@@ -117,8 +120,9 @@ def get_invoice(invoice_id):
                 'tax': str(invoice.tax),
                 'amount_paid': str(invoice.amount_paid),
                 'payment_method': str(invoice.payment_method),
-                # 'cashier_id': invoice.cashier_id,
-                'cashier_name': invoice.cashier_name,
+                'costumer_PNO': invoice.costumer_PNO,
+                'cashier_id': invoice.cashier_id,
+                'cashier_name': invoice.cashier.name,
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
             }
 

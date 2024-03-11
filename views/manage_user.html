@@ -136,24 +136,21 @@
             if(!this.isAdminLogin()){
                this.logout();
             }
-            const response = await fetch("/users_api");
+            const response = await fetch("/api/users");
             const data = await response.json();
            
             let items = data["users"]
-            
-            for( var i in items){
-                let item = items[i]
-                let id = item[0]
-                let name = item[1]
-                let username = item[2]
-                let userType = item[3]
-                
-                this.items.push({id: id, name: name, username: username, userType: userType,
-                show: 'test', edit: 'test', delete: 'test'})
-                //console.log("Array::i ",i,item[3])
-            }
-            this.totalRows = this.items.length
 
+            items.forEach(user => {
+              let id = user.id
+              let name = user.name
+              let username = user.username
+              let userType = user.usertype
+
+              this.items.push({id: id, name: name, username: username, userType: userType,
+                show: 'test', edit: 'test', delete: 'test'})
+            })
+            this.totalRows = this.items.length
         },
         methods: {
             removeUser : function(index, id){

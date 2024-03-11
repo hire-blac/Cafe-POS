@@ -22,12 +22,7 @@
                         Error Creating Item(s)
                     </div>
                 {% endif %}
-                <form method="post" >
-
-                    <!-- <div class="mb-3">
-                        <label for="id" class="form-label">ID</label>
-                        <input type="text" class="form-control" name='id' id="id" placeholder="Enter Item Id">
-                    </div> -->
+                <form method="post" action="">
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
@@ -37,7 +32,7 @@
                     <div class="mb-3">
          
                       <label for="itemCategory">Category:</label>
-                      <select v-model="category" name = "category" class="form-select" @change="categoryChanged">
+                      <select v-model="category" name="category" class="form-select" @change="categoryChanged">
                           <option v-for="category in categoryOptions" :key="category" :value="category.id">[[category.name]]</option>                                
                       </select>
                       <!-- Additional input for custom category -->
@@ -91,7 +86,7 @@
           },
           mounted: async function(){
             if(!this.isAdminLogin()){
-              // this.logout();
+              this.logout();
             }
             
             this.categoryOptions.push({id: 'New Category', name: 'New Category'})
@@ -117,11 +112,33 @@
             this.customCategory = '';
             },
             
-            submitForm() {
-              const response = fetch("api/add_category1/" + this.customCategory);
+            async submitForm() {
+              const response = fetch("/api/categories" + this.customCategory);
               const data =  response.json();
               console.log(data)
               alert("New category added!");
+
+              const category = {
+                name: this.customCategory
+              }
+
+              try {
+                const response = await fetch("/api/categories", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(category),
+                });
+
+                const result = await response.json();
+                console.log(result);
+                
+                alert("New category added!");
+
+              } catch (error) {
+                console.log(error);
+              }
             },
 
             goBack(){

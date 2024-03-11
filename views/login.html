@@ -20,23 +20,20 @@
                 </div>
                 
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label">User Name</label>
-                        <input type="text" class="form-control" name='username' v-model="username" id="username" placeholder="Enter username">
-                    </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">User Name</label>
+                    <input type="text" class="form-control" name='username' v-model="username" id="username" placeholder="Enter username">
+                </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" name='password' v-model="password" id="password" placeholder="Enter password">
-                    </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" name='password' v-model="password" id="password" placeholder="Enter password">
+                </div>
 
-                    <div class="mb-3">
-                        <button @click="login" class="btn btn-primary">Login</button>
-                    </div>
+                <div class="mb-3">
+                    <button @click="login" class="btn btn-primary">Login</button>
+                </div>
 
-
-    
-               
             </div>
             <div class="col-md-2"></div>
         </div>
@@ -55,43 +52,57 @@
             },
             methods:{
                 async login(){
-                   
-                   
-                    let response = await fetch("/plogin/"+this.username+"/"+this.password)
-                    const data = await response.json();
-                    console.log("login_data:", data["res"], data["user"])
 
-                    if(data["res"] == "sucess"){
-                        let luser = data["user"]
-                        let cashierId = luser[2]
-                        let name = luser[0]
-                        let username = luser[1]
-                        let usertype = luser[4]
-                        console.log("LL", cashierId, name, username, "Type:", usertype)
-                        //alert("Login: "+cashierId+ name+ username);
-                        window.localStorage.setItem("cashierId", cashierId)
-                        window.localStorage.setItem("name", name)
-                        window.localStorage.setItem("username", username)
-                        window.localStorage.setItem("usertype", usertype)
-                        window.location.href = "/"
-                        
-                        auth_token = data["auth_token"]
-                       
-                        this.setCookie('auth_token', auth_token, 86000)
-                        this.setCookie('user_type', usertype, 86000)
-                        this.setCookie('user_name', username, 86000)
-                        this.setCookie('user_id', cashierId, 86000)
+                  const credentials = {
+                    username: this.username,
+                    password: this.password
+                  }
+                  try {
+                    const response = await fetch("/login", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(credentials),
+                    });
+
+                    const result = await response.json();
+                    
+                    if(result["res"] == "success"){
+                      let cashierId = result['id']
+                      let name = result['name']
+                      let username = result['username']
+                      let usertype = result['usertype']
+
+                      //alert("Login: "+cashierId+ name+ username);
+                      window.localStorage.setItem("cashierId", cashierId)
+                      window.localStorage.setItem("name", name)
+                      window.localStorage.setItem("username", username)
+                      window.localStorage.setItem("usertype", usertype)
+                      window.location.href = "/"
+                      
+                      auth_token = result["auth_token"]
+                      
+                      this.setCookie('auth_token', auth_token, 86000)
+                      this.setCookie('user_type', usertype, 86000)
+                      this.setCookie('user_name', username, 86000)
+                      this.setCookie('user_id', cashierId, 86000)
 
                     }else{
-                        this.error = true
+                      this.error = true
                     }
 
+                  } catch (error) {
+                    console.error("Error:", error);
+                  }
+
                 },
+
                 setCookie(name, value, seconds) {
-                        const expires = new Date();
-                        expires.setTime(expires.getTime() + seconds * 1000);
-                        document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-    },
+                  const expires = new Date();
+                  expires.setTime(expires.getTime() + seconds * 1000);
+                  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+                },
             }
         })
 

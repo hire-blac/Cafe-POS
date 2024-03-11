@@ -66,9 +66,7 @@
             el: "#app",
             data: {
                 fields: [ 'id', 'name', 'username', 'userType',],
-                items: [
-                    
-                ],
+                items: [],
                 usercode : window.location.pathname.split("/")[2],
                 filter: null,
                 filterOn: [],
@@ -92,15 +90,24 @@
 
                 async getUser(){
                     //console.log("window.location::",this.idcode)
-                    const response = await fetch("/user_api/" + this.usercode);
+                    const response = await fetch("/api/user/" + this.usercode);
                     const data = await response.json();
-                    let id = data["Id"]
+
+                    let id = data["id"]
                     let name = data["name"]
                     let username = data["username"]
-                    let usertype = data["userType"]
-                    this.items = []
-                    console.log({ id: id, name: name, username: username, usertype: usertype, editName: false, editUsername: false, editUserType: false, show: 'test', id: id})
-                    this.items.push({ id: id, name: name, username: username, usertype: usertype, editName: false, editUsername: false, editUserType: false, show: 'test', id: id})
+                    let usertype = data["usertype"]
+                    
+                    this.items.push({ 
+                      id: id, 
+                      name: name, 
+                      username: username, 
+                      usertype: usertype, 
+                      editName: false, 
+                      editUsername: false, 
+                      editUserType: false, 
+                      show: 'test',
+                    })
                 },
 
                 isAdminLogin : function(){
@@ -113,8 +120,6 @@
                       window.location.href = "/login"
    
                 },
-
-
 
                 async toggleEditMode(){
                     this.isEditable = !this.isEditable
@@ -136,9 +141,27 @@
                     name = data.name
                     username = data.username
                     usertype = data.usertype
-                    let response = await fetch("/api/update_user/"+id+"/"+name+"/"+username+"/"+usertype)
-                    this.usercode = username
-                    this.toggleEditMode()
+
+                    const newData = {
+                      name: data.name,
+                      username: data.username,
+                      usertype: data.usertype,
+                    }
+                    
+                  const response = await fetch("/api/invoices/" + id, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(invoiceData),
+                    });
+
+                  const result = await response.json();
+                  console.log(result);
+
+                    // let response = await fetch("/api/update_user/"+id+"/"+name+"/"+username+"/"+usertype)
+                    // this.usercode = username
+                    // this.toggleEditMode()
 
                 },
                 async Cancel(){

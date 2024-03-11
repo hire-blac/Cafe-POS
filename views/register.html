@@ -10,12 +10,18 @@
             <div class="col-md-8">
                 
                 
-                <form method="post" action="/pregister">
+                <form method="post" action="/register">
 
                     <div class="mb-3">
-                        <label for="cashierId" class="form-label">Cashier ID</label>
-                        <input type="text" class="form-control" name='cashierId' id="cashierId" placeholder="Enter Cashier Id">
+                      <label for="userType" class="form-label">User Type</label>
+                      <select class="form-select" aria-label="Default select" name="userType" id="userType">
+                          <option selected>Select User Type</option>
+                          <!-- <option value="Administrator">Administrator</option> -->
+                          <option value="Cashier">Cashier</option>
+                          <option value="Staff">Staff</option>
+                        </select>
                     </div>
+
 
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>

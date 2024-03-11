@@ -10,6 +10,7 @@ def create_item(data):
         item = Item(
             name=data['name'],
             price=data['price'],
+            image=data['image'],
             quantity=data['quantity'],
             category_id=data['category_id'],
         )
@@ -21,6 +22,7 @@ def create_item(data):
                 'id': item.id, 
                 'name': item.name,
                 'price': str(item.price),
+                # 'image': item.image,
                 'quantity': item.quantity,
                 'category': item.category.name,
             }
@@ -38,6 +40,7 @@ def all_items():
                     'id': item.id, 
                     'name': item.name,
                     'price': str(item.price),
+                    # 'image': item.image,
                     'quantity': item.quantity,
                     'category': item.category.name,
                 })
@@ -56,13 +59,62 @@ def all_items():
 def get_item(item_id):
     with Session() as session:
         item = session.query(Item).get(item_id)
-        if item:        
+        if item:
+            transactions = [{
+                'id': trans.id,
+                'item_id': trans.item_id,
+                'item_price': str(trans.item_price),
+                'quantity_sold': trans.quantity_sold,
+                'created_at': trans.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            } for trans in item.transactions]
+
             return {
                 'id': item.id, 
                 'name': item.name,
                 'price': str(item.price),
+                # 'image': item.image,
+                'quantity': item.quantity,
+                'category': item.category.name,
+                'transactions': transactions,
+            }
+        else:
+            return {'message': 'Item not found'}
+
+
+def update_item(item_id, data):
+    with Session() as session:
+        item = session.query(Item).get(item_id)
+        if item:
+            item.name = data['name']
+            item.price = data['price']
+            item.quantity = data['quantity']
+            item.category_id = data['category_id']
+            session.add(item)
+            session.commit()
+
+            return {
+                'id': item.id, 
+                'name': item.name,
+                'price': str(item.price),
+                # 'image': item.image,
                 'quantity': item.quantity,
                 'category': item.category.name,
                 }
         else:
             return {'message': 'Item not found'}
+
+
+def reduce_quantity(item_id, quantity):
+    with Session() as session:
+        item = session.query(Item).get(item_id)
+        if item:
+            item.quantity -= quantity
+            session.add(item)            
+            session.commit()
+            return {
+                'message':  f'Quantity reduced by {quantity}',
+                'remaining': item.quantity
+            }
+        else:
+            return {'message': 'Item not found'}
+

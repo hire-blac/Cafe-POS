@@ -1,9 +1,10 @@
+from hmac import new
 from bottle import Bottle, request
 from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
 from bottle import jinja2_template as template
 import POS
 import os
-from controllers import category_controller, invoice_controller, item_controller, transaction_controller
+from controllers import auth_controller, category_controller, invoice_controller, item_controller, transaction_controller
 import posauth
 # Import Bottle Extensions
 
@@ -66,6 +67,14 @@ def items():
 @post("/api/items")
 def new_items():
     data =  request.json
+    data['image'] = ''
+    # Handle file upload
+    image_upload = request.files.get('image')
+    if image_upload:
+        image_filename = f"static/images/{data['name']}_{image_upload.filename}"
+        image_upload.save(image_filename)
+        data['image'] = image_filename
+        
     item = item_controller.create_item(data)
     return item
 
@@ -94,10 +103,19 @@ def new_item():
         'price': request.forms.get('price'),
         'quantity': request.forms.get('quantity'),
         'newcategory': request.forms.get('newcategory'),
+        'image': ''
     }
-    print(form_data)
+
+    # Handle file upload
+    image_upload = request.files.get('image')
+    if image_upload:
+        image_filename = f"static/images/{form_data['name']}_{image_upload.filename}"
+        image_upload.save(image_filename)
+        form_data['image'] = image_filename
+
     if(form_data['category_id'] == "New Category"):
-        new_category = category_controller.create_category(form_data)
+        new_cat = {'name': form_data['newcategory']}
+        new_category = category_controller.create_category(new_cat)
         form_data['category_id'] = new_category['id']
 
     item = item_controller.create_item(form_data)
@@ -187,6 +205,10 @@ def all_invoices():
     invoices = invoice_controller.all_invoices()
     return invoices
 
+@route("/cart")
+def new_cart():
+    return template('cart')
+
 @route("/new_cart")
 def new_cart():
     return template('new_cart')
@@ -194,9 +216,9 @@ def new_cart():
 @post('/api/invoices')
 def new_invoice():
     data = request.json
-    data['cashier_name'] = "Jimmy"
+    # data['cashier_name'] = "Jimmy"
     invoice = invoice_controller.create_invoice(data)
-    return invoice, 201
+    return invoice
 
 @route('/invoice/<invoice_id>')
 def invoice(invoice_id):
@@ -225,39 +247,68 @@ def delete_invoice(invoice_id):
 def login():
     return template("login")
 
+@post("/login")
+def login_post():
+    data = request.json
+    auth_user = auth_controller.login_user(data)
+    return auth_user
+
 @get("/register")
 def register():
     return template("register")
 
-@post("/pregister")
-def pregister():
-    username = request.forms.get("username")
-    password = request.forms.get("password")
-    name = request.forms.get("name")
-    cashierId = request.forms.get("cashierId")
-    usertype = request.forms.get("userType")
-    redirect("/manage_user")
+
+@post("/register")
+def register_post():
+    data = request.json
+    user = auth_controller.register_user(data)
+    return user
+
 
 @route("/add_user")
 def cart():
     return template('add_user')
 
+
 @route("/manage_user")
 def manage_usesr():
-    
-    return template("manage_user", rows=items)
+    if posauth.isAdmin(request):
+        users = auth_controller.all_users()
+        return template("manage_user", rows=users)
+    return {'error': "Unauthorized"}
 
 
-@route("/user/<username>")
+@get('/api/users')
+def getUsers():
+    users = auth_controller.all_users()
+    return users
+
+@get("/api/user/<username>")
 def get_user(username):
     # get user info
-    user= ''
-    return template('get_user', items=user)
+    user= auth_controller.get_user(username)
+    return user
+
+@get("/user/<username>")
+def get_user(username):
+    # get user info
+    return template('get_user')
+
+@post('/api/user/<user_id>/update')
+def updateUsers(user_id):
+    data = request.json
+    users = auth_controller.update_user()
+    return users
+
 
 @route("/user_profile")
 def user_profile():
-    return template('user_profile')
-
+    if posauth.Auth(request):
+        username = request.get_cookie('user_name')
+        user= auth_controller.get_user(username)
+        return template('user_profile', user=user)
+    else:
+        return {"error": "Please login"}
 
 # CUSTOMER ROUTES
 

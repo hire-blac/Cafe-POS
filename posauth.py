@@ -7,6 +7,6 @@ def Auth(request):
 def GetAuthToken(username):
     return AUTH_TOKEN + username
 
-def isAdmin(username):
-    user_type =  ''#request.get_cookie('user_type')
+def isAdmin(request):
+    user_type =  request.get_cookie('user_type')
     return user_type == 'Administrator'

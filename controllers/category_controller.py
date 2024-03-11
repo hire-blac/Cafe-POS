@@ -37,23 +37,22 @@ def get_category(category_id):
     with Session() as session:
         category = session.query(Category).get(category_id)
         if category:
-            return category
-        
-            # items = [{'id': item.id, 'name': item.name} for item in category.items]
-            # return {'id': category.id, 'name': category.name, 'items': items}
+            # return category
+            items = [{'id': item.id, 'name': item.name} for item in category.items]
+            return {'id': category.id, 'name': category.name, 'items': items}
         else:
-            return None
             return {'message': 'Category not found'}
 
 
-def update_category(data, category_id):
+def update_category(category_id, data):
     with Session() as session:
         category = session.query(Category).get(category_id)
         if category:
-            pass
+            category.name = data['name']
+            session.add(category)
+            session.commit()
         else:
-            return None
-            # return {'message': 'Category not found'}
+            return {'message': 'Category not found'}
         
 
 def delete_category(category_id):
@@ -63,7 +62,6 @@ def delete_category(category_id):
             session.delete(category)
             session.commit()
             return f'Category with ID {category_id} deleted successfully'
-            # return {'status': 'success', 'message': f'Category with ID {category_id} deleted successfully'}
         else:
-            return None
+            return {'message': 'Category not found'}
         

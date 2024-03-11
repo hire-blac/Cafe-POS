@@ -29,7 +29,7 @@
                         <span @click="toggleEdit(data.item.category, data.index, data.item.editCat, 'category')" v-show="!data.item.editCat"> [[ data.item.category ]]</span>
                         
                         <b-select  v-model="data.item.category"  class="b-form-select" v-show="data.item.editCat">
-                            <option v-for="category in categoryOptions" :key="category" :value="category">[[category]]</option>
+                            <option v-for="category in categoryOptions" :key="category" :value="category.id">[[category.name]]</option>
                         </b-select>
                     </template>
               
@@ -131,17 +131,15 @@
             el: "#app",
             data: {
                 fields: [ 'id', 'name', 'price', 'quantity', 'category', {key: 'edit_r', label: ''}],
-                items: [
-                    
+                items: [],
+                tfields: [ 
+                  {key: 'transactionId', label:'Transaction Id'}, 
+                  {key: 'dateTime', label:'Transaction DateTime'}, 
+                  {key: 'itemId', label:'Item Id'},
+                  {key: 'price', label:'Item Price'}, 
+                  {key: 'quantity', label:'Quantity Sold'}
                 ],
-                tfields: [ {key: 'transactionId', label:'Transaction Id'}, 
-                        {key: 'dateTime', label:'Transaction DateTime'}, 
-                        {key: 'itemId', label:'Item Id'},
-                        {key: 'price', label:'Item Price'}, 
-                        {key: 'quantity', label:'Quantity Sold'}],
-                transactions: [
-                
-                ],
+                transactions: [],
                 idcode : window.location.pathname.split("/")[2],
                 filter: null,
                 filterOn: [],
@@ -158,7 +156,7 @@
                   this.logout();
                 }
                 this.getItem()
-                this.getItemTransactions()
+                // this.getItemTransactions()
                 this.totalRows = this.transactions.length
                 this.getCategories()
             },
@@ -184,19 +182,53 @@
 
                 async getItem(){
                     //console.log("window.location::",this.idcode)
-                    const response = await fetch("/item_api/" + this.idcode);
+                    const response = await fetch("/api/items/" + this.idcode);
                     const data = await response.json();
-                    let id = data["Id"]
+                    let id = data["id"]
                     let name = data["name"]
-                    let cat = data["Category"]
-                    let price = data["Price"]
-                    let qty = data["Qty"]
+                    let cat = data["category"]
+                    let price = data["price"]
+                    let qty = data["quantity"]
+
                     this.items =[]
-                    this.items.push({ del: 'test', id: id, name: name, category: cat, price: price, quantity: qty, editName: false, editCat: false, editPrice: false, editQty: false, show: 'test', id: id})
+                    this.items.push({ 
+                      del: 'test', 
+                      id: id, 
+                      name: name, 
+                      category: cat, 
+                      price: price, 
+                      quantity: qty, 
+                      editName: false, 
+                      editCat: false, 
+                      editPrice: false, 
+                      editQty: false, 
+                      show: 'test'
+                    })
+                    
+                    let transactions = data["transactions"]
+                    console.log("transactions::", transactions)
+                    this.transactions =[]
+                    transactions.forEach(trans => {
+                        let id = trans['id']
+                        // let dateTime = new Date(trans['created_at'] ).toDateString();
+                        let dateTime = trans['created_at']
+                        let item_idcode = trans['item_id']
+                        let item_price = trans['item_price']
+                        let qty = trans['quantity_sold']
+                        
+                        this.transactions.push({ 
+                          transactionId: id, 
+                          dateTime: dateTime, 
+                          itemId: item_idcode, 
+                          price: item_price, 
+                          quantity: qty
+                        })
+
+                    })
                 },
 
                 async getCategories(){
-                    const response = await fetch("/category_api");
+                    const response = await fetch("/api/categories");
                     const data = await response.json();
                
                     let categories = data["categories"]
@@ -257,7 +289,6 @@
                 },
                 saveChanges() {
                     
-                   
                    data = this.items[0]
                    name = data.name
                    category = data.category
@@ -274,7 +305,7 @@
 
                    console.log(name, price, category, quantity, editName,editCat, editPrice,editQty, index)
                    if (editName == true){
-                   this.saveEdit(this,name, index, editName, 'name', id)
+                   this.saveEdit(this, name, index, editName, 'name', id)
                    }
                    if(editCat == true){
                     this.saveEdit(this, category, index, editCat, 'category', id)
@@ -286,8 +317,7 @@
                     this.saveEdit(this, quantity, index, editQty, 'quantity', id)
                    }
                    this.toggleEditMode()
-                
-                
+                   
                 },
                 toggleEditMode() {
                 // Toggle the edit mode

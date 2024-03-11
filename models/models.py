@@ -8,18 +8,13 @@ Base = declarative_base()
 
 # Define SQLAlchemy models
 
-class UserTypeEnum(PythonEnum):
-    ADMINISTRATOR = 'Administrator'
-    CASHIER = 'Cashier'
-
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    usertype = Column(Enum(UserTypeEnum), nullable=False)
+    usertype = Column(String, nullable=False)
 
 
 class Customer(Base):
@@ -50,6 +45,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Numeric(precision=8, scale=2), nullable=False)
+    image_url = Column(String)  # Column to store image URL
     quantity = Column(Integer, nullable=False)
     category_id = Column(Integer, ForeignKey('categories.id'))
     category = relationship('Category', back_populates='items')
@@ -72,24 +68,23 @@ class Transaction(Base):
 class Invoice(Base):
     __tablename__ = 'invoices'
     id = Column(Integer, primary_key=True)
-    # cart_item_id = Column(Integer, ForeignKey('transactions.id'), nullable=False)
     tax = Column(Numeric(precision=2, scale=2), nullable=False)
     total_price = Column(Numeric(precision=8, scale=2), nullable=False)
     # costumer_id = Column(Integer, ForeignKey('customers.id'), nullable=True)
-    costumer_PNO = Column(String, nullable=True)
+    costumer_PNO = Column(String)
     payment_method = Column(String, nullable=False)
     amount_paid = Column(Numeric(precision=8, scale=2), nullable=False)
-    # payment_id = Column(String, nullable=True)
-    # cashier_id = Column(Integer, ForeignKey('users.id'))
+    payment_id = Column(String, nullable=True)
+    cashier_id = Column(Integer, ForeignKey('users.id'))
     cashier_name = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
 
     # Define the relationships
     purchase_items = relationship('Transaction', backref=backref('transactions', uselist=False))
+    cashier = relationship('User', backref=backref('cashier'))
     # customer = relationship('Customer', backref=backref('customer'))
-    # cashier = relationship('User', backref=backref('cashier'))
 
 # Create SQLite database and tables
 # engine = create_engine('sqlite:///db.sqlite3')
-engine = create_engine('sqlite:///posDB.db')
+engine = create_engine('sqlite:///POS_DB.db')
 Base.metadata.create_all(engine)

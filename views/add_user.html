@@ -9,42 +9,38 @@
             <div class="col-md-2"></div>
             <div class="col-md-8">
                 
+              <div class="alert alert-danger" v-if="error" role="alert">
+                [[error]]
+              </div>
                 
-                <form method="post" action="/pregister">
-                    <div class="mb-3">
-                        <label for="userType" class="form-label">User Type</label>
-                        <select class="form-select" aria-label="Default select" name="userType" id="userType">
-                            <option selected>Select User Type</option>
-                            <option value="Administrator">Administrator</option>
-                            <option value="Cashier">Cashier</option>
-                            <option value="Staff">Staff</option>
-                          </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="cashierId" class="form-label">User ID</label>
-                        <input type="text" class="form-control" name='cashierId' id="cashierId" placeholder="Enter User Id">
-                    </div>
+              <div class="mb-3">
+                  <label for="userType" class="form-label">User Type</label>
+                  <select class="form-select" aria-label="Default select" name="userType"  v-model="userType" id="userType">
+                      <option selected>Select User Type</option>
+                      <option value="Administrator">Administrator</option>
+                      <option value="Cashier">Cashier</option>
+                      <option value="Staff">Staff</option>
+                    </select>
+              </div>
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" name='name' id="name" placeholder="Enter name">
-                    </div>
+              <div class="mb-3">
+                  <label for="name" class="form-label">Name</label>
+                  <input type="text" class="form-control" name='name'  v-model="name" id="name" placeholder="Enter name">
+              </div>
 
-                    <div class="mb-3">
-                        <label for="username" class="form-label">User Name</label>
-                        <input type="text" class="form-control" name='username' id="username" placeholder="Enter username">
-                    </div>
+              <div class="mb-3">
+                  <label for="username" class="form-label">User Name</label>
+                  <input type="text" class="form-control" name='username'  v-model="username" id="username" placeholder="Enter username">
+              </div>
 
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" name='password' id="password" placeholder="Enter password">
-                    </div>
+              <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" name='password'  v-model="password" id="password" placeholder="Enter password">
+              </div>
 
-                    <div class="mb-3">
-                        <input type="submit" value="Create Account" class="btn btn-primary"/>
-                    </div>
-    
-                </form>
+              <div class="mb-3">
+                  <button @click="addUser" class="btn btn-primary">Create Account</button>
+              </div>
                 
             </div>
             <div class="col-md-2"></div>
@@ -58,7 +54,11 @@
            delimiters : ['[[',']]'],
            el: "#users",
            data: {
-              
+            userType: '',
+            name: '',
+            username: '',
+            password: '',
+            error: ''              
            },
            mounted : function(){
             
@@ -71,15 +71,46 @@
            
            },
            methods: {
+            async addUser(){
+
+              const credentials = {
+                usertype: this.userType,
+                name: this.name,
+                username: this.username,
+                password: this.password
+              }
+              try {
+                const response = await fetch("/register", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(credentials),
+                });
+
+                const result = await response.json();
+                console.log(result);
+                
+                if(result["error"]){
+                  this.error = result['error']
+                } else {
+                  window.location.href = "/manage_user"
+
+                }
+
+              } catch (error) {
+                console.log(error);
+              }
+
+            },
             isAdminLogin : function(){
                    return localStorage.getItem("usertype") == "Administrator"
             },
             logout:function(){
-                   window.localStorage.clear()
-                   console.log("You don't have access to view this page")
-                   window.location.href = "/login"
-
-                }
+                window.localStorage.clear()
+                console.log("You don't have access to view this page")
+                window.location.href = "/login"
+            }
             
            }
         })          

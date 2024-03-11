@@ -6,91 +6,95 @@
 
    
     <div class="container" id="app">
-      <div style="margin-top: 2em;">
-          <div class="d-inline p-2 bg-white text-dark" style="float: left; width: 70%" id ="items" >
-            <div style="text-align:center; background-color: lightgray; color: black;"><span style="display: inline-block; ">Items</span></div>
-            <div class="row">
-                <div class="col-md-6">
-                    <b-form-group
-                        label=""
-                        label-for="filter-input"
-                        label-cols-sm="3"
-                        label-align-sm="right"
-                        label-size="sm"
-                        class="mb-0">
-                        <b-input-group size="sm">
-                            <b-form-input
-                                id="filter-input"
-                                v-model="filter"
-                                type="search"
-                                placeholder="Filter by Item Id or Item Name"
-                            ></b-form-input>
-    
-                            <b-input-group-append>
-                            <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                            </b-input-group-append>
-                        </b-input-group>
-                    </b-form-group>
-                </div>
-               
-            </div>
 
-            <div class="float-end">
-              
-            </div>
+          <div class="items-section" style="float: left; width: 70%" id ="items" >
             
-            <b-table striped hover 
-                    :fields="fields" 
-                    :items="items"
-                    :filter="filter"
-                    :filter-included-fields="filterOn"
-                    @filtered="onFiltered"
-                    :current-page="currentPage"
-                    :per-page="perPage"
-                    :sort-by.sync="sortBy"
-                    >
-          
-                <template #cell(name)="data" >
-                  [[data.item.name]]
-                </template>
+           
+                <!-- > Items Section -->
+    <div class="section full" v-show="this.orderStatus=='New'">
 
-                <template #cell(category)="data">
-                    [[data.item.category]]
-                  </template>
-          
-                <template #cell(price)="data">
-                  [[ data.item.price ]]
-                </template>
-    
-          
-                
-                <template #cell(show)="data">
-                    <b-link v-on:click="addToCart(data)"><i class="fas fa-chevron-right"></i></span></b-link>
-                </template>
-    
-            </b-table>
-            <b-row>
-                <b-col sm="5" md="6"></b-col>
-                <b-col sm="7" md="6" class="my-1">
-                    <b-pagination
-                        v-model="currentPage"
-                        :total-rows="totalRows"
-                        :per-page="perPage"
-                        align="fill"
-                        size="sm"
-                        class="my-0"
-                        v-show="totalRows > perPage"
-                    >
-                    </b-pagination>
-                </b-col>
-            </b-row>
-          </div>
-          <div class="d-inline p-2 bg-light text-dark" style="float: right; width: 30%;" id ="cart">
-              <div style="text-align:center; background-color: lightgray; color: black;">
-                <span style="display: inline-block; ">Cart Details</span>
+      <div class="d-flex justify-content-between align-items-center">
+         
+          <div class="category-nav">
+            <div class="category-scroll-button"  @click="scrollCategories('left')"><</div>
+            <div class="category-wrapper">
+              <div class="category-item" v-for="(category, index) in displayedCategories" :key="index"
+                  @click="selectCategory(category)" :class="{ 'active': category === selectedCategory }">
+                  [[ category ]]
               </div>
+            </div>
+              
+            <div class="category-scroll-button" @click="scrollCategories('right')">></div>
+              <div>
+                <input v-model="searchQuery" class="form-control search-input" placeholder="Search items...">
+            </div>
+          </div>
+      </div>
+      <div class="item">
+          <div  v-for="(item, index) in paginatedItems" :key="index" v-on:click=" isAvailable(item) && addToCart(item)">
+            <div :class="{ 'item-card-eneabled': isAvailable(item), 'item-card-disabled': !isAvailable(item)}">    
+            <div class="item-card" >
+
+                <img :src="item.image" alt="Item">
+                <h4>[[ item.name ]]</h4>
+               
+                <h6>[[ item.quantity ]] Available</h6>
+                <h3>[[ item.price ]]</h3>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="pagination">
+          <nav aria-label="Page navigation">
+              <ul class="pagination">
+                  <li class="page-item">
+                      <a class="page-link" @click="goToPage(1)" aria-label="First">
+                          <span aria-hidden="true">&laquo;&laquo;</span>
+                      </a>
+                  </li>
+                  <li class="page-item">
+                      <a class="page-link" @click="prevPage" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                      </a>
+                  </li>
+                  <li class="page-item" :class="{ 'active': currentPage === page }" v-for="page in totalPages"
+                      :key="page">
+                      <a class="page-link" @click="setCurrentPage(page)">[[ page ]]</a>
+                  </li>
+                  <li class="page-item">
+                      <a class="page-link" @click="nextPage" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                      </a>
+                  </li>
+                  <li class="page-item">
+                      <a class="page-link" @click="goToPage(totalPages)" aria-label="Last">
+                          <span aria-hidden="true">&raquo;&raquo;</span>
+                      </a>
+                  </li>
+              </ul>
+          </nav>
+      </div>
+    </div>
+
+          </div>
+          
+
+
+          <div class="cart-section" style="float: right; width: 30%;" id ="cart" >
+                   <!-- Cart Section -->
+    <div class="section half" v-show="!show_receipt">
+      
+      <div class="cart-head">
+        <p>Cart</p>
+        <b-alert v-if="cartErrorMsg" show variant="danger">[[cartErrorMsg]]</b-alert>
+      </div>
+  
+      <div v-show="cart.length <= 0">
+        
+      </div>
               <div v-show="cart.length > 0">
-                <span v-show="cart.orderCompleted==true"><h3>Order Completed</h3></span>   
+               
+   
                   <div id="carttable" >
                    <b-table striped hover responsive sticky-header head-variant="light"
                    :fields="fields" 
@@ -169,7 +173,7 @@
                     </div>
                     <div class="col-md-6">
                       <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />
-                          <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
+                         
                         
                     </div> 
                   </div>
@@ -189,9 +193,9 @@
                     <div class="col-md-6">
                       <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
                         <option selected>Select Payment Method</option>
-                        <option value="cash">Cash</option>
-                        <option value="visa">Visa</option>
-                        <option value="mada">Mada</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Visa">Visa</option>
+                        <option value="Mada">Mada</option>
                       </select>
                     </div> 
                   </div>
@@ -210,7 +214,7 @@
                       
                      
                           <div class="d-grid gap-2">
-                              <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal || remainingAmount < 0 " type="button">Complete Order</button>
+                              <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal" type="button">Complete Order</button>
                           </div>
                       
                       
@@ -220,13 +224,14 @@
 
                   </div>
               </div>
+      </div>
                   
           </div>
-          <div id="invoicediv">
-         
+          <div class="invoice-container" id="invoicediv" v-show="cart.show_receipt">
+            <span><h4>Order Completed</h4></span>   
             <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
              
-              <div id="invoice-POS" ref="invoice" v-show="cart.show_receipt">
+              <div id="invoice-POS" ref="invoice">
           
                 <center id="top">
                   <div class="logo"></div>
@@ -305,7 +310,7 @@
                         - Paid amount: [[ cart.paidAmount ]]
                         <br/>
             
-                        - Change: [[ cart.paidAmount - cart.cartTotal ]]
+                        - Change: [[ cart.remainingAmount ]]
                         <br/>
                         <br/>
             
@@ -327,11 +332,10 @@
                 </div><!--End InvoiceBot-->
               </div><!--End Invoice-->
             <!-- partial -->
-      
+         
             </div>
           </div>
-     
-      </div>
+
     </div>
 
     <script type="application/javascript">
@@ -341,87 +345,197 @@
             el: '#items',
             data: {
               fields: [
-                        {key:'id',sortable: false},
-                        {key:'name'}, 
-                        {key:'price', sortable: false}, 
-                        {key:'category', sortable: false}, 
-                        {key: 'show', label: ''}],
-              items: [
-               
+                {key:'id',sortable: false},
+                {key:'name'}, 
+                {key:'price', sortable: false}, 
+                {key:'category', sortable: false}, 
+                {key: 'show', label: ''}
               ],
-              currentDeleteId: -1,
-              currentDeleteIndex: -1,
-              modalShow: false,
+              items: [],
               filter: null,
               filterOn: [],
               currentPage: 1,
               totalRows: 1,
               perPage: 10,
               sortBy: '',
-              selectedCategory: null,
-              categoryOptions: []
-            ,
+            
+              itemsPerPage: 15,
+              currentPage: 1,
+              items: [],
+              cartItems: [],
+              searchQuery: '',
+              selectedCategory: 'All',
+              categoryOptions: [],
+              maxDisplayedCategories: 6, // Set the maximum number of displayed categories
+              orderStatus:'New',
+              catScrollIndex:0,
+
             }
               ,
             mounted: async function(){
-                const response = await fetch("/items_api");
+                const response = await fetch("/api/items");
                 const data = await response.json();
                
                 let items = data["items"]
+
+                items.forEach(item => {
+                  let id = item['id']
+                  let name = item['name']
+                  let cat = item['category']
+                  let price = item['price']
+                  let qty = item['quantity']
+
+                  this.items.push({
+                    id: id,
+                    name: name, 
+                    category: cat, 
+                    price: price, 
+                    quantity:qty,
+                    image: "item.png",
+                    isAddedToCart:false
+                    
+                  })
+                })
                 
-                for( var i in items){
-                    let item = items[i]
-                    let id = item[0]
-                    let name = item[1]
-                    let cat = item[2]
-                    let price = item[3]
-                    let qty = item[4]
-                    this.categoryOptions.push(cat)
-                    this.items.push({id: id, name: name, category: cat, price: price, edit: false, show: 'test', id: id})
-                    console.log("Array::i ",i,items[i])
-                }
                 this.totalRows = this.items.length
+                this.generateCategories()
 
-                this.categoryOptions = [...new Set(this.categoryOptions)]
-                this.selectedCategory = this.categoryOptions[0]
             },
+            computed: {
+              displayedCategories() {
+                const start = this.catScrollIndex;
+                const end = start + this.maxDisplayedCategories;
+                return this.categoryOptions.slice(start, end);
+            },
+            filteredItems() {
+                if (this.selectedCategory == "All"){
+                return this.items.filter(item =>
+                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())||
+                    (item.id.toString().includes(this.searchQuery))
+                );
+                }
+                else{
+                  return this.items.filter(item =>
+                    item.category== this.selectedCategory 
+                    &&( item.name.toLowerCase().includes(this.searchQuery.toLowerCase())  ||
+                    (item.id.toString().includes(this.searchQuery)))
+                );
+                  
+                }
+            },
+            paginatedItems() {
+                const start = (this.currentPage - 1) * this.itemsPerPage;
+                const end = start + this.itemsPerPage;
+                return this.filteredItems.slice(start, end);
+            },
+            totalPages() {
+                return Math.ceil(this.filteredItems.length / this.itemsPerPage);
+            },
+            
+           
+        },
             methods: {
-                removeItem : function(index, id){
-                    this.modalShow = !this.modalShow
-                    this.currentDeleteId = id
-                    this.currentDeleteIndex = index
-                    console.log("Hello::",alert("Do you want to delete this Itemhh?"))
-                },
-
-                handleOk: async function(){
-                    let id = this.currentDeleteId
-                    let index = this.currentDeleteIndex
-                    this.items.splice(index,1)
-                    const response = await fetch("/delete_item_api/" + id);
-                    const data = await response.json();
-                },
-
+              
+              scrollCategories(direction) {
+                    const maxIndex = this.categoryOptions.length -this.maxDisplayedCategories
+                    //console.log('before index direction:',this.catScrollIndex, direction)
+                    if (direction === 'left' && this.catScrollIndex > 0) {
+                        this.catScrollIndex--;
+                        this.selectCategory(this.categoryOptions[this.catScrollIndex])
+                    } else if (direction === 'right' && this.catScrollIndex < maxIndex) {
+                        this.catScrollIndex++;
+                        this.selectCategory(this.categoryOptions[this.catScrollIndex])
+                    }
+                    
+                    //console.log('after index direction:',this.catScrollIndex, direction)
+            },
                 onFiltered(filteredItems) {
                     // Trigger pagination to update the number of buttons/pages due to filtering
                     this.totalRows = filteredItems.length
                     this.currentPage = 1
                 },
 
-                 addToCart(dataobj) {
+                 addToCart(itm) {
 
-                   cartv.addToCart(dataobj)
-                
+                  cartv.addToCart(itm)
+                  itm.isAddedToCart=true
+                  let item = itm
+              
+                  let id = item.id
+                  let name = item.name
+                  let qty = 1
+                  let price = item.price
+                  let totalQty = item.quantity
 
+                  this.addItemToCart({
+                    'id':id,
+                    'name':name, 
+                    'price':price,
+                    'quantity':totalQty
+                  })
                 },
-                testfun(item) {
-
-                    
+                testfun(item) {                    
                   console.log("Hello::",alert("test?"))
-                  
+                },
+                addItemToCart(item) {
+                    this.cartItems.push(item);
+                },
+                removeItemFromCart(id) {
+                  for( index in this.cartItems){ 
+                    if(id == this.cartItems[index]['id']){
+                    this.cartItems.splice(index, 1);
+                    this.cartItems[index]=false;
+                    }
+                  }
+                  for( index in this.items){ 
+                    if(id == this.items[index]['id']){
+                    this.items[index]['isAddedToCart']=false;
+                    }
+                  }
+                },
+                setCurrentPage(page) {
+                   this.currentPage = page;
+                },
+                prevPage() {
+                  if (this.currentPage > 1) {
+                    this.currentPage--;
+                  }
+                },
+                nextPage() {
+                  if (this.currentPage < this.totalPages) {
+                    this.currentPage++;
+                  }
+                },
+            goToPage(page) {
+                this.currentPage = page;
+            },
+           
+            generateCategories() {
+                const categories = new Set(this.items.map(item => item.category));
+                this.categoryOptions =  ['All'].concat(Array.from(categories));
+            },
+            selectCategory(category) {
+                this.currentPage = 1;
+                this.selectedCategory = category;
+                this.filterItems();
+                //alert('category selected'+ this.selectedCategory)
+            },
+            filterItems() {
+                const filteredBySearch = this.items.filter(item =>
+                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+                //this.filteredItems = this.selectedCategory
+                //   ? filteredBySearch.filter(item => item.category === this.selectedCategory)
+                //    : filteredBySearch;
+            },
+            setOrderStatus(status){
+              this.orderStatus = status
+            },
+            isAvailable(item){
+              return item.quantity>0
+            },
+        },
 
-                }
-
-            }
         })
 
     </script>
@@ -440,20 +554,15 @@
               {key:'price'},
               {key:'del', label: ''},
                     ],
-            items: [
-             
-            ],
+            items: [],
             currentDeleteId: -1,
             currentDeleteIndex: -1,
-            modalShow: false,
             filter: null,
             filterOn: [],
             currentPage: 1,
             totalRows: 1,
             perPage: 10,
             sortBy: '',
-            selectedCategory: null,
-            categoryOptions: [],
             cartLiveTotal:0,
             taxTotal:0,
             cartTotal:0,
@@ -477,6 +586,7 @@
               paidAmount: 0,
               quantity_check: false,
               paid_amount_check: false,
+              cartErrorMsg:'',
             
           }
             ,
@@ -490,46 +600,48 @@
           }
         },
           methods: {
-              
-
-               addToCart(dataobj) {
-
-                //console.log("Hello::",alert("test cart?"))
+               addToCart(itm) {
                 
-                  let item = dataobj.item.name
-              
-                  
-                  let id = dataobj.item.id
-                  let name = dataobj.item.name
+                  let item = itm.name                  
+                  let id = itm.id
+                  let name = itm.name
                   let qty = 1
-                  let price = dataobj.item.price
-                  let totalQty = dataobj.item.quantity
+                  let price = itm.price
+                  let totalQty = itm.quantity
+                  
+                  this.cartErrorMsg =''
                   for( i in this.items){
                     if (this.items[i]['id'] == id){
+                      if(this.items[i]['quantity'] + 1 > this.items[i]['totalQty']){
+                          this.cartErrorMsg ='Cannot add more than available'
+                          return
+                      }
+                      //increase and return
                       this.items[i]['quantity'] = this.items[i]['quantity'] + 1;
-                      this.cartLiveTotal = this.cartLiveTotal +   dataobj.item.price
+                      this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
                       this.taxTotal = (0.05 * (this.cartLiveTotal))
-                      this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
+                      this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
                       this.cartTotal = this.cartLiveTotal +   this.taxTotal
                       this.cart.length = this.cart.length + 1
-                        return;
+                      return;
                     }
                     //console.log("Hello::",alert("test cart?"+ this.items[i]['id']))
                   }
+                  //add new
+                  this.items.push({
+                    id: id, 
+                    name:name, 
+                    quantity: qty, 
+                    price: price, 
+                    totalQty:totalQty
+                  })
                   
-           
-                  this.items.push({id: id, name:name, quantity: qty, price: price, totalQty:totalQty})
-                  //console.log("Hello::",alert("test cart?"+name))
-                  
-                  this.cartLiveTotal = this.cartLiveTotal +   dataobj.item.price
+                  this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
                   this.taxTotal = (0.05 * (this.cartLiveTotal))
+                  this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
                   this.cartTotal = this.cartLiveTotal +   this.taxTotal
                   
                   this.cart.length = this.cart.length + 1
-                  //console.log("Hello::",alert("test cart?"+id))
-                  //this.cart.push({ del: 'test', name: answ['name'], price: answ['price'],
-                 // totalQty: answ['totalQty'], quantity: this.quantity, total: 0, edit: false, id: answ['id'].toString()})
-
               },
               test() {
                return false
@@ -537,36 +649,46 @@
               },
               checkPaidAmount(){
                 this.remainingAmount = this.paidAmount - this.cartTotal
+                this.remainingAmount =  Math.round((this.remainingAmount+Number.EPSILON)*100)/100
 
               },
-              IncQuantity(ind, id){
+              IncQuantity(ind, id){               
+                if(this.items[ind]['quantity'] + 1 > this.items[ind]['totalQty']){
+                  this.cartErrorMsg ='Cannot add more than available'
+                  return
+                }
+                this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] + 1;
-                this.cartLiveTotal = this.cartLiveTotal +   this.items[ind]['price']
+                this.cartLiveTotal = this.cartLiveTotal +   parseFloat(this.items[ind]['price'])
                 this.taxTotal = (0.05 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length + 1
               },
               DecQuantity(ind, id){
+                this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] - 1;
-                this.cartLiveTotal = this.cartLiveTotal -   this.items[ind]['price']
+                this.cartLiveTotal = this.cartLiveTotal -   parseFloat(this.items[ind]['price'])
                 this.taxTotal = (0.05 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length -  1
                 if(this.items[ind]['quantity'] == 0){
                   this.items.splice(ind,1)
+                  itemsv.removeItemFromCart(id)
                 }
               },
               removeCartItem(ind, id){
-               
-                this.cartLiveTotal = this.cartLiveTotal -   (this.items[ind]['price'] *this.items[ind]['quantity'])
+                this.cartErrorMsg =''
+                this.cartLiveTotal = this.cartLiveTotal -   (parseFloat(this.items[ind]['price']) *this.items[ind]['quantity'])
                 this.taxTotal = (0.05 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length -  this.items[ind]['quantity'] 
                 this.items[ind]['quantity'] = 0
                 this.items.splice(ind,1)
+               
+                itemsv.removeItemFromCart(id)
               },
 
               downloadInvoice(){
@@ -579,77 +701,77 @@
                       width: 200
                   };
 
-                  doc.html(this.$refs.invoice, 
+                  doc.html(invoice.$refs.invoice, 
                       {
                           callback: function(doc) {
                               doc.save(new Date().getTime() + '.pdf');
                           },
-                      x: 150,
+                      x: 200,
                       y: 100
                       }
                   );   
               },
 
-              async  saveInvoice(){
-                // /api/save_invoice/<invId>/<cartItems>/<cartPrices>/<cartQty>/<totalPrice>/<Tax>/
-                //<customerPNO>"+
-                // "/<paymentMethod>/<paymentId>/<cashierIdName>
-                
-                  let cartItems = ''
-                  let cartPrices = ''
-                  let cartQty = ''
-                  
-                  for(let k in this.items){
-                     let cc = this.items[k]
-                     console.log("CC:", cc, cc['id'], cc['price'], cc['quantity'])
-                     cartItems +=  cc['id'].toString() + ")"
-                     cartPrices += cc['price'].toString() + ")"
-                     cartQty +=  cc['quantity'].toString() + ')'
-                  }
-                  console.log("JJJ:", cartItems, cartPrices, cartQty)
-                  //let invoiceId = new Date().getTime() + Math.floor(Math.random() * 1000);
-                  invoiceId = this.inv.invoiceId
-                  
-                  let totalPrice = this.cartTotal
-                  let tax = 0.05
+              async saveInvoice(){
+
+                  let cart_items = []
+
+                  this.items.forEach(item => {
+                    cart_items.push({
+                      item_id: item['id'],
+                      item_price: item['price'],
+                      quantity_sold: item['quantity'],
+                      subtotal: parseFloat(item['price']) * item['quantity'],
+                    })
+                  })
+
                   let customerPNO = '0'
                   if( this.inv.customerPNO != ''){
-                    let customerPNO = this.inv.customerPNO
+                    customerPNO = this.inv.customerPNO
                   }
-                  let paymentMethod = this.inv.paymentMethod
-                  let paymentId = this.inv.paymentId 
+
                   let cashierIdName = window.localStorage.getItem("cashierId")
-                  this.inv.cashier = cashierIdName
-                  this.cdateTime = new Date()
-                 
-                  let url = "/api/save_invoice/"+invoiceId+"/"+cartItems+"/"+cartPrices+"/" 
-                                                +cartQty+"/"+totalPrice+"/"+tax+"/" + this.cdateTime + "/"
-                                                +customerPNO+"/"+paymentMethod+"/" + this.paidAmount + "/"
-                                                +paymentId + "/" + cashierIdName
-                                                //alert(url)
-                  
-                  const response = await fetch(url);
-                  const data = await response.json();
+
+                  invoiceData = {
+                    cart_items: cart_items,
+                    total_price: this.cartLiveTotal,
+                    tax: 0.05,
+                    amount_paid: this.paidAmount,
+                    costumer_PNO: customerPNO,
+                    payment_method: this.inv.paymentMethod,
+                    payment_id: this.inv.paymentId,
+                    cashier_id: cashierIdName
+                  }
+
+                  const response = await fetch("/api/invoices", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(invoiceData),
+                    });
+
+                  const result = await response.json();
+                  console.log(result);
+                    
+                  this.inv.cashier = result['cashier_id']
+                  this.inv.invoiceId = result['id']
+                  this.cdateTime = result['created_at']
               },
 
-              async saveItemTransaction(items){
-
+              async saveItemTransaction(){
                 //create invoice id
                 let invoiceId = new Date().getTime() + Math.floor(Math.random() * 1000);
                 this.inv.invoiceId = invoiceId
-               
+                items = this.items
                 for(var i in items){
                     let item  = items[i]
                     let idcode = item['id']
                     let itemPrice = item['price']
                     let soldItemQty = item['quantity']
-                    
                     let totalQty = item['totalQty']
 
                     let newQty = totalQty - soldItemQty
-                    if(newQty<=0){
-                      alert("Quntity must less than total quantity")
-                    }
                     let update_url = `/api/update_item_quantity/${idcode}/${newQty}`
                     const response1 = await fetch(update_url)
                     const data1 = await response1.json();
@@ -665,22 +787,50 @@
                       return 'error'
                     }
                 }
+                return 'success'
                 //transaction completed
               },
-
              
               saveItemAndInvoice(){
-                 
+                 if (this.validate_cart() == false)
+                    return;
                  this.show_receipt = true
-                 this.saveItemTransaction(this.items)
+                 if(this.saveItemTransaction() == 'error'){
+                  this.cartErrorMsg = 'Error in transaction'
+                  return
+                 }
                  this.saveInvoice()
                  this.downloadInvoice()
-                 //this.show_receipt = false
                  this.orderCompleted = true
+                 itemsv.setOrderStatus('Complete')
               },
 
               startNewCart(){
                  window.location.reload();
+              },
+              validate_cart(){
+                let items = this.items
+                for(var i in items){
+                    let item  = items[i]
+                    let idcode = item['id']
+                    let itemPrice = item['price']
+                    let soldItemQty = item['quantity']
+                    
+                    let totalQty = item['totalQty']
+
+                    let newQty = totalQty - soldItemQty
+                    if(newQty<0){
+                      alert("Quntity is more than available quantity!")
+                      return false;
+                    }
+                  }
+
+                  if (this.remainingAmount < 0){
+                    this.paid_amount_check =true
+                    return false
+                  }
+                return true;
+                
               }
 
 
@@ -714,12 +864,31 @@
             console.log("Hello::",alert("test?"))
             
 
-          }
+          },
+          downloadInvoice(){
+                  const { jsPDF } = window.jspdf;
+                  var doc = new jsPDF('p', 'pt', 'A4');
+                  margins = {
+                      top: 80,
+                      bottom: 60,
+                      left: 40,
+                      width: 200
+                  };
+
+                  doc.html(this.$refs.invoice, 
+                      {
+                          callback: function(doc) {
+                              doc.save(new Date().getTime() + '.pdf');
+                          },
+                      x: 150,
+                      y: 100
+                      }
+                  );   
+              },
 
       }
   })
 
 </script>
-
 
 {% endblock %}
