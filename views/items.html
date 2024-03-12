@@ -141,7 +141,7 @@
             },
             mounted: async function(){
                 if(!this.isAdminLogin()){
-                    // this.logout();
+                    this.logout();
                 }
                 const response = await fetch("/api/items");
                 const data = await response.json();
