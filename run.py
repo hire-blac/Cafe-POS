@@ -67,14 +67,14 @@ def items():
 @post("/api/items")
 def new_items():
     data =  request.json
-    data['image'] = ''
     # Handle file upload
     image_upload = request.files.get('image')
     if image_upload:
         image_filename = f"static/images/{data['name']}_{image_upload.filename}"
         image_upload.save(image_filename)
         data['image'] = image_filename
-        
+    else:
+        data['image'] = ''
     item = item_controller.create_item(data)
     return item
 
@@ -82,17 +82,6 @@ def new_items():
 @get("/new_item")
 def new_item():
     return template('new_item')
-
-
-@route("/item/<id_code>")
-def get_item(id_code):
-    item = item_controller.get_item(id_code)
-    return template('get_item', item=item)
-
-@get("/api/items/<id_code>")
-def get_item(id_code):
-    item = item_controller.get_item(id_code)
-    return item
 
 # add new item from page form
 @post("/new_item")
@@ -117,9 +106,31 @@ def new_item():
         new_cat = {'name': form_data['newcategory']}
         new_category = category_controller.create_category(new_cat)
         form_data['category_id'] = new_category['id']
-
     item = item_controller.create_item(form_data)
+    print(item)
     return template('new_item', res="success")
+
+
+@route("/item/<id_code>")
+def get_item(id_code):
+    item = item_controller.get_item(id_code)
+    return template('get_item', item=item)
+
+@get("/api/items/<id_code>")
+def get_item(id_code):
+    item = item_controller.get_item(id_code)
+    return item
+
+@put("/api/items/<id_code>/update")
+def update_item(id_code):
+    data = request.json
+    item = item_controller.update_item(id_code, data)
+    return item
+
+@delete("/api/items/<id_code>/delete")
+def delete_item(id_code):
+    item = item_controller.delete_item(id_code)
+    return item
 
 # upload items from file
 @route('/upload_item', method='POST')
@@ -140,10 +151,18 @@ def do_upload():
             item_code =item['Id']
             name = item['Name']
             category = item['Category']
+            category_id = item['Category_ID']
             price = item['Price']
             quantity = item['Quantity']
-            if name != None or category != None or price != None or quantity != None:
-                POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
+            if name != None or category_id != None or price != None or quantity != None:
+                item_dict = {
+                    'name': name,
+                    'price': price,
+                    'quantity': quantity,
+                    'category_id': category_id,
+                }
+                item = item_controller.create_item(item_dict)
+                # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
         return template('new_item', res="success")
 
     if ext == ".xlsx":
@@ -152,10 +171,18 @@ def do_upload():
             item_code = item['Id']
             name = item['Name']
             category = item['Category']
+            category_id = item['Category_ID']
             price = item['Price']
             quantity = item['Quantity']
-            if name != None or category != None or price != None or quantity != None:
-                POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
+            if name != None or category_id != None or price != None or quantity != None:
+                item_dict = {
+                    'name': name,
+                    'price': price,
+                    'quantity': quantity,
+                    'category_id': category_id,
+                }
+                item = item_controller.create_item(item_dict)
+                # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
         return template('new_item', res="success")
 
     if ext == ".db":
@@ -171,10 +198,18 @@ def do_upload():
             item_code = ait['idcode']
             name = ait['Name']
             category = ait['Category']
+            category_id = item['Category_ID']
             price = ait['Price']
             quantity = ait['Qty']
-            if name != None or category != None or price != None or quantity != None:
-                POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
+            if name != None or category_id != None or price != None or quantity != None:
+                item_dict = {
+                    'name': name,
+                    'price': price,
+                    'quantity': quantity,
+                    'category_id': category_id,
+                }
+                item = item_controller.create_item(item_dict)
+                # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
         return template('new_item', res="success")
 
 # TRANSACTION ROUTES
@@ -187,7 +222,6 @@ def get_transactions():
 def transactions():
     transactions = transaction_controller.all_transactions()
     return transactions
-
 
 @get('/api/transactions/<transaction_id>')
 def transactions(transaction_id):
@@ -203,6 +237,11 @@ def invoices():
 @get('/api/invoices')
 def all_invoices():
     invoices = invoice_controller.all_invoices()
+    return invoices
+
+@delete('/api/invoices/delete')
+def all_invoices():
+    invoices = invoice_controller.delete_invoice(1)
     return invoices
 
 @route("/cart")
@@ -294,12 +333,11 @@ def get_user(username):
     # get user info
     return template('get_user')
 
-@post('/api/user/<user_id>/update')
+@put('/api/user/<user_id>/update')
 def updateUsers(user_id):
     data = request.json
-    users = auth_controller.update_user()
+    users = auth_controller.update_user(data, user_id)
     return users
-
 
 @route("/user_profile")
 def user_profile():
@@ -309,6 +347,31 @@ def user_profile():
         return template('user_profile', user=user)
     else:
         return {"error": "Please login"}
+
+@route("/api/user_profile")
+def user_profile_api():
+    if posauth.Auth(request):
+        username = request.get_cookie('user_name')
+        user= auth_controller.get_user(username)
+        return user
+    else:
+        return {"error": "Please login"}
+
+@post("/user-profile/change-password")
+def change_password():
+    data = request.json
+    if posauth.Auth(request):
+        username = request.get_cookie('user_name')
+        user = auth_controller.change_password(username, data)
+        return user
+    else:
+        return {"error": "Please login"}
+    
+@delete('/api/user/<user_id>/delete')
+def deleteUser(user_id):
+    users = auth_controller.delete_user(user_id)
+    return users
+
 
 # CUSTOMER ROUTES
 

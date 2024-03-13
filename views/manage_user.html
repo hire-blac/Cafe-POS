@@ -112,15 +112,14 @@
         el: '#app',
         data: {
           fields: [
-                    {key:'id',sortable: true},
-                    {key:'name'}, 
-                    {key:'username', sortable: true}, 
-                    {key:'userType', sortable: true}, 
-                    {key: 'delete', label: ''},
-                    {key: 'show', label: ''}],
-          items: [
-           
+            {key:'id',sortable: true},
+            {key:'name'}, 
+            {key:'username', sortable: true}, 
+            {key:'userType', sortable: true}, 
+            {key: 'delete', label: ''},
+            {key: 'show', label: ''}
           ],
+          items: [],
           currentDeleteId: -1,
           currentDeleteIndex: -1,
           modalShow: false,
@@ -164,8 +163,17 @@
                 let id = this.currentDeleteId
                 let index = this.currentDeleteIndex
                 this.items.splice(index,1)
-                const response = await fetch("/delete_user_api/" + id);
-                const data = await response.json();
+                
+                const response = await fetch("/api/user/"+ id +"/delete", {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json",
+                    }
+                  });
+
+                const result = await response.json();
+                console.log(result);
+                window.location.reload()
             },
             Edit(){
                 //redirect()
@@ -178,7 +186,6 @@
                 this.currentPage = 1
             },
             isAdminLogin : function(){
-                   
                 return localStorage.getItem("usertype") == "Administrator"
             },
             logout:function(){

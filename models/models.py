@@ -45,7 +45,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     price = Column(Numeric(precision=8, scale=2), nullable=False)
-    image_url = Column(String)  # Column to store image URL
+    image_url = Column(String, nullable=True)  # Column to store image URL
     quantity = Column(Integer, nullable=False)
     category_id = Column(Integer, ForeignKey('categories.id'))
     category = relationship('Category', back_populates='items')

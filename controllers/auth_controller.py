@@ -97,8 +97,8 @@ def update_user(data, user_id):
             user.username = data['username']
             user.usertype = data['usertype']
 
-            session.commit(user)
-            session.save()
+            session.add(user)
+            session.commit()
 
             return {
                 'id': user.id, 
@@ -109,17 +109,26 @@ def update_user(data, user_id):
         else:
             return {'message': 'user not found'}
         
+def change_password(username, data):
+    with Session() as session:
+        user = session.query(User).filter_by(username=username).first()
+        if user:
+            password_hash = pbkdf2_sha256.hash(data['password'])
+            user.password = password_hash
+            session.add(user)
+            session.commit()
+            return  {"message": "Password changed successfully"}
+        else:
+            return  {"message":"Username does not exist."}  
+
 
 def delete_user(user_id):
     with Session() as session:
-        # user = session.query(User).get(user_id)
-        user = session.query(User).all()
+        user = session.query(User).get(user_id)
         if user:
-            for u in user:
-                session.delete(u)
-                session.commit()
-            # return f'User with ID {user_id} deleted successfully'
-            return {'message': f'all users deleted successfully'}
+            session.delete(user)
+            session.commit()
+            return {'success': f'User with ID {user_id} deleted successfully'}
         else:
-            return {'error': 'no users'}
+            return {'error': 'user not found'}
         

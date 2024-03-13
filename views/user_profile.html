@@ -96,21 +96,20 @@
               console.log("window.location::",this.username)
               this.pwdChangedMsg =''
               this.errMsg = ''
-              const response = await fetch("/user_api/" + this.username);
-                    const data = await response.json();
-                    let id = data["Id"]
-                    let name = data["name"]
-                    let username = data["username"]
-                    let usertype = data["userType"]
-                    this.items = []
-                    this.items.push({ id: id,
-                                    name: name,
-                                    username:
-                                    username,
-                                    usertype:
-                                    usertype})
-
-              
+              // const response = await fetch("/api/user/" + this.username);
+              const response = await fetch("/api/user_profile");
+              const data = await response.json();
+              let id = data["id"]
+              let name = data["name"]
+              let username = data["username"]
+              let usertype = data["usertype"]
+              this.items = []
+              this.items.push({ 
+                id: id,
+                name: name,
+                username: username,
+                usertype: usertype
+              })
             },
             methods: {
 
@@ -124,8 +123,6 @@
                       window.location.href = "/login"
    
                 },
-
-
 
                 async toggleEditMode(){
                     this.pwdChangedMsg =''
@@ -152,26 +149,24 @@
                         this.errMsg ='Passwords do not match'
                         return
                     }
-                    id = data.id
-                    name = data.name
-                    username = data.username
+                    // id = data.id
+                    // name = data.name
+                    // username = data.username
                     pwd = this.password1
 
 
-                    const apiUrl = '/pwd_upd';
+                    const apiUrl = '/user-profile/change-password';
                     const postData = {
-                                      username: username,
-                                      password: pwd,
-                                      cashierId:id
+                        password: pwd
                     };
                     try {
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: {
-                                          'Content-Type': 'application/json',
-                                },
-                                 body: JSON.stringify(postData),
-                            });
+                      const response = await fetch(apiUrl, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                            body: JSON.stringify(postData),
+                      });
               
                       if (!response.ok) {
                         throw new Error('Response was not ok');

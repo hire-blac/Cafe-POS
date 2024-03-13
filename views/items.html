@@ -180,9 +180,18 @@
                   let id = this.currentDeleteId
                   let index = this.currentDeleteIndex
                   this.items.splice(index,1)
-                  const response = await fetch("/delete_item_api/" + id);
-                  const data = await response.json();
-                  //console.log('deleted', id, index)
+
+                  const response = await fetch("/api/items/"+ id +"/delete", {
+                      method: "DELETE",
+                      headers: {
+                        "Content-Type": "application/json",
+                      }
+                    });
+
+                  const result = await response.json();
+                  console.log(result);
+                  window.location.reload()
+
               },
 
               onFiltered(filteredItems) {

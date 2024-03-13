@@ -148,16 +148,17 @@
                       usertype: data.usertype,
                     }
                     
-                  const response = await fetch("/api/invoices/" + id, {
-                      method: "POST",
+                  const response = await fetch(`/api/user/${id}/update`, {
+                      method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify(invoiceData),
+                      body: JSON.stringify(newData),
                     });
 
                   const result = await response.json();
                   console.log(result);
+                  window.location.reload()
 
                     // let response = await fetch("/api/update_user/"+id+"/"+name+"/"+username+"/"+usertype)
                     // this.usercode = username
