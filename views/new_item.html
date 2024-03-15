@@ -25,6 +25,11 @@
                 <form method="post" action="/new_item">
 
                     <div class="mb-3">
+                        <label for="id" class="form-label">Item ID</label>
+                        <input type="text" class="form-control" name='id' id="id" placeholder="Enter Item ID">
+                    </div>
+    
+                    <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
                         <input type="text" class="form-control" name='name' id="name" placeholder="Enter Item name">
                     </div>
@@ -78,6 +83,7 @@
           delimiters : ['[[',']]'],
           el: "#app",
           data: {
+            itemID: '',
             itemName: '',
             itemPrice: '',
             category: null,

@@ -35,6 +35,7 @@ def register_user(data):
             try:
                 password_hash = pbkdf2_sha256.hash(data['password'])
                 user = User(
+                        id=data['id'],
                         name=data['name'],
                         username=data['username'],
                         password=password_hash,

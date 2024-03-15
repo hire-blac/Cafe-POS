@@ -6,9 +6,9 @@ Session = sessionmaker(bind=engine)
 
 
 def create_item(data):
-    print(data)
     try:
         item = Item(
+            id=data['id'],
             name=data['name'],
             price=data['price'],
             image_url=data['image'],
@@ -20,6 +20,7 @@ def create_item(data):
             session.add(item)            
             session.commit()    
             return {
+                'message': "success",
                 'id': item.id, 
                 'name': item.name,
                 'price': str(item.price),
@@ -28,7 +29,7 @@ def create_item(data):
                 'category': item.category.name,
             }
     except:
-        return {'message': "an error occured"}
+        return {'message': "error"}
 
 
 def all_items():

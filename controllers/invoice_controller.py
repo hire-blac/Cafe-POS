@@ -2,6 +2,7 @@ from sqlalchemy.orm import sessionmaker
 from controllers import item_controller, transaction_controller
 from models.models import Invoice, Transaction, engine
 from sqlalchemy.exc import SQLAlchemyError
+import random
 
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
@@ -43,6 +44,7 @@ def all_invoices():
 def create_invoice(data):
     try:
         invoice = Invoice(
+            id=data['id'],
             total_price=data['total_price'],
             tax=data['tax'],
             amount_paid=data['amount_paid'],
@@ -60,7 +62,13 @@ def create_invoice(data):
             inv_transactions = []
             # create transactions for this invoive
             for item in data['cart_items']:
+                min = 1111
+                max = 999999999
+                transaction_id = random.randrange(min, max)
+                print("creating transaction")
+                print(item)
                 transaction = Transaction(
+                    id=transaction_id,
                     invoice_id=invoice.id,
                     item_id=item['item_id'],
                     item_price=item['item_price'],
@@ -97,7 +105,7 @@ def create_invoice(data):
             }
         
     except:
-        return {'message': "An error occured"}
+        return {'error': "An error occured"}
 
 
 def get_invoice(invoice_id):

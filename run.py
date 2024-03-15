@@ -1,4 +1,4 @@
-from hmac import new
+from sqlalchemy.orm import sessionmaker
 from bottle import Bottle, request
 from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
 from bottle import jinja2_template as template
@@ -6,7 +6,10 @@ import POS
 import os
 from controllers import auth_controller, category_controller, invoice_controller, item_controller, transaction_controller
 import posauth
-# Import Bottle Extensions
+from models.models import Category, engine
+
+# Create SQLAlchemy session
+Session = sessionmaker(bind=engine)
 
 import sqlite3 
 import pandas as pd
@@ -87,6 +90,7 @@ def new_item():
 @post("/new_item")
 def new_item():
     form_data = {
+        'id': request.forms.get('id'),
         'name': request.forms.get('name'),
         'category_id': request.forms.get('category'),
         'price': request.forms.get('price'),
@@ -107,8 +111,7 @@ def new_item():
         new_category = category_controller.create_category(new_cat)
         form_data['category_id'] = new_category['id']
     item = item_controller.create_item(form_data)
-    print(item)
-    return template('new_item', res="success")
+    return template('new_item', res=item['message'])
 
 
 @route("/item/<id_code>")
@@ -151,11 +154,17 @@ def do_upload():
             item_code =item['Id']
             name = item['Name']
             category = item['Category']
-            category_id = item['Category_ID']
             price = item['Price']
             quantity = item['Quantity']
-            if name != None or category_id != None or price != None or quantity != None:
+
+            if name != None or category != None or price != None or quantity != None:
+                category_id = ''
+                with Session() as session:
+                    category = session.query(Category).filter_by(name=category).first()
+                    category_id = category.id
+
                 item_dict = {
+                    'id': item_code,
                     'name': name,
                     'price': price,
                     'quantity': quantity,
@@ -171,11 +180,17 @@ def do_upload():
             item_code = item['Id']
             name = item['Name']
             category = item['Category']
-            category_id = item['Category_ID']
             price = item['Price']
             quantity = item['Quantity']
-            if name != None or category_id != None or price != None or quantity != None:
+
+            if name != None or category != None or price != None or quantity != None:
+                category_id = ''
+                with Session() as session:
+                    category = session.query(Category).filter_by(name=category).first()
+                    category_id = category.id
+                    
                 item_dict = {
+                    'id': item_code,
                     'name': name,
                     'price': price,
                     'quantity': quantity,
@@ -198,11 +213,17 @@ def do_upload():
             item_code = ait['idcode']
             name = ait['Name']
             category = ait['Category']
-            category_id = item['Category_ID']
             price = ait['Price']
             quantity = ait['Qty']
-            if name != None or category_id != None or price != None or quantity != None:
+            
+            if name != None or category != None or price != None or quantity != None:
+                category_id = ''
+                with Session() as session:
+                    category = session.query(Category).filter_by(name=category).first()
+                    category_id = category.id
+                    
                 item_dict = {
+                    'id': item_code,
                     'name': name,
                     'price': price,
                     'quantity': quantity,
@@ -239,10 +260,10 @@ def all_invoices():
     invoices = invoice_controller.all_invoices()
     return invoices
 
-@delete('/api/invoices/delete')
-def all_invoices():
-    invoices = invoice_controller.delete_invoice(1)
-    return invoices
+# @delete('/api/invoices/delete')
+# def all_invoices():
+#     invoices = invoice_controller.delete_invoice(1)
+#     return invoices
 
 @route("/cart")
 def new_cart():
@@ -255,7 +276,6 @@ def new_cart():
 @post('/api/invoices')
 def new_invoice():
     data = request.json
-    # data['cashier_name'] = "Jimmy"
     invoice = invoice_controller.create_invoice(data)
     return invoice
 
@@ -354,7 +374,7 @@ def user_profile_api():
         username = request.get_cookie('user_name')
         user= auth_controller.get_user(username)
         return user
-    else:
+    else: 
         return {"error": "Please login"}
 
 @post("/user-profile/change-password")

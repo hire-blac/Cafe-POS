@@ -619,7 +619,7 @@
                       //increase and return
                       this.items[i]['quantity'] = this.items[i]['quantity'] + 1;
                       this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
-                      this.taxTotal = (0.05 * (this.cartLiveTotal))
+                      this.taxTotal = (0.15 * (this.cartLiveTotal))
                       this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
                       this.cartTotal = this.cartLiveTotal +   this.taxTotal
                       this.cart.length = this.cart.length + 1
@@ -637,7 +637,7 @@
                   })
                   
                   this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
-                  this.taxTotal = (0.05 * (this.cartLiveTotal))
+                  this.taxTotal = (0.15 * (this.cartLiveTotal))
                   this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
                   this.cartTotal = this.cartLiveTotal +   this.taxTotal
                   
@@ -660,7 +660,7 @@
                 this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] + 1;
                 this.cartLiveTotal = this.cartLiveTotal +   parseFloat(this.items[ind]['price'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length + 1
@@ -669,7 +669,7 @@
                 this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] - 1;
                 this.cartLiveTotal = this.cartLiveTotal -   parseFloat(this.items[ind]['price'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length -  1
@@ -681,7 +681,7 @@
               removeCartItem(ind, id){
                 this.cartErrorMsg =''
                 this.cartLiveTotal = this.cartLiveTotal -   (parseFloat(this.items[ind]['price']) *this.items[ind]['quantity'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
                 this.cartTotal = this.cartLiveTotal +   this.taxTotal
                 this.cart.length = this.cart.length -  this.items[ind]['quantity'] 
@@ -713,11 +713,14 @@
               },
 
               async saveInvoice(){
+                  let invoiceId = new Date().getTime() + Math.floor(Math.random() * 1000);
+                  this.inv.invoiceId = invoiceId
 
                   let cart_items = []
 
                   this.items.forEach(item => {
                     cart_items.push({
+                      invoice_id: this.inv.invoiceId,
                       item_id: item['id'],
                       item_price: item['price'],
                       quantity_sold: item['quantity'],
@@ -733,9 +736,10 @@
                   let cashierIdName = window.localStorage.getItem("cashierId")
 
                   invoiceData = {
+                    id: invoiceId,
                     cart_items: cart_items,
                     total_price: this.cartLiveTotal,
-                    tax: 0.05,
+                    tax: this.taxTotal,
                     amount_paid: this.paidAmount,
                     costumer_PNO: customerPNO,
                     payment_method: this.inv.paymentMethod,

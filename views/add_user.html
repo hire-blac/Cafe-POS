@@ -12,6 +12,11 @@
               <div class="alert alert-danger" v-if="error" role="alert">
                 [[error]]
               </div>
+
+              <div class="mb-3">
+                <label for="id" class="form-label">User ID</label>
+                <input type="text" class="form-control" name='id'  v-model="id" id="id" placeholder="Enter user ID">
+              </div>
                 
               <div class="mb-3">
                   <label for="userType" class="form-label">User Type</label>
@@ -54,6 +59,7 @@
            delimiters : ['[[',']]'],
            el: "#users",
            data: {
+            id: '',
             userType: '',
             name: '',
             username: '',
@@ -74,6 +80,7 @@
             async addUser(){
 
               const credentials = {
+                id: this.id,
                 usertype: this.userType,
                 name: this.name,
                 username: this.username,
