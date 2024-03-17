@@ -40,7 +40,7 @@
         
                     <template #cell(quantity)="data">
                         <span @click="toggleEdit(data.item.quantity, data.index, data.item.editQty, 'quantity')" v-show="!data.item.editQty">[[ data.item.quantity]]</span>
-                      <input v-show="data.item.editQty" v-model="data.item.quantity" type="text" />
+                      <input v-show="data.item.editQty" v-model="data.item.quantity" type="number" />
                     </template>
                     
                     <template #cell(show)="data">

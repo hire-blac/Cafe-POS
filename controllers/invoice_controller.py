@@ -3,7 +3,7 @@ from controllers import item_controller, transaction_controller
 from models.models import Invoice, Transaction, engine
 from sqlalchemy.exc import SQLAlchemyError
 import random
-
+from . transaction_controller import transaction_details
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
         
@@ -14,13 +14,7 @@ def all_invoices():
             data = []
             for invoice in invoices:
                 # get all transactions for each invoice
-                purchase_items = [{
-                    'id': transaction.id,
-                    'item': transaction.item.name,
-                    'item_price': str(transaction.item_price),
-                    'quantity_sold': transaction.quantity_sold,
-                    'subtotal': str(transaction.subtotal),
-                } for transaction in invoice.purchase_items]
+                purchase_items = [transaction_details(transaction) for transaction in invoice.purchase_items]
 
                 # add invoice to data
                 data.append({
@@ -80,13 +74,7 @@ def create_invoice(data):
                 session.commit()
 
                 # add transaction to invoice
-                inv_transactions.append({
-                    'id': transaction.id,
-                    'item': transaction.item.name,
-                    'item_price': str(transaction.item_price),
-                    'quantity': transaction.quantity_sold,
-                    'subtotal': str(transaction.subtotal)
-                })
+                inv_transactions.append(transaction_details(transaction))
 
                 # update item quantity
                 item_controller.reduce_quantity(item['item_id'], item['quantity_sold'])
@@ -113,13 +101,7 @@ def get_invoice(invoice_id):
         invoice = session.query(Invoice).get(invoice_id)
         if invoice:
             # get all transactions for each invoice
-            purchase_items = [{
-                'id': transaction.id,
-                'item': transaction.item.name,
-                'item_price': str(transaction.item_price),
-                'quantity_sold': transaction.quantity_sold,
-                'subtotal': str(transaction.subtotal),
-            } for transaction in invoice.purchase_items]
+            purchase_items = [transaction_details(transaction) for transaction in invoice.purchase_items]
 
             return {
                 'id': invoice.id,

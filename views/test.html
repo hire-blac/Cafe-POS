@@ -264,7 +264,7 @@
         computed: {
             filteredItems() {
                 return this.items.filter(item =>
-                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    item.name.toLowerCase().startsWith(this.searchQuery.toLowerCase())
                 );
             },
             paginatedItems() {
@@ -341,7 +341,7 @@
             },
             filterItems() {
                 const filteredBySearch = this.items.filter(item =>
-                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    item.name.toLowerCase().startsWith(this.searchQuery.toLowerCase())
                 );
                 //this.filteredItems = this.selectedCategory
                  //   ? filteredBySearch.filter(item => item.category === this.selectedCategory)

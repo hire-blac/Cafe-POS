@@ -38,19 +38,19 @@
         <div class="row">
             <div class="row"  v-show="isPwdChange" >
                 <div class="col-md-3">
-                    <label for="password1" class="form-label">New Password</label>
+                    <label for="oldPassword" class="form-label">Enter Old Password</label>
                 </div>
                 <div class="col-md-6">
-                    <input v-model="password1" type="password" />
+                    <input v-model="oldPassword" type="password" />
                 </div>
 
             </div>
             <div class="row"  v-show="isPwdChange" >
                 <div class="col-md-3">
-                   <label for="password2" class="form-label">Confirm Password</label>
+                   <label for="newPassword" class="form-label">Enter New Password</label>
                 </div>
                 <div class="col-md-4">
-                   <input v-model="password2" type="password" />
+                   <input v-model="newPassword" type="password" />
                 </div>
                
             </div>
@@ -87,8 +87,8 @@
                 perPage: 10,
                 isPwdChange: false,
                 usertypeOptions: ['Administrator', 'Cashier','Staff'],
-                password1:'',
-                password2:'',
+                oldPassword:'',
+                newPassword:'',
                 pwdChangedMsg:'',
                 errMsg:'',
             },
@@ -140,24 +140,26 @@
                     this.currentPage = 1
                 },
                 async ChangePassword(){
-                    if(!this.password1){
-                        this.errMsg ='Please enter password'
+                    if(!this.oldPassword){
+                        this.errMsg ='Please enter your old password'
                         return
                     }
-                    data = this.items[0]
-                    if(this.password1 != this.password2){
-                        this.errMsg ='Passwords do not match'
-                        return
-                    }
+                    // data = this.items[0]
+                    // if(this.password1 != this.password2){
+                    //     this.errMsg ='Passwords do not match'
+                    //     return
+                    // }
                     // id = data.id
                     // name = data.name
                     // username = data.username
-                    pwd = this.password1
+                    old_password = this.oldPassword
+                    new_password = this.newPassword
 
 
                     const apiUrl = '/user-profile/change-password';
                     const postData = {
-                        password: pwd
+                      old_password: old_password,
+                      new_password: new_password
                     };
                     try {
                       const response = await fetch(apiUrl, {
@@ -175,8 +177,8 @@
                       const responseData = await response.json();
                       console.log(responseData);
                       if(responseData['message'] == 'success'){
-                          this.password1 =''
-                          this.password2 =''
+                          this.oldPassword =''
+                          this.newPassword =''
                           this.toggleEditMode()
                           this.pwdChangedMsg='Password changed'
                       }

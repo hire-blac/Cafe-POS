@@ -1,35 +1,42 @@
 from sqlalchemy.orm import sessionmaker
 from models.models import Category, Item, engine
+from . transaction_controller import transaction_details
 
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
 
+def item_details(item):
+    cat = '-'
+    if item.category:
+        cat = item.category.name
+    return {
+        'message': "success",
+        'id': item.id, 
+        'name': item.name,
+        'price': str(item.price),
+        'image': item.image_url,
+        'quantity': item.quantity,
+        'category': cat
+    }
+
 
 def create_item(data):
-    try:
-        item = Item(
-            id=data['id'],
-            name=data['name'],
-            price=data['price'],
-            image_url=data['image'],
-            quantity=data['quantity'],
-            category_id=data['category_id'],
-        )
+    # try:
+    item = Item(
+        id=data['id'],
+        name=data['name'],
+        price=data['price'],
+        image_url=data['image'],
+        quantity=data['quantity'],
+        category_id=data['category_id'],
+    )
 
-        with Session() as session:
-            session.add(item)            
-            session.commit()    
-            return {
-                'message': "success",
-                'id': item.id, 
-                'name': item.name,
-                'price': str(item.price),
-                'image': item.image_url,
-                'quantity': item.quantity,
-                'category': item.category.name,
-            }
-    except:
-        return {'message': "error"}
+    with Session() as session:
+        session.add(item)            
+        session.commit()
+        return item_details(item)
+    # except:
+    #     return {'message': "error"}
 
 
 def all_items():
@@ -38,15 +45,8 @@ def all_items():
         if items:
             data = []
             for item in items:
-                data.append({
-                    'id': item.id, 
-                    'name': item.name,
-                    'price': str(item.price),
-                    'image': item.image_url,
-                    'quantity': item.quantity,
-                    'category': item.category.name,
-                })
-
+                data.append(item_details(item))
+                
             return {
                 'items': data,
                 'items_count': len(items)
@@ -62,23 +62,12 @@ def get_item(item_id):
     with Session() as session:
         item = session.query(Item).get(item_id)
         if item:
-            transactions = [{
-                'id': trans.id,
-                'item_id': trans.item_id,
-                'item_price': str(trans.item_price),
-                'quantity_sold': trans.quantity_sold,
-                'created_at': trans.created_at.strftime("%Y-%m-%d %H:%M:%S")
-            } for trans in item.transactions]
+            transactions = [transaction_details(trans) for trans in item.transactions]
+            
+            item = item_details(item)
+            item['transactions'] = transactions
 
-            return {
-                'id': item.id, 
-                'name': item.name,
-                'price': str(item.price),
-                'image': item.image_url,
-                'quantity': item.quantity,
-                'category': item.category.name,
-                'transactions': transactions,
-            }
+            return item
         else:
             return {'message': 'Item not found'}
 
@@ -95,14 +84,7 @@ def update_item(item_id, data):
             session.add(item)
             session.commit()
 
-            return {
-                'id': item.id, 
-                'name': item.name,
-                'price': str(item.price),
-                'image': item.image_url,
-                'quantity': item.quantity,
-                'category': item.category.name,
-                }
+            return item_details(item)
         else:
             return {'message': 'Item not found'}
 

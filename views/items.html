@@ -28,11 +28,13 @@
                         label-size="sm"
                         class="mb-0">
                         <b-input-group size="sm">
+
                             <b-form-input
                                 id="filter-input"
                                 v-model="filter"
                                 type="search"
                                 placeholder="Filter by Item Id or Item Name"
+                                @input="filterItems"
                             ></b-form-input>
     
                             <b-input-group-append>
@@ -126,6 +128,7 @@
                 {key: 'show', label: ''},
               ],
               items: [],
+              allItems: [],
               currentDeleteId: -1,
               currentDeleteIndex: -1,
               modalShow: false,
@@ -160,6 +163,7 @@
                   
                   this.categoryOptions.push(cat)
                   this.items.push(item)
+                  this.allItems.push(item)
                 })
 
                 this.totalRows = this.items.length
@@ -192,6 +196,16 @@
                   console.log(result);
                   window.location.reload()
 
+              },
+
+              filterItems() {
+                this.items = this.allItems;
+
+                const filteredItems = this.items.filter(item =>
+                    item.name.toLowerCase().startsWith(this.filter.toLowerCase()) ||
+                    item.id.toString().startsWith(this.filter)
+                );
+                this.items = filteredItems;
               },
 
               onFiltered(filteredItems) {

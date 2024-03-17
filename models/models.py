@@ -64,14 +64,14 @@ class Transaction(Base):
     __tablename__ = 'transactions'
     id = Column(Integer, primary_key=True)
     invoice_id = Column(Integer, ForeignKey('invoices.id'), nullable=False)
-    item_id = Column(Integer, ForeignKey('items.id'), nullable=False)
+    item_id = Column(Integer, ForeignKey('items.id'), nullable=True)
     item_price = Column(Numeric(precision=8, scale=2), nullable=False)
     quantity_sold = Column(String, nullable=False)
     subtotal = Column(Numeric(precision=8, scale=2), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
 
     # Define the relationship with Item
-    item = relationship('Item', backref=backref('transactions'))
+    item = relationship('Item', backref=backref('transactions'), cascade="")
 
 
 class Invoice(Base):

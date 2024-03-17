@@ -114,11 +114,12 @@ def change_password(username, data):
     with Session() as session:
         user = session.query(User).filter_by(username=username).first()
         if user:
-            password_hash = pbkdf2_sha256.hash(data['password'])
-            user.password = password_hash
-            session.add(user)
-            session.commit()
-            return  {"message": "Password changed successfully"}
+            if pbkdf2_sha256.verify(data['old_password'], user.password):
+                password_hash = pbkdf2_sha256.hash(data['new_password'])
+                user.password = password_hash
+                session.add(user)
+                session.commit()
+                return  {"message": "Password changed successfully"}
         else:
             return  {"message":"Username does not exist."}  
 

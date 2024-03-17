@@ -33,16 +33,23 @@
                         label-size="sm"
                         class="mb-0">
                         <b-input-group size="sm">
+                            <!-- <b-form-input
+                                id="filter-input"
+                                v-model="filter"
+                                type="search"
+                                placeholder="Filter..."
+                            ></b-form-input> -->
+
                             <b-form-input
                                 id="filter-input"
                                 v-model="filter"
                                 type="search"
                                 placeholder="Filter..."
+                                @input="filterItems"
                             ></b-form-input>
     
                             <b-input-group-append>
                                 <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                               
                             </b-input-group-append>
                             
                         </b-input-group>
@@ -215,6 +222,16 @@
                         return parseInt(trans.dateTime.toString().substring(0,8)) >= parseInt(from) && parseInt(trans.dateTime.toString().substring(0,8)) <= parseInt(to)
                     })
                     this.totalRows = this.transactions.length;
+                },
+
+                filterItems() {
+                  const filteredItems = this.all_transactions.filter(transaction =>
+                    transaction.itemName.toLowerCase().startsWith(this.filter.toLowerCase()) ||
+                    transaction.invoiceId.toString().startsWith(this.filter) ||
+                    transaction.itemId.toString().startsWith(this.filter)
+                  );
+                  this.transactions = filteredItems;
+                  this.totalRows = this.transactions.length;
                 },
 
                 onFiltered(filteredItems) {

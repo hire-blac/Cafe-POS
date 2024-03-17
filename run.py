@@ -1,3 +1,4 @@
+import math
 from sqlalchemy.orm import sessionmaker
 from bottle import Bottle, request
 from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
@@ -151,17 +152,22 @@ def do_upload():
         df = pd.read_csv(upload.file)
         print("DataFrame: {}".format(df))
         for index,item in df.iterrows():
-            item_code =item['Id']
-            name = item['Name']
+            item_code =item['Item ID']
+            name = item['Item Name']
             category = item['Category']
             price = item['Price']
             quantity = item['Quantity']
 
-            if name != None or category != None or price != None or quantity != None:
+            if name != None or price != None or quantity != None:
                 category_id = ''
-                with Session() as session:
-                    category = session.query(Category).filter_by(name=category).first()
-                    category_id = category.id
+                if category and isinstance(category, str):
+                    with Session() as session:
+                        cat = session.query(Category).filter_by(name=category).first()
+                        if cat:
+                            category_id = cat.id
+                        else:
+                            cat = category_controller.create_category({'name': category})
+                            category_id = cat.id
 
                 item_dict = {
                     'id': item_code,
@@ -169,6 +175,7 @@ def do_upload():
                     'price': price,
                     'quantity': quantity,
                     'category_id': category_id,
+                    'image': '',
                 }
                 item = item_controller.create_item(item_dict)
                 # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
@@ -177,17 +184,23 @@ def do_upload():
     if ext == ".xlsx":
         df = pd.read_excel(upload.file)
         for index,item in df.iterrows():
-            item_code = item['Id']
-            name = item['Name']
+            item_code = item['Item ID']
+            name = item['Item Name']
             category = item['Category']
             price = item['Price']
-            quantity = item['Quantity']
+            quantity = item['Qty']
 
-            if name != None or category != None or price != None or quantity != None:
+            if name != None or price != None or quantity != None:
                 category_id = ''
-                with Session() as session:
-                    category = session.query(Category).filter_by(name=category).first()
-                    category_id = category.id
+                if category and isinstance(category, str):
+                    with Session() as session:
+                        cat = session.query(Category).filter_by(name=category).first()
+                        if cat:
+                            category_id = cat.id
+                        else:
+                            cat = category_controller.create_category({'name': category})
+                            print(cat)
+                            category_id = cat['id']
                     
                 item_dict = {
                     'id': item_code,
@@ -195,6 +208,7 @@ def do_upload():
                     'price': price,
                     'quantity': quantity,
                     'category_id': category_id,
+                    'image': '',
                 }
                 item = item_controller.create_item(item_dict)
                 # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
@@ -216,11 +230,16 @@ def do_upload():
             price = ait['Price']
             quantity = ait['Qty']
             
-            if name != None or category != None or price != None or quantity != None:
+            if name != None  or price != None or quantity != None:
                 category_id = ''
-                with Session() as session:
-                    category = session.query(Category).filter_by(name=category).first()
-                    category_id = category.id
+                if category and isinstance(category, str):
+                    with Session() as session:
+                        cat = session.query(Category).filter_by(name=category).first()
+                        if cat:
+                            category_id = cat.id
+                        else:
+                            cat = category_controller.create_category({'name': category})
+                            category_id = cat.id
                     
                 item_dict = {
                     'id': item_code,
@@ -228,9 +247,9 @@ def do_upload():
                     'price': price,
                     'quantity': quantity,
                     'category_id': category_id,
+                    'image': '',
                 }
                 item = item_controller.create_item(item_dict)
-                # POS.add_item(item_idcode=item_code, item_name=name, item_category=category, item_price=price, quantity=quantity)
         return template('new_item', res="success")
 
 # TRANSACTION ROUTES
