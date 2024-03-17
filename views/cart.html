@@ -8,9 +8,8 @@
 
   <div class="items-section" style="float: left; width: 70%" id ="items" >
             
-           
-                <!-- > Items Section -->
-    <div class="section full" v-show="this.orderStatus=='New'">
+    <!-- > Items Section -->
+    <div class="section full">
 
       <div class="d-flex justify-content-between align-items-center">
          
@@ -31,7 +30,7 @@
       </div>
       <div class="item">
           <div  v-for="(item, index) in paginatedItems" :key="index" v-on:click=" isAvailable(item) && addToCart(item)">
-            <div :class="{ 'item-card-eneabled': isAvailable(item), 'item-card-disabled': !isAvailable(item)}">    
+            <div :class="{ 'item-card-eneabled': isAvailable(item), 'item-card-disabled': !isAvailable(item)}">
             <div class="item-card" >
 
                 <img :src="item.image" alt="Item">
@@ -76,6 +75,7 @@
       </div>
 
     </div>
+  </div>
           
     <div class="cart-section" style="float: right; width: 30%;" id ="cart" >
       <!-- Cart Section -->
@@ -211,11 +211,10 @@
 
           </div>
         </div>
-      </div>
-
-                  
+      </div>       
     </div>
-          <div class="invoice-container" id="invoicediv" v-show="cart.show_receipt">
+    
+          <div class="invoice-container" style="float: right; width: 30%;" id="invoicediv" v-show="cart.show_receipt">
             <span><h4>Order Completed</h4></span>   
             <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
              
@@ -320,6 +319,11 @@
               <!-- partial -->
          
             </div>
+            <!-- new invoice -->
+            <div class="d-grid gap-2 col-12 mx-auto mt-3">
+              <a href="/cart" class="btn btn-outline-success">New Invoice</a>
+            </div>
+              
           </div>
 
   </div>
