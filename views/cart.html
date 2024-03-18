@@ -712,6 +712,7 @@
                     cart_items.push({
                       invoice_id: this.inv.invoiceId,
                       item_id: item['id'],
+                      item_name: item['name'],
                       item_price: item['price'],
                       quantity_sold: item['quantity'],
                       subtotal: parseFloat(item['price']) * item['quantity'],
@@ -747,9 +748,15 @@
 
                   const result = await response.json();
                     
-                  this.inv.cashier = result['cashier_id']
-                  this.inv.invoiceId = result['id']
+                  // this.inv.cashier = result['cashier_id']
+                  // this.inv.invoiceId = result['id']
+                  // this.cdateTime = result['created_at']
+
+                  this.inv.cashier = cashierIdName
+                  this.inv.invoiceId = invoiceId
                   this.cdateTime = result['created_at']
+                  
+                 this.show_receipt = true
               },
 
               async saveItemTransaction(){
@@ -787,7 +794,8 @@
               saveItemAndInvoice(){
                  if (this.validate_cart() == false)
                     return;
-                 this.show_receipt = true
+                //  this.show_receipt = true
+
                  if(this.saveItemTransaction() == 'error'){
                   this.cartErrorMsg = 'Error in transaction'
                   return

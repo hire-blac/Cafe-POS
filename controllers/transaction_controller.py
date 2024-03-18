@@ -5,9 +5,10 @@ from models.models import Transaction, engine
 Session = sessionmaker(bind=engine)
 
 def transaction_details(transaction):
-    item = 'item'
+    item = transaction.item_name
     if transaction.item:
         item = transaction.item.name
+
     return {
     'id': transaction.id,
     'invoice_id': transaction.invoice_id,

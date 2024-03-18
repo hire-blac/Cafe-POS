@@ -65,6 +65,7 @@ def create_invoice(data):
                     id=transaction_id,
                     invoice_id=invoice.id,
                     item_id=item['item_id'],
+                    item_name=item['item_name'],
                     item_price=item['item_price'],
                     quantity_sold=item['quantity_sold'],
                     subtotal=item['subtotal']

@@ -65,6 +65,7 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True)
     invoice_id = Column(Integer, ForeignKey('invoices.id'), nullable=False)
     item_id = Column(Integer, ForeignKey('items.id'), nullable=True)
+    item_name = Column(String, nullable=True)
     item_price = Column(Numeric(precision=8, scale=2), nullable=False)
     quantity_sold = Column(String, nullable=False)
     subtotal = Column(Numeric(precision=8, scale=2), nullable=False)

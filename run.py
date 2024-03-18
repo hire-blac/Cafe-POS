@@ -199,7 +199,6 @@ def do_upload():
                             category_id = cat.id
                         else:
                             cat = category_controller.create_category({'name': category})
-                            print(cat)
                             category_id = cat['id']
                     
                 item_dict = {
