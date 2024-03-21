@@ -25,7 +25,7 @@ def all_invoices():
                     'amount_paid': str(invoice.amount_paid),
                     'payment_method': str(invoice.payment_method),
                     'cashier_id': invoice.cashier_id,
-                    'cashier_name': invoice.cashier.name,
+                    # 'cashier_name': invoice.cashier.name,
                     # 'customer_PNO': invoice.customer_PNO,
                     'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
                 })
@@ -89,7 +89,7 @@ def create_invoice(data):
                 'payment_method': str(invoice.payment_method),
                 'costumer_PNO': invoice.costumer_PNO,
                 'cashier_id': invoice.cashier_id,
-                'cashier_name': invoice.cashier.name,
+                # 'cashier_name': invoice.cashier.name,
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
             }
         
@@ -113,8 +113,8 @@ def get_invoice(invoice_id):
                 'payment_method': str(invoice.payment_method),
                 'costumer_PNO': invoice.costumer_PNO,
                 'cashier_id': invoice.cashier_id,
-                'cashier_name': invoice.cashier.name,
-                'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
+                # 'cashier_name': invoice.cashier.name,
+                'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S")
             }
 
         else:

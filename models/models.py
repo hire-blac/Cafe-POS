@@ -31,7 +31,6 @@ class Customer(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
-    email = Column(String, nullable=False)
 
 
 class Supplier(Base):
@@ -39,7 +38,7 @@ class Supplier(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, nullable=True)
 
 
 class Category(Base):
@@ -80,7 +79,7 @@ class Invoice(Base):
     id = Column(Integer, primary_key=True)
     tax = Column(Numeric(precision=8, scale=2), nullable=False)
     total_price = Column(Numeric(precision=8, scale=2), nullable=False)
-    # costumer_id = Column(Integer, ForeignKey('customers.id'), nullable=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
     costumer_PNO = Column(String)
     payment_method = Column(String, nullable=False)
     amount_paid = Column(Numeric(precision=8, scale=2), nullable=False)
@@ -100,18 +99,48 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     tax = Column(Numeric(precision=2, scale=2), nullable=False)
     total_price = Column(Numeric(precision=8, scale=2), nullable=False)
-    costumer_id = Column(Integer, ForeignKey('customers.id'), nullable=True)
+    customer_name = Column(String, nullable=False)
+    customer_phone = Column(String, nullable=True)
     order_type = Column(String, nullable=False) # Delivery or Pickup
     payment_status = Column(String, nullable=False, default="Unpaid") # unpaid or paid
-    status = Column(String, nullable=False, default="pending") # pending or fulfilled
-    # amount_paid = Column(Numeric(precision=8, scale=2), nullable=False)
+    status = Column(String, nullable=False, default="Pending") # pending or fulfilled
     cashier_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
 
     # Define the relationships
-    # ordered_items = relationship('Transaction', backref=backref('orderes_items', uselist=False))
-    # # cashier = relationship('User', backref=backref('cashier'))
+    ordered_items = relationship('OrderedItem', backref=backref('ordered_items', uselist=False))
+    cashier = relationship('User', backref=backref('order_cashier'))
     # customer = relationship('Customer', backref=backref('orders'))
+
+
+class OrderedItem(Base):
+    __tablename__ = 'ordered_item'
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
+    item_id = Column(Integer, ForeignKey('items.id'), nullable=True)
+    item_name = Column(String, nullable=True)
+    item_price = Column(Numeric(precision=8, scale=2), nullable=False)
+    quantity_ordered = Column(String, nullable=False)
+    subtotal = Column(Numeric(precision=8, scale=2), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Define the relationship with Item
+    item = relationship('Item', backref=backref('orderd_items'))
+
+
+class Delivery(Base):
+    __tablename__ = 'deliveries'
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=False)
+    customer_name = Column(String, nullable=False)
+    customer_phone = Column(String, nullable=False)
+    delivery_address = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="Pending") # pending, enroute, or delivered
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Define the relationship with Item
+    order = relationship('Order', backref=backref('delivery'))
+
 
 # Create SQLite database and tables
 engine = create_engine('sqlite:///POS_DB.db')

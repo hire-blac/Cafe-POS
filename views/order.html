@@ -1,0 +1,244 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} order {% endblock %}
+
+{% block content %}
+
+<div class="container" id="app">
+
+    <div style="margin-top: 2em;">
+
+      <b-table striped hover :fields="fields" :items="order">
+          
+      </b-table>
+
+      <b-table striped hover :fields="itemsFields" :items="orderItems">
+          
+      </b-table>
+
+    </div>
+
+</div>
+
+<script type="application/javascript">
+    new Vue({
+        delimiters : ['[[',']]'],
+        el: '#app',
+        data: {
+          fields: [ 
+            {key: 'id', label:'Order Id'}, 
+            {key: 'created_at', label:'Order DateTime', sortable: true},  
+            {key: 'tax', label:'Tax', },
+            {key: 'total', label:'Total Price', sortable: true},
+            {key: 'paymentStatus', label:'Payment Status'},
+            {key: 'orderType', label:'Order Type'},
+            {key: 'status', label:'Status'},
+          ],
+          order: [],
+          itemsFields: [
+            {key: "item", label: "Ordered Item"},
+            {key: "price", label: "Price"},
+            {key: "quantity", label:"Quantity"},
+            {key: "subtotal", label:"Sub Total"}
+          ],
+          orderItems: [],
+          ordId:  window.location.pathname.split("/")[2],          
+          wTaxTotal: 0,
+          taxTotal: 0,
+          tax: 0,
+          ord: {
+            orderId: '',
+            ordDate: '',
+            tax: '',
+            total: '',
+            paymentStatus: '',
+            orderType: '',
+            status: ''
+          },
+          remainingAmount:0,
+          cdateTime: '',
+
+        },
+        mounted: async function(){
+            console.log(this.ordId);
+            console.log("+++++++++++++++++++");
+            const response = await fetch("/api/orders/" + this.ordId );
+            const order = await response.json();
+            const orderItems = order['ordered_items']
+
+            orderItems.forEach(item => {
+              this.orderItems.push({
+                item: item['item'],
+                price: item['item_price'],
+                quantity: item['quantity_ordered'],
+                subtotal: item['subtotal']
+              })
+            })
+
+            
+            let id = order['id']
+            let dateTime = order['created_at']
+            let total = order['total_price']
+            let tax = order['tax']
+            let paymentStatus = order['payment_status']
+            let orderType = order['order_type']
+            let status = order['status']
+            this.cdateTime = dateTime
+
+            // let paymentId = order['payment_id']
+            // let customerPNO = order['customer_PNO']
+            // let cashier = order['cashier_name']
+            // let paymentMethod = order['payment_method']
+            // let paidAmount = order['amount_paid']
+
+            this.ord.orderId = id
+            this.ord.tax = tax
+            this.order.total = parseFloat(total)
+            this.total = parseFloat(total)
+            this.order.tax = parseFloat(tax)
+            this.tax = parseFloat(tax)
+            this.ord.paymentStatus = paymentStatus
+            this.ord.orderType = orderType
+            this.status = status
+
+            this.order.push({ 
+              id: id, 
+              ordDate: dateTime, 
+              total: total, 
+              tax: tax,
+              paymentStatus: paymentStatus,
+              orderType: orderType,
+              status: status
+            })
+        },
+        methods: {
+            downloadorder(){
+                    //alert("Hello World")
+                    const { jsPDF } = window.jspdf;
+                    var doc = new jsPDF('p', 'pt', 'A4');
+                    margins = {
+                        top: 80,
+                        bottom: 60,
+                        left: 40,
+                        width: 522
+                    };
+
+                    doc.html(this.$refs.order, 
+                        {
+                            callback: function(doc) {
+                                doc.save(new Date().getTime() + '.pdf');
+                            },
+                        x: 10,
+                        y: 10
+                        }
+                    );
+                                
+                   
+                },
+                isAdminLogin : function(){
+                   
+                   return localStorage.getItem("usertype") == "Administrator"
+               },
+               logout:function(){
+                      window.localStorage.clear()
+                      console.log("You don't have access to view this page")
+                      window.location.href = "/login"
+   
+                   }
+        }
+    })
+
+</script>
+<style>
+    #order-POS {
+  box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+  padding: 2mm;
+  margin: 0 auto;
+  width: 44mm;
+  background: #FFF;
+}
+#order-POS ::selection {
+  background: #f31544;
+  color: #FFF;
+}
+#order-POS ::moz-selection {
+  background: #f31544;
+  color: #FFF;
+}
+#order-POS h1 {
+  font-size: 1.5em;
+  color: #222;
+}
+#order-POS h2 {
+  font-size: 0.9em;
+}
+#order-POS h3 {
+  font-size: 1.2em;
+  font-weight: 300;
+  line-height: 2em;
+}
+#order-POS p {
+  font-size: 0.7em;
+  color: #666;
+  line-height: 1.2em;
+}
+#order-POS #top, #order-POS #mid, #order-POS #bot {
+  /* Targets all id with 'col-' */
+  border-bottom: 1px solid #EEE;
+}
+#order-POS #top {
+  min-height: 100px;
+}
+#order-POS #mid {
+  min-height: 80px;
+}
+#order-POS #bot {
+  min-height: 50px;
+}
+#order-POS #top .logo {
+  height: 60px;
+  width: 60px;
+  background: url(http://michaeltruong.ca/images/logo1.png) no-repeat;
+  background-size: 60px 60px;
+}
+#order-POS .clientlogo {
+  float: left;
+  height: 60px;
+  width: 60px;
+  background: url(http://michaeltruong.ca/images/client.jpg) no-repeat;
+  background-size: 60px 60px;
+  border-radius: 50px;
+}
+#order-POS .info {
+  display: block;
+  margin-left: 0;
+}
+#order-POS .title {
+  float: right;
+}
+#order-POS .title p {
+  text-align: right;
+}
+#order-POS table {
+  width: 100%;
+  border-collapse: collapse;
+}
+#order-POS .tabletitle {
+  font-size: 0.5em;
+  background: #EEE;
+}
+#order-POS .service {
+  border-bottom: 1px solid #EEE;
+}
+#order-POS .item {
+  width: 24mm;
+}
+#order-POS .itemtext {
+  font-size: 0.5em;
+}
+#order-POS #legalcopy {
+  margin-top: 5mm;
+}
+</style>
+
+{% endblock %}

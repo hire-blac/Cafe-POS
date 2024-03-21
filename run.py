@@ -5,7 +5,7 @@ from bottle import Bottle, template, route, run, static_file, request, get, post
 from bottle import jinja2_template as template
 import POS
 import os
-from controllers import auth_controller, category_controller, invoice_controller, item_controller, transaction_controller
+from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, transaction_controller
 import posauth
 from models.models import Category, engine
 
@@ -24,7 +24,16 @@ def home():
     items_count = item_controller.all_items()['items_count']
     transaction_count = transaction_controller.all_transactions()['transaction_count']
     invoices_count = invoice_controller.all_invoices()['invoices_count']
-    return template('index', items_count=items_count, transaction_count=transaction_count, invoices_count=invoices_count)
+    orders_count = order_controller.all_orders()['orders_count']
+    deliveries_count = delivery_controller.all_deliveries()['deliveries_count']
+    return template(
+        'index', 
+        items_count=items_count, 
+        transaction_count=transaction_count, 
+        invoices_count=invoices_count, 
+        orders_count=orders_count,
+        deliveries_count=deliveries_count,
+    )
 
 
 # CATEGORY ROUTES
@@ -250,6 +259,57 @@ def do_upload():
                 }
                 item = item_controller.create_item(item_dict)
         return template('new_item', res="success")
+    
+
+# ORDER ROUTES
+@get("/new-order")
+def new_order():
+    return template( "new_order" )
+
+@get("/orders")
+def get_all_order():
+    return template( "orders" )
+
+@get("/orders/<order_id>")
+def get_order(order_id):
+    return template( "order" )
+
+@get("/api/orders")
+def all_order():
+    orders = order_controller.all_orders()
+    return orders
+
+@post("/api/orders")
+def create_order():
+    data = request.json
+    order = order_controller.create_order(data)
+    return order
+
+@get("/api/orders/<order_id>")
+def single_order(order_id):
+    order = order_controller.get_order(order_id)
+    return order
+
+
+# DELIVERY ROUTES
+@get("/deliveries")
+def get_all_deliveries():
+    return template( "deliveries" )
+
+@get("/deliveries/<delivery_id>")
+def get_order(delivery_id):
+    return template( "delivery" )
+
+@get("/api/deliveries")
+def all_order():
+    deliveries = delivery_controller.all_deliveries()
+    return deliveries
+
+@get("/api/deliveries/<delivery_id>")
+def single_delivery(delivery_id):
+    delivery = delivery_controller.get_Delivery(delivery_id)
+    return delivery
+
 
 # TRANSACTION ROUTES
 @get("/transactions")
@@ -278,18 +338,9 @@ def all_invoices():
     invoices = invoice_controller.all_invoices()
     return invoices
 
-# @delete('/api/invoices/delete')
-# def all_invoices():
-#     invoices = invoice_controller.delete_invoice(1)
-#     return invoices
-
 @route("/cart")
 def new_cart():
     return template('cart')
-
-@route("/new_cart")
-def new_cart():
-    return template('new_cart')
 
 @post('/api/invoices')
 def new_invoice():
@@ -412,6 +463,43 @@ def deleteUser(user_id):
 
 
 # CUSTOMER ROUTES
+
+
+# ORDER ROUTES
+@get("/manage_customers")
+def manage_customers():
+    return template( "customers" )
+
+@get("/customers/<customer_id>")
+def get_customer(customer_id):
+    return template( "get_customer" )
+
+@get("/api/customers")
+def all_customers():
+    customers = customer_controller.all_customers()
+    return customers
+
+@post("/api/customers")
+def add_customer():
+    data = request.json
+    customer = customer_controller.create_customer(data)
+    return customer
+
+@get("/api/customers/<customer_id>")
+def single_customer(customer_id):
+    customer = customer_controller.get_customer(customer_id)
+    return customer
+
+@put("/api/customers/<customer_id>/update")
+def single_customer(customer_id):
+    data = request.json
+    customer = customer_controller.update_customer(customer_id, data)
+    return customer
+
+@get("/api/customers/<customer_id>/delete")
+def single_customer(customer_id):
+    customer = customer_controller.delete_customer(customer_id)
+    return customer
 
 
 

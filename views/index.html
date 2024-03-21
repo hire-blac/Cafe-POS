@@ -50,6 +50,35 @@
               </div>
             </div>
           </div>
+          
+          <div class="card col-md-4" style="max-width: 340px;">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <i class="fa fa-shopping-bag fa-3x" aria-hidden="true"></i>
+
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h2 class="card-title">{{ orders_count }}</h2>
+                  <p class="card-text">Total Orders</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+            <div class="card col-md-4" style="max-width: 340px;">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <i class="fa fa-truck fa-3x" aria-hidden="true"></i>
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h2 class="card-title">{{ deliveries_count }}</h2>
+                    <p class="card-text">Total Deliveries</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
         </div>
         <div id="admin">
@@ -67,33 +96,19 @@
               </div>
               
             </div>
-    
-            <!-- <div class="row" style="margin-top: 2em;">
-              <div class="col-md-6">
-                <div class="d-grid gap-2 col-12 mx-auto">
-                  <a href="/items" class="btn btn-outline-success">Items</a>
-                </div>
-              </div>
-              
-              <div class="col-md-6">
-                <div class="d-grid gap-2 col-12 mx-auto">
-                  <a href="/new_item" class="btn btn-outline-success">New Item</a>
-                </div>
-              </div>
-              
-            </div> -->
 
             <div class="row" style="margin-top: 2em;" >
-              <div class="col-md-6">
-                <div class="d-grid gap-2 col-12 mx-auto">
-                 
-                  <a href="/invoices" class="btn btn-outline-success">Invoices</a>
-                </div>
-              </div>
     
               <div class="col-md-6">
                 <div class="d-grid gap-2 col-12 mx-auto">
                   <a href="/cart" class="btn btn-outline-success">New Invoice</a>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                 
+                  <a href="/invoices" class="btn btn-outline-success">Invoices</a>
                 </div>
               </div>
               
@@ -102,10 +117,34 @@
             <div class="row" style="margin-top: 2em;">
               <div class="col-md-6">
                 <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/new-order" class="btn btn-outline-success">New Order</a>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/orders" class="btn btn-outline-success">Orders</a>
+                </div>
+              </div>
+              
+            </div>
+            
+    
+            <div class="row" style="margin-top: 2em;">
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
                   <a href="/transactions" class="btn btn-outline-success">Transactions</a>
                 </div>
-              </div>            
+              </div>
+              
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/deliveries" class="btn btn-outline-success">Deliveries</a>
+                </div>
+              </div>
+              
             </div>
+  
         </div>
     </container>
 

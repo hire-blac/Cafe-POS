@@ -3,340 +3,389 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-
    
-    <div class="container" id="app">
+<div class="container" id="app">
 
-          <div class="items-section" style="float: left; width: 70%" id ="items" >
+  <h4 class="text-center w-75 mt-2">New Order</h4>
+
+  <div class="items-section" style="float: left; width: 70%" id ="items" >
             
-           
-                <!-- > Items Section -->
+    <!-- > Items Section -->
     <div class="section full" v-show="this.orderStatus=='New'">
 
       <div class="d-flex justify-content-between align-items-center">
          
           <div class="category-nav">
             <div class="category-scroll-button"  @click="scrollCategories('left')"><</div>
-            <div class="category-wrapper">
-              <div class="category-item" v-for="(category, index) in displayedCategories" :key="index"
-                  @click="selectCategory(category)" :class="{ 'active': category === selectedCategory }">
-                  [[ category ]]
+              <div class="category-wrapper">
+                <div class="category-item" v-for="(category, index) in displayedCategories" :key="index"
+                    @click="selectCategory(category)" :class="{ 'active': category === selectedCategory }">
+                    [[ category ]]
+                </div>
+              </div>
+                
+              <div class="category-scroll-button" @click="scrollCategories('right')">></div>
+                <div>
+                  <input v-model="searchQuery" class="form-control search-input" placeholder="Search items...">
               </div>
             </div>
-              
-            <div class="category-scroll-button" @click="scrollCategories('right')">></div>
-              <div>
-                <input v-model="searchQuery" class="form-control search-input" placeholder="Search items...">
-            </div>
           </div>
-      </div>
-      <div class="item">
-          <div  v-for="(item, index) in paginatedItems" :key="index" v-on:click=" isAvailable(item) && addToCart(item)">
-            <div :class="{ 'item-card-eneabled': isAvailable(item), 'item-card-disabled': !isAvailable(item)}">    
-            <div class="item-card" >
+        <div class="item">
+            <div  v-for="(item, index) in paginatedItems" :key="index" v-on:click=" isAvailable(item) && addToCart(item)">
+              <div :class="{ 'item-card-eneabled': isAvailable(item), 'item-card-disabled': !isAvailable(item)}">    
+              <div class="item-card" >
 
-                <img :src="item.image" alt="Item">
-                <h4>[[ item.name ]]</h4>
-               
-                <h6>[[ item.quantity ]] Available</h6>
-                <h3>[[ item.price ]]</h3>
+                  <img :src="item.image" alt="Item">
+                  <h4>[[ item.name ]]</h4>
+                
+                  <h6>[[ item.quantity ]] Available</h6>
+                  <h3>[[ item.price ]]</h3>
+                </div>
               </div>
             </div>
-          </div>
-      </div>
-      <div class="pagination">
+        </div>
+
+        <div class="pagination">
           <nav aria-label="Page navigation">
-              <ul class="pagination">
-                  <li class="page-item">
-                      <a class="page-link" @click="goToPage(1)" aria-label="First">
-                          <span aria-hidden="true">&laquo;&laquo;</span>
-                      </a>
-                  </li>
-                  <li class="page-item">
-                      <a class="page-link" @click="prevPage" aria-label="Previous">
-                          <span aria-hidden="true">&laquo;</span>
-                      </a>
-                  </li>
-                  <li class="page-item" :class="{ 'active': currentPage === page }" v-for="page in totalPages"
-                      :key="page">
-                      <a class="page-link" @click="setCurrentPage(page)">[[ page ]]</a>
-                  </li>
-                  <li class="page-item">
-                      <a class="page-link" @click="nextPage" aria-label="Next">
-                          <span aria-hidden="true">&raquo;</span>
-                      </a>
-                  </li>
-                  <li class="page-item">
-                      <a class="page-link" @click="goToPage(totalPages)" aria-label="Last">
-                          <span aria-hidden="true">&raquo;&raquo;</span>
-                      </a>
-                  </li>
-              </ul>
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" @click="goToPage(1)" aria-label="First">
+                  <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" @click="prevPage" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item" :class="{ 'active': currentPage === page }" v-for="page in totalPages"
+                  :key="page">
+                  <a class="page-link" @click="setCurrentPage(page)">[[ page ]]</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" @click="nextPage" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" @click="goToPage(totalPages)" aria-label="Last">
+                  <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+              </li>
+            </ul>
           </nav>
+        </div>
       </div>
     </div>
-
-          </div>
-          
-
-
-          <div class="cart-section" style="float: right; width: 30%;" id ="cart" >
-                   <!-- Cart Section -->
-    <div class="section half" v-show="!show_receipt">
+    
+    <div class="cart-section" style="float: right; width: 30%;" id ="cart" >
+      <!-- Cart Section -->
+      <div class="section half" v-show="!show_receipt">
       
-      <div class="cart-head">
-        <p>Cart</p>
-        <b-alert v-if="cartErrorMsg" show variant="danger">[[cartErrorMsg]]</b-alert>
-      </div>
-  
-      <div v-show="cart.length <= 0">
-        
-      </div>
-              <div v-show="cart.length > 0">
-               
-   
-                  <div id="carttable" >
-                   <b-table striped hover responsive sticky-header head-variant="light"
-                   :fields="fields" 
-                   :items="items"
-                   :filter="filter"
-                   :filter-included-fields="filterOn"
-                   :current-page="currentPage"
-                   :per-page="perPage"
-                   :sort-by.sync="sortBy"
-                   >
-         
-                   <template #cell(name)="data" >
-                     [[data.item.name]]
-                   </template>
-         
-                   <template #cell(quantity)="data">
-                     <i v-on:click="DecQuantity(data.index, data.item.id)" class="fas fa-minus"></i>  
-                     <span style="float:none 10px;">  [[data.item.quantity]]</span>
-                       <i v-on:click="IncQuantity(data.index, data.item.id)" class="fas fa-plus"></i>
-                     
-                     </template>
-             
-                   <template #cell(price)="data">
-                     [[ data.item.price ]]
-                   </template>
-         
-             
-                   
-                   <template #cell(del)="data">
-                   
-                     <span><i v-on:click="removeCartItem(data.index, data.item.id)" class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span>   
-            
-                   </template>
-                  </b-table>
-                  </div>
-                  <div id ="cartprices" >
-                  <div class="row">
-                    <div class="col-md-8">
-                      <h6>Live Total:</h6>
-                    </div>
-                    <div class="col-md-4">
-                      <label for="cartLiveTotal" class="form-label" >[[cartLiveTotal]]</label>
-                    </div> 
-                  </div>
-
-                  <div class="row">
-                
-                    <div class="col-md-8">
-                      <h6>Tax:</h6>
-                    </div>
-                    <div class="col-md-4">
-                      <label for="taxTotal" class="form-label" >[[taxTotal]]</label>
-                    </div> 
-                  </div>
-                  <div class="row">
-                
-                    <div class="col-md-8">
-                      <h6>Total (includingTax):</h6>
-                    </div>
-                    <div class="col-md-4">
-                      <label for="cartTotal" class="form-label" >[[cartTotal]]</label>
-                    </div> 
-                  </div>
-
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="paidAmount" class="form-label">Paid Amount</label>
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" required class="form-control form-control-sm" id="paidAmount" @input="checkPaidAmount()" v-model="paidAmount" name="paidAmount" placeholder="Enter Paid Amount" />
-                          <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
-                        
-                    </div> 
-                    <div class="col-md-6">
-                      <label for="remainingAmount" class="form-label">Remaining Amount</label>
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />
-                         
-                        
-                    </div> 
-                  </div>
-
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="customerPNO" class="form-label">Customer PNO</label>
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" required class="form-control form-control-sm" id="customerPNO" v-model="inv.customerPNO" name="customerPNO" placeholder="" />
-                    </div> 
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="payment" class="form-label">Payment Method</label>
-                    </div>
-                    <div class="col-md-6">
-                      <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
-                        <option selected>Select Payment Method</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Visa">Visa</option>
-                        <option value="Mada">Mada</option>
-                      </select>
-                    </div> 
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <label for="paymentId" class="form-label">Payment Id</label>
-                    </div>
-                    <div class="col-md-6">
-                      <input type="text" class="form-control form-control-sm" id="paymentId" v-model="inv.paymentId" name="paymentId" placeholder="Enter Payment Id" />
-                    </div> 
-                  </div>
-
-                  
-                  
-                  <div class="row" v-show="cart.length > 0">
-                      
-                     
-                          <div class="d-grid gap-2">
-                              <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal" type="button">Complete Order</button>
-                          </div>
-                      
-                      
-                    
-                  </div>
-
-
-                  </div>
-              </div>
-      </div>
-                  
-          </div>
-          <div class="invoice-container" id="invoicediv" v-show="cart.show_receipt">
-            <span><h4>Order Completed</h4></span>   
-            <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
-             
-              <div id="invoice-POS" ref="invoice">
+        <div class="cart-head">
+          <p>Order</p>
+          <b-alert v-if="cartErrorMsg" show variant="danger">[[cartErrorMsg]]</b-alert>
+        </div>
+    
+        <div v-show="cart.length <= 0">
           
-                <center id="top">
-                  <div class="logo"></div>
-                  <div class="info"> 
-                    <h2>SBISTechs Inc</h2>
-                    <p align="center"> 
-                        street city, state 0000</br>
-                      JohnDoe@gmail.com</br>
-                      555-555-5555</br>
-                    </p>
-                  </div><!--End Info-->
-                </center><!--End InvoiceTop-->
-                
-                <div id="mid" >
-                  <div class="info">
-                    <p align="left"> 
-                      Invoice ID: [[ cart.inv.invoiceId ]] </br>
-                       Invoice Date Time: [[ cart.cdateTime ]]
-                     
-                      
-                    </p>
-                    
-                  </div>
-                </div><!--End Invoice Mid-->
-                
-                <div id="bot">
-            
-                      <div id="table">
-                        <table>
-                          <tr class="tabletitle">
-                            <td class="item"><h2>Item</h2></td>
-                            <td class="Hours"><h2>Qty</h2></td>
-                            <td class="Rate"><h2>Sub Total</h2></td>
-                          </tr>
-            
-                          <tr class="service" v-for="it in cart.items">
-                            <td class="tableitem"><p class="itemtext">[[it.name]]</p></td>
-                            <td class="tableitem"><p class="itemtext">[[ it.quantity ]]</p></td>
-                            <td class="tableitem"><p class="itemtext">[[ it.price * it.quantity ]]</p></td>
-                          </tr>
-            
-                          <td></td>
-            
-                          <tr class="tabletitle"> 
-            
-                            <td class="Rate" ><h2>Total Ex. TAX</h2></td>
-                            <td class="payment"> <h2>[[ cart.cartLiveTotal ]]</h2></td>
-                            <td></td>
-            
-                          </tr>
-                          <div style=" height: 0px;border-bottom:solid 3px #000;"></div>
-            
-                          <tr class="tabletitle">
-                            <td class="Rate"><h2>TAX</h2></td>
-                            <td class="payment">
-                              <h2>[[ cart.taxTotal ]]</h2>
-                            </td>
-                            <td></td>
-            
-                          </tr>
-            
-            
-                          <tr class="tabletitle">
-                            <td class="Rate" style='font-size: 12px;'><h2>Total Inc. TAX</h2></td>
-                            <td class="payment" style='font-size: 12px;'><h2>[[ cart.cartTotal ]]</h2></td>
-                                            <td></td>
-            
-                          </tr>
-            
-                        </table>
-                      </div><!--End Table-->
-            
-                      <div style=" height: 0px;
-                        border-bottom:solid 0.4px #000;"></div>
-                        <div align="left" style='font-size: 11px;'>
-                        - Paid amount: [[ cart.paidAmount ]]
-                        <br/>
-            
-                        - Change: [[ cart.remainingAmount ]]
-                        <br/>
-                        <br/>
-            
-                        - Payment Method: [[ cart.inv.paymentMethod ]]
-                        <br/>
-                      - Cashier: [[ cart.inv.cashier ]]
-                          
-                        </div>
-                                <div id="legalcopy">
-                                <div style=" height: 0px;
-                        border-bottom:solid 3px #000;"></div>
-                                  <p class="legal"><strong>Thank you for your Purchase!</strong>
-            
-                                  </p>
-                                               QR CODE AREA
-            
-                                </div>
-            
-                </div><!--End InvoiceBot-->
-              </div><!--End Invoice-->
-            <!-- partial -->
-         
-            </div>
+        </div>
+
+        <div v-show="cart.length > 0">
+
+          <div id="carttable" >
+            <b-table striped hover responsive sticky-header head-variant="light"
+            :fields="fields" 
+            :items="items"
+            :filter="filter"
+            :filter-included-fields="filterOn"
+            :current-page="currentPage"
+            :per-page="perPage"
+            :sort-by.sync="sortBy"
+            >
+    
+              <template #cell(name)="data" >
+                [[data.item.name]]
+              </template>
+    
+              <template #cell(quantity)="data">
+                <i v-on:click="DecQuantity(data.index, data.item.id)" class="fas fa-minus"></i>  
+                <span style="float:none 10px;">  [[data.item.quantity]]</span>
+                  <i v-on:click="IncQuantity(data.index, data.item.id)" class="fas fa-plus"></i>
+              </template>
+        
+              <template #cell(price)="data">
+                [[ data.item.price ]]
+              </template>
+
+              <template #cell(del)="data">
+                <span><i v-on:click="removeCartItem(data.index, data.item.id)" class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span>
+              </template>
+
+            </b-table>
           </div>
 
+          <div id ="cartprices" >
+            <div class="row">
+              <div class="col-md-8">
+                <h6>Live Total:</h6>
+              </div>
+              <div class="col-md-4">
+                <label for="cartLiveTotal" class="form-label" >[[cartLiveTotal]]</label>
+              </div> 
+            </div>
+
+            <div class="row">
+          
+              <div class="col-md-8">
+                <h6>Tax:</h6>
+              </div>
+              <div class="col-md-4">
+                <label for="taxTotal" class="form-label" >[[taxTotal]]</label>
+              </div> 
+            </div>
+
+            <div class="row">
+          
+              <div class="col-md-8">
+                <h6>Total (includingTax):</h6>
+              </div>
+              <div class="col-md-4">
+                <label for="cartTotal" class="form-label" >[[cartTotal]]</label>
+              </div> 
+            </div>
+            
+            <div class="row">
+              <div class="col-md-5">
+                <label for="customerName" class="form-label">Customer Name</label>
+              </div>
+              <div class="col-md-7">
+                <input type="text" required class="form-control form-control-sm" id="customerName" v-model="order.customerName" name="customerName" placeholder="Enter Customer's name'" />
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-5">
+                <label for="customerPhone" class="form-label">Customer Phone</label>
+              </div>
+              <div class="col-md-7">
+                <input type="text" required class="form-control form-control-sm" id="customerPhone" v-model="order.customerPhone" name="customerPhone" placeholder="Enter Customer's Phone Number'" />
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <label for="orderType" class="form-label">Order Type: </label>
+              </div>
+              <div class="col-md-6">
+                <select required class="form-select form-select-sm" v-model="order.orderType" name="orderType">
+                  <option value="Delivery">Delivery</option>
+                  <option value="Pickup">Pickup</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" v-if="order.orderType === 'Delivery'">
+              <div class="col-md-12">
+                <label for="deliveryAddress" class="form-label">Delivery Address</label>
+              </div>
+              <div class="col-md-12">
+                <input type="text" required class="form-control form-control-sm" id="deliveryAddress" v-model="deliveryAddress" name="deliveryAddress" placeholder="Enter the delivery address" />              
+              </div> 
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <label for="status" class="form-label">Order Status:</label>
+              </div>
+              <div class="col-md-6">
+                <select required class="form-select form-select-sm" v-model="order.status" name="status">
+                  <option value="Pending" >Pending</option>
+                  <option value="Ready">Ready</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <label for="paymentStatus" class="form-label">Payment Status:</label>
+              </div>
+              <div class="col-md-6">
+                <select required class="form-select form-select-sm" v-model="order.paymentStatus" name="paymentStatus">
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="order.paymentStatus === 'Paid'">
+
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="paidAmount" class="form-label">Paid Amount</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" required class="form-control form-control-sm" id="paidAmount" @input="checkPaidAmount()" v-model="paidAmount" name="paidAmount" placeholder="Enter Paid Amount" />
+                      <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>                    
+                </div> 
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="remainingAmount" class="form-label">Remaining Amount</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />
+                </div> 
+              </div>
+  
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="payment" class="form-label">Payment Method</label>
+                </div>
+  
+                <div class="col-md-6">
+                  <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
+                    <option selected>Select Payment Method</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Mada">Mada</option>
+                  </select>
+                </div>
+                
+              </div>
+  
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="paymentId" class="form-label">Payment Id</label>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" class="form-control form-control-sm" id="paymentId" v-model="inv.paymentId" name="paymentId" placeholder="Enter Payment Id" />
+                </div> 
+              </div>
+
+            </div>
+                      
+            <div class="row" v-show="cart.length > 0">                
+              <div class="d-grid gap-2">
+                <button class="btn btn-success mt-2" @click="saveItemAndInvoice()" :disabled="order.paymentStatus === 'Paid' && (inv.paymentMethod == '' || paidAmount < taxTotal)" type="button">Complete Order</button>
+              </div>              
+            </div>
+
+          </div>
+        </div>
+      </div>
+                  
     </div>
+
+
+    <div class="invoice-container" id="invoicediv" v-show="cart.show_receipt">
+      <span><h4>Order Completed</h4></span>   
+      <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
+        
+        <div id="invoice-POS" ref="invoice">
+    
+          <center id="top">
+            <div class="logo"></div>
+            <div class="info"> 
+              <h2>SBISTechs Inc</h2>
+              <p align="center"> 
+                  street city, state 0000</br>
+                JohnDoe@gmail.com</br>
+                555-555-5555</br>
+              </p>
+            </div><!--End Info-->
+          </center><!--End InvoiceTop-->
+          
+          <div id="mid" >
+            <div class="info">
+              <p align="left"> 
+                Invoice ID: [[ cart.inv.invoiceId ]] </br>
+                Invoice Date Time: [[ cart.cdateTime ]]
+              </p>
+              
+            </div>
+          </div><!--End Invoice Mid-->
+          
+          <div id="bot">
+      
+            <div id="table">
+              <table>
+                <tr class="tabletitle">
+                  <td class="item"><h2>Item</h2></td>
+                  <td class="Hours"><h2>Qty</h2></td>
+                  <td class="Rate"><h2>Sub Total</h2></td>
+                </tr>
+  
+                <tr class="service" v-for="it in cart.items">
+                  <td class="tableitem"><p class="itemtext">[[it.name]]</p></td>
+                  <td class="tableitem"><p class="itemtext">[[ it.quantity ]]</p></td>
+                  <td class="tableitem"><p class="itemtext">[[ it.price * it.quantity ]]</p></td>
+                </tr>
+  
+                <td></td>
+  
+                <tr class="tabletitle"> 
+                  <td class="Rate" ><h2>Total Ex. TAX</h2></td>
+                  <td class="payment"> <h2>[[ cart.cartLiveTotal ]]</h2></td>
+                  <td></td>
+                </tr>
+
+                <div style=" height: 0px;border-bottom:solid 3px #000;"></div>
+  
+                <tr class="tabletitle">
+                  <td class="Rate"><h2>TAX</h2></td>
+                  <td class="payment">
+                    <h2>[[ cart.taxTotal ]]</h2>
+                  </td>
+                  <td></td>
+                </tr>
+  
+                <tr class="tabletitle">
+                  <td class="Rate" style='font-size: 12px;'><h2>Total Inc. TAX</h2></td>
+                  <td class="payment" style='font-size: 12px;'><h2>[[ cart.cartTotal ]]</h2></td>
+                  <td></td>
+                </tr>
+  
+              </table>
+
+            </div><!--End Table-->
+      
+            <div style=" height: 0px; border-bottom:solid 0.4px #000;"></div>
+            <div align="left" style='font-size: 11px;'>
+              - Paid amount: [[ cart.paidAmount ]]
+              <br/>
+
+              - Change: [[ cart.remainingAmount ]]
+              <br/>
+              <br/>
+
+              - Payment Method: [[ cart.inv.paymentMethod ]]
+              <br/>
+              - Cashier: [[ cart.inv.cashier ]]
+            </div>
+
+            <div id="legalcopy">
+              <div style=" height: 0px; border-bottom:solid 3px #000;">
+              </div>
+              <p class="legal">
+                <strong>Thank you for your Purchase!</strong>
+              </p>
+
+               QR CODE AREA
+
+            </div>
+      
+          </div><!--End InvoiceBot-->
+        </div><!--End Invoice-->
+        <!-- partial -->
+    
+      </div>
+    </div>
+
+  </div>
+
+</div>
 
     <script type="application/javascript">
 
@@ -409,16 +458,16 @@
             },
             filteredItems() {
                 if (this.selectedCategory == "All"){
-                return this.items.filter(item =>
-                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())||
-                    (item.id.toString().includes(this.searchQuery))
+                return this.items.filter(item => 
+                    item.name.toLowerCase().startsWith(this.searchQuery.toLowerCase())||
+                    (item.id.toString().startsWith(this.searchQuery))
                 );
                 }
                 else{
                   return this.items.filter(item =>
                     item.category== this.selectedCategory 
-                    &&( item.name.toLowerCase().includes(this.searchQuery.toLowerCase())  ||
-                    (item.id.toString().includes(this.searchQuery)))
+                    &&( item.name.toLowerCase().startsWith(this.searchQuery.toLowerCase())  ||
+                    (item.id.toString().startsWith(this.searchQuery)))
                 );
                   
                 }
@@ -522,7 +571,7 @@
             },
             filterItems() {
                 const filteredBySearch = this.items.filter(item =>
-                    item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    item.name.toLowerCase().startsWith(this.searchQuery.toLowerCase())
                 );
                 //this.filteredItems = this.selectedCategory
                 //   ? filteredBySearch.filter(item => item.category === this.selectedCategory)
@@ -568,14 +617,24 @@
             cartTotal:0,
             paidAmount:0,
             remainingAmount:0,
+            order: {
+              orderId: '',
+              cashier: '',
+              orderType: '',
+              customerName: '',
+              customerPhone: '',
+              paymentStatus: 'Unpaid',
+              status: 'Pending'
+            },
+            deliveryAddress: '',
             inv: {
-                  invoiceId: '',
-                  cashier: '',
-                  customerPNO: '',
-                  paymentId: '-1',
-                  paymentMethod: '',
-                  store: ''
-              },
+              invoiceId: '',
+              cashier: '',
+              customerPNO: '',
+              paymentId: '-1',
+              paymentMethod: '',
+              store: ''
+            },
             cart:{
               length:0,
               orderCompleted:false
@@ -595,7 +654,6 @@
           },
           watch: {
             paidAmount: function(amt) {
-    
             //this.remainingAmount = this.cartTotal - amt
           }
         },
@@ -619,13 +677,12 @@
                       //increase and return
                       this.items[i]['quantity'] = this.items[i]['quantity'] + 1;
                       this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
-                      this.taxTotal = (0.05 * (this.cartLiveTotal))
+                      this.taxTotal = (0.15 * (this.cartLiveTotal))
                       this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
-                      this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                      this.cartTotal = (this.cartLiveTotal +   this.taxTotal).toFixed(2)
                       this.cart.length = this.cart.length + 1
                       return;
                     }
-                    //console.log("Hello::",alert("test cart?"+ this.items[i]['id']))
                   }
                   //add new
                   this.items.push({
@@ -637,9 +694,9 @@
                   })
                   
                   this.cartLiveTotal = this.cartLiveTotal +   parseFloat(itm.price)
-                  this.taxTotal = (0.05 * (this.cartLiveTotal))
+                  this.taxTotal = (0.15 * (this.cartLiveTotal))
                   this.taxTotal = (Math.round((this.taxTotal+Number.EPSILON)*100)/100)
-                  this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                  this.cartTotal = (this.cartLiveTotal +   this.taxTotal).toFixed(2)
                   
                   this.cart.length = this.cart.length + 1
               },
@@ -660,18 +717,18 @@
                 this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] + 1;
                 this.cartLiveTotal = this.cartLiveTotal +   parseFloat(this.items[ind]['price'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
-                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cartTotal = (this.cartLiveTotal +   this.taxTotal).toFixed(2)
                 this.cart.length = this.cart.length + 1
               },
               DecQuantity(ind, id){
                 this.cartErrorMsg =''
                 this.items[ind]['quantity'] = this.items[ind]['quantity'] - 1;
                 this.cartLiveTotal = this.cartLiveTotal -   parseFloat(this.items[ind]['price'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
-                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cartTotal = (this.cartLiveTotal +   this.taxTotal).toFixed(2)
                 this.cart.length = this.cart.length -  1
                 if(this.items[ind]['quantity'] == 0){
                   this.items.splice(ind,1)
@@ -681,9 +738,9 @@
               removeCartItem(ind, id){
                 this.cartErrorMsg =''
                 this.cartLiveTotal = this.cartLiveTotal -   (parseFloat(this.items[ind]['price']) *this.items[ind]['quantity'])
-                this.taxTotal = (0.05 * (this.cartLiveTotal))
+                this.taxTotal = (0.15 * (this.cartLiveTotal))
                 this.taxTotal = Math.round((this.taxTotal+Number.EPSILON)*100)/100
-                this.cartTotal = this.cartLiveTotal +   this.taxTotal
+                this.cartTotal = (this.cartLiveTotal +   this.taxTotal).toFixed(2)
                 this.cart.length = this.cart.length -  this.items[ind]['quantity'] 
                 this.items[ind]['quantity'] = 0
                 this.items.splice(ind,1)
@@ -713,29 +770,36 @@
               },
 
               async saveInvoice(){
+                  let orderId = new Date().getTime() + Math.floor(Math.random() * 1000);
+                  this.order.orderId = orderId
 
                   let cart_items = []
 
                   this.items.forEach(item => {
                     cart_items.push({
+                      order_id: this.inv.orderId,
                       item_id: item['id'],
+                      item_name: item['name'],
                       item_price: item['price'],
-                      quantity_sold: item['quantity'],
+                      quantity_ordered: item['quantity'],
                       subtotal: parseFloat(item['price']) * item['quantity'],
                     })
                   })
 
-                  let customerPNO = '0'
-                  if( this.inv.customerPNO != ''){
-                    customerPNO = this.inv.customerPNO
-                  }
-
+                  let customerPNO = this.order.customerName
                   let cashierIdName = window.localStorage.getItem("cashierId")
 
-                  invoiceData = {
+                  orderData = {
+                    id: orderId,
                     cart_items: cart_items,
+                    order_type: this.order.orderType,
+                    delivery_address: this.deliveryAddress,
+                    payment_status: this.order.paymentStatus,
+                    customer_name: this.order.customerName,
+                    customer_phone: this.order.customerPhone,
+                    status: this.order.status,
                     total_price: this.cartLiveTotal,
-                    tax: 0.05,
+                    tax: this.taxTotal,
                     amount_paid: this.paidAmount,
                     costumer_PNO: customerPNO,
                     payment_method: this.inv.paymentMethod,
@@ -743,20 +807,21 @@
                     cashier_id: cashierIdName
                   }
 
-                  const response = await fetch("/api/invoices", {
+                  const response = await fetch("/api/orders", {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify(invoiceData),
+                      body: JSON.stringify(orderData),
                     });
 
                   const result = await response.json();
-                  console.log(result);
-                    
-                  this.inv.cashier = result['cashier_id']
-                  this.inv.invoiceId = result['id']
+
+                  this.inv.cashier = cashierIdName
+                  this.inv.invoiceId = invoiceId
                   this.cdateTime = result['created_at']
+                  
+                 this.show_receipt = true
               },
 
               async saveItemTransaction(){
@@ -794,15 +859,18 @@
               saveItemAndInvoice(){
                  if (this.validate_cart() == false)
                     return;
-                 this.show_receipt = true
-                 if(this.saveItemTransaction() == 'error'){
-                  this.cartErrorMsg = 'Error in transaction'
-                  return
-                 }
+                //  this.show_receipt = true
+
+                //  if(this.saveItemTransaction() == 'error'){
+                //   this.cartErrorMsg = 'Error in transaction'
+                //   return
+                //  }
+
                  this.saveInvoice()
-                 this.downloadInvoice()
+                //  this.downloadInvoice()
                  this.orderCompleted = true
                  itemsv.setOrderStatus('Complete')
+                  window.location.reload()
               },
 
               startNewCart(){

@@ -9,10 +9,9 @@
         <div class="row" style="margin-top: 2em;">
             <div class="col-md-12">
                 <h5>Item </h5>
-                <b-table striped hover :fields="fields" stacked :items="items">
+                <b-table striped hover :fields="fields" stacked :items="customer">
 
                     <template #cell(del)="data">
-                     
                       <b-link v-on:click="removeItem(data.index)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
                     </template>
 
@@ -24,34 +23,21 @@
                       <span @click="toggleEdit(data.item.name, data.index, data.item.editName, 'name' )" v-show="!data.item.editName">[[data.item.name]]</span>
                       <input  v-show="data.item.editName" v-model="data.item.name" type="text" />
                     </template>
-    
-                    <template #cell(category)="data">
-                        <span @click="toggleEdit(data.item.category, data.index, data.item.editCat, 'category')" v-show="!data.item.editCat"> [[ data.item.category ]]</span>
-                        
-                        <b-select  v-model="data.item.category"  class="b-form-select" v-show="data.item.editCat">
-                            <option v-for="category in categoryOptions" :key="category" :value="category.name">[[category.name]]</option>
-                        </b-select>
-                    </template>
               
-                    <template #cell(price)="data">
-                        <span @click="toggleEdit(data.item.price, data.index, data.item.editPrice, 'price')" v-show="!data.item.editPrice">[[ data.item.price ]]</span>
-                      <input v-show="data.item.editPrice" v-model="data.item.price" type="text" />
-                    </template>
-        
-                    <template #cell(quantity)="data">
-                        <span @click="toggleEdit(data.item.quantity, data.index, data.item.editQty, 'quantity')" v-show="!data.item.editQty">[[ data.item.quantity]]</span>
-                      <input v-show="data.item.editQty" v-model="data.item.quantity" type="number" />
+                    <template #cell(phone)="data">
+                        <span @click="toggleEdit(data.item.phone, data.index, data.item.editPhone, 'phone')" v-show="!data.item.editPhone">[[ data.item.phone ]]</span>
+                      <input v-show="data.item.editPhone" v-model="data.item.phone" type="text" />
                     </template>
                     
-                    <template #cell(show)="data">
+                    <!-- <template #cell(show)="data">
                         <b-link href="/item/9103"><i class="fas fa-chevron-right"></i></span></b-link>
-                    </template>
+                    </template> -->
         
                 </b-table>
                 <template>
                 <div class="row">
                     <div class="col-md-4">
-                        <b-button  variant="outline-primary" href="/items">Back</b-button>
+                        <b-button  variant="outline-primary" href="/manage_customers">Back</b-button>
                         <b-button v-on:click="toggleEditMode()" type="submit" variant="primary">[[ isEditable ? 'Cancel' : 'Edit']]</b-button>
                        
                         <b-button @click="saveChanges" v-if="isEdit()" type="submit" variant="success">Save Changes</b-button>
@@ -64,7 +50,7 @@
             <div class="row" style="margin-top: 2em;">
             </div>
         </div>
-        <h5>Item Transactions</h5>
+        <h5>Customer Orders</h5>
         <div class="row">
             <div class="col-md-6">
                 <b-form-group
@@ -94,8 +80,8 @@
         <div>
             <b-table 
               striped hover 
-              :fields="tfields" 
-              :items="transactions"
+              :fields="ordFields" 
+              :items="orders"
               :filter="filter"
               :filter-included-fields="filterOn"
               @filtered="onFiltered"
@@ -130,16 +116,17 @@
             delimiters : ['[[',']]'],
             el: "#app",
             data: {
-                fields: [ 'id', 'name', 'price', 'quantity', 'category', {key: 'edit_r', label: ''}],
-                items: [],
-                tfields: [ 
-                  {key: 'transactionId', label:'Transaction Id'}, 
-                  {key: 'dateTime', label:'Transaction DateTime'}, 
-                  {key: 'itemId', label:'Item Id'},
-                  {key: 'price', label:'Item Price'}, 
-                  {key: 'quantity', label:'Quantity Sold'}
+                fields: [ 'id', 'name', 'phone', {key: 'edit_r', label: ''}],
+                customer: [],
+                ordFields: [ 
+                  {key: 'orderId', label:'Order Id'}, 
+                  {key: 'dateTime', label:'Order DateTime'}, 
+                  {key: 'orderType', label:'Order Type'}, 
+                  {key: 'total', label:'Total'},
+                  {key: 'paymentStatus', label:'Payment Status'}, 
+                  {key: 'status', label:'Order Status'}
                 ],
-                transactions: [],
+                orders: [],
                 idcode : window.location.pathname.split("/")[2],
                 filter: null,
                 filterOn: [],
@@ -155,88 +142,49 @@
                 if(!this.isAdminLogin()){
                   this.logout();
                 }
-                this.getItem()
-                // this.getItemTransactions()
-                this.totalRows = this.transactions.length
-                this.getCategories()
+                this.getCustomer()
+                // this.getItemorders()
+                this.totalRows = this.orders.length
             },
             methods: {
-                async getItemTransactions(){
-                    const response = await fetch("/get_item_transaction_api/" + this.idcode);
-                    const data = await response.json();
-                
-                    let transactions = data["transactions"]
-                    console.log("transactions::", transactions)
-                    this.transactions =[]
-                    //Trans_ID,Creation_datetime,item_idcode,item_price,sold_item_qty
-                    for( var i in transactions){
-                        let transaction = transactions[i]
-                        let id = transaction[0]
-                        let dateTime = new Date(transaction[1] ).toDateString();'kljk'//transaction[1]
-                        let item_idcode = transaction[2]
-                        let item_price = transaction[3]
-                        let qty = transaction[4]
-                        this.transactions.push({ transactionId: id, dateTime: dateTime, itemId: item_idcode, price: item_price, quantity: qty})
-                    }
-                },
-
-                async getItem(){
+                async getCustomer(){
                     //console.log("window.location::",this.idcode)
-                    const response = await fetch("/api/items/" + this.idcode);
+                    const response = await fetch("/api/customers/" + this.idcode);
                     const data = await response.json();
                     let id = data["id"]
                     let name = data["name"]
-                    let cat = data["category"]
-                    let price = data["price"]
-                    let qty = data["quantity"]
+                    let phone = data["phone"]
 
-                    this.items =[]
-                    this.items.push({ 
+                    this.customer.push({ 
                       del: 'test', 
                       id: id, 
-                      name: name, 
-                      category: cat, 
-                      price: price, 
-                      quantity: qty, 
-                      editName: false, 
-                      editCat: false, 
-                      editPrice: false, 
-                      editQty: false, 
+                      name: name,
+                      phone: phone,
+                      editName: false,
+                      editPhone: false,
                       show: 'test'
                     })
                     
-                    let transactions = data["transactions"]
-                    console.log("transactions::", transactions)
-                    this.transactions =[]
-                    transactions.forEach(trans => {
-                        let id = trans['id']
-                        // let dateTime = new Date(trans['created_at'] ).toDateString();
-                        let dateTime = trans['created_at']
-                        let item_idcode = trans['item_id']
-                        let item_price = trans['item_price']
-                        let qty = trans['quantity_sold']
+                    let orders = data["orders"]
+                    orders.forEach(ord => {
+                        let id = ord['id']
+                        // let dateTime = new Date(ord['created_at'] ).toDateString();
+                        let dateTime = ord['created_at']
+                        let orderType = ord['order_type']
+                        let total = ord['total_price']
+                        let paymentStatus = ord['payment_status']
+                        let status = ord['status']
                         
-                        this.transactions.push({ 
-                          transactionId: id, 
+                        this.orders.push({ 
+                          orderId: id, 
                           dateTime: dateTime, 
-                          itemId: item_idcode, 
-                          price: item_price, 
-                          quantity: qty
+                          orderType: orderType, 
+                          total: total, 
+                          paymentStatus: paymentStatus,
+                          status: status
                         })
 
                     })
-                },
-
-                async getCategories(){
-                    const response = await fetch("/api/categories");
-                    const data = await response.json();
-               
-                    let categories = data["categories"]
-                    this.categoryOptions = []
-                    for( var i in categories){
-                        this.categoryOptions.push(categories[i])
-                    }
-
                 },
 
                 toggleEdit: function(val,index,ed,section){
@@ -248,7 +196,7 @@
                     this.items[index].editCat = !ed
                   }
                   else if(section == 'price'){
-                    this.items[index].editPrice = !ed
+                    this.items[index].editPhone = !ed
                   }
                   else if(section == 'quantity'){
                     this.items[index].editQty = !ed
@@ -256,30 +204,6 @@
 
                   this.toggleEditMode()
                   //console.log("NewEd:", ed)
-                },
-
-                saveEdit: async function(self,val,index,ed, section, itemId){
-
-                    if(section == 'name'){
-                        this.items[index].editName = !ed
-                        let response = await fetch("/api/update_item_name/"+itemId+"/"+val)
-                    }
-                    else if(section == 'category'){
-                        console.log('saving category')
-                        this.items[index].editCat = !ed
-                        let response = await fetch("/api/update_item_category/"+itemId+"/"+val)
-                    }
-                    else if(section == 'price'){
-                        this.items[index].editPrice = !ed
-                        let response = await fetch("/api/update_item_price/"+itemId+"/"+val)
-                    }
-                    else if(section == 'quantity'){
-                        this.items[index].editQty = !ed
-                        let response = await fetch("/api/update_item_quantity/"+itemId+"/"+val)
-                    }
-                    this.toggleEdit(val, index, ed)
-                    
-                  //this.items[index].total = this.getTotal(index)
                 },
 
                 onFiltered(filteredItems) {
@@ -292,12 +216,10 @@
                    
                   const newData = {
                     name: data.name,
-                    price: data.price,
-                    quantity: data.quantity,
-                    category: data.category,
+                    phone: data.phone,
                   }
                     
-                  const response = await fetch(`/api/items/${id}/update`, {
+                  const response = await fetch(`/api/customers/${id}/update`, {
                       method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
@@ -315,39 +237,31 @@
                 toggleEditMode() {
                 // Toggle the edit mode
                 this.isEditable = !this.isEditable;
-                data = this.items[0]
+                data = this.customer[0]
        
                   if(!this.isEditable){
                     data.editName = false
-                    data.editCat =false
-                    data.editPrice =false
-                    data.editQty =false
-                    this.getItem()
-                    this.getItemTransactions()
-                    this.totalRows = this.transactions.length
-                    this.getCategories()
+                    data.editPhone =false
+                    this.getCustomer()
+                    this.totalRows = this.orders.length
                   }
                   else{
                     data.editName = true
-                    data.editCat =true
-                    data.editPrice =true
-                    data.editQty =true
+                    data.editPhone =true
                   }
 
                 //this.validationMessage = ''; // Clear validation message when toggling edit mode
                 },
                 isEdit(){
 
-                   data = this.items[0]
+                   data = this.customer[0]
                    if (!data){
                     return true
                    }
                    
                    editName = data.editName
-                   editCat = data.editCat
-                   editPrice = data.editPrice
-                   editQty = data.editQty
-                   if( editCat || editName || editPrice || editQty){
+                   editPhone = data.editPhone
+                   if( editName || editPhone ){
                     return true
                    }
                    else{
@@ -369,7 +283,5 @@
         })
 
     </script>
-
-
 
 {% endblock %}
