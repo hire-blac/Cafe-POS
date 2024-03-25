@@ -31,6 +31,7 @@ def all_invoices():
                     'tax': str(invoice.tax),
                     'amount_paid': str(invoice.amount_paid),
                     'payment_method': str(invoice.payment_method),
+                    'customer_PNO': invoice.costumer_PNO,
                     'cashier_id': invoice.cashier_id,
                     'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S") ,
                 })

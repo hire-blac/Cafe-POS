@@ -214,119 +214,118 @@
       </div>       
     </div>
     
-    <div dir="rtl" lang="ar" class="invoice-container" style="float: right; width: 30%;" id="invoicediv" v-show="cart.show_receipt">
-      <span><h4>Order Completed</h4></span>
-
-      <header>
-        <div id="logo" class="media">
-          <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-        </div>
-
-        <p align="center">SBISTechs Inc</p>
-        <p align="center">
-          TAX Number : 4910487129047124<br/>
-          JohnDoe@gmail.com, street city, state 0000, 555-555-5555.
-        </p></br>
-
-      </header>
-
-      <table class="bill-details">
-        <tbody align="center">
-            <tr>
-              <td>
-                Date :<span> </br>[[ cart.cdateTime ]] </span>
-              </td>
-              <td>
-                Invoice ID :<span>[[ cart.inv.invoiceId ]]</span>
-              </td>
-            </tr>
-
-            <tr>
-            </tr>
-
-            <tr>
-              <th class="center-align" colspan="2">
-                <span class="receipt">Order Number: 3 </span>
-              </th>
-            </tr>
-        </tbody>
-      </table>
-      <!--Invoice Body  -->
-      <table class="items">
-        <thead>
-          <tr>
-            <th class="heading name">Item  الصنف</th>
-            <th class="heading Itemprice">Price  السعر</th>
-            <th class="heading qty">Qty  الكمية</th>
-            <th class="heading ItemTotal">Sub  اجمالي</th>                
-          </tr>
-        </thead>
+          <div class="invoice-container" style="float: right; width: 30%;" id="invoicediv" v-show="cart.show_receipt">
+            <span><h4>Order Completed</h4></span>   
+            <div id="invoicemain"  style="margin-top: 2em;" class ="cart">  
+             
+              <div id="invoice-POS" ref="invoice">
+          
+                <center id="top">
+                  <div class="logo"></div>
+                  <div class="info"> 
+                    <h2>SBISTechs Inc</h2>
+                    <p align="center"> 
+                        street city, state 0000</br>
+                      JohnDoe@gmail.com</br>
+                      555-555-5555</br>
+                    </p>
+                  </div><!--End Info-->
+                </center><!--End InvoiceTop-->
+                
+                <div id="mid" >
+                  <div class="info">
+                    <p align="left"> 
+                      Invoice ID: [[ cart.inv.invoiceId ]] </br>
+                      Invoice Date Time: [[ cart.cdateTime ]]                      
+                    </p>
+                  </div>
+                </div><!--End Invoice Mid-->
+                
+                <div id="bot">
+            
+                  <div id="table">
+                    <table>
+                      <tr class="tabletitle">
+                        <td class="item"><h2>Item</h2></td>
+                        <td class="Hours"><h2>Qty</h2></td>
+                        <td class="Rate"><h2>Sub Total</h2></td>
+                      </tr>
         
-        <tbody>          
-          <tr v-for="it in cart.items">
-            <td class="name">[[it.name]]</td>
-            <td class="price Itemprice">[[it.price]]</td>
-            <td class="qty">[[ it.quantity ]]</td>
-            <td class="price ItemTotal">[[ it.price * it.quantity ]]</td>
-          </tr>
-
-          <tr>
-            <td colspan="3" class="sum-up line">Total Before Tax الاجمالي قبل الضريبة</td>
-            <td class="line price" align="left">[[ cart.cartLiveTotal ]]</td>
-          </tr>
-
-          <tr>
-            <td colspan="3" class="sum-up">TAX الضريبة</td>
-            <td class="price" align="left">[[ cart.taxTotal ]]</td>
-          </tr>
-
-          <tr>
-          </tr>
-
-          <tr>
-            <th colspan="3" class="total text">Grand Total الاجمالي</th>
-            <th class="total price" align="left">[[ cart.cartTotal ]]</th>
-          </tr>
-
-          <tr>
-            <td colspan="3" class="sum-up">Paid المدفوع</td>
-            <td class="price" align="left">[[ cart.paidAmount ]]</td>
-          </tr>
-
-          <tr>
-            <td colspan="3" class="sum-up">Reamining الباقي</td>
-            <td class="price" align="left">[[ cart.remainingAmount ]]</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <section style="width: 360px;align-content: center;" align='center'>
-          <p>
-            Payment Method: <span>[[ cart.inv.paymentMethod ]]</span>
-          </p>
-
-          <p>
-            Cashier ID: <span>[[ cart.inv.cashier ]]</span>
-          </p>
-
-          <img :src="cart.inv.qrcodeURL" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-          <p style="text-align:center">
-            Thank you for your visit!
-          </p>
-
-          <p style="text-align:center">
-            <a href="/"> www.www.com </a>
-          </p>
-      </section>
-
-      <!-- former invoice card -->
-      
-      <!-- new invoice -->
-      <div class="d-grid gap-2 col-12 mx-auto mt-3">
-        <a href="/cart" class="btn btn-outline-success">New Invoice</a>
-      </div>
+                      <tr class="service" v-for="it in cart.items">
+                        <td class="tableitem"><p class="itemtext">[[it.name]]</p></td>
+                        <td class="tableitem"><p class="itemtext">[[ it.quantity ]]</p></td>
+                        <td class="tableitem"><p class="itemtext">[[ it.price * it.quantity ]]</p></td>
+                      </tr>
         
-    </div>
+                      <td></td>
+        
+                      <tr class="tabletitle">
+                        <td class="Rate" ><h2>Total Ex. TAX</h2></td>
+                        <td class="payment"> <h2>[[ cart.cartLiveTotal ]]</h2></td>
+                        <td></td>
+                      </tr>
+
+                      <div style=" height: 0px;border-bottom:solid 3px #000;">
+                      </div>
+        
+                      <tr class="tabletitle">
+                        <td class="Rate">
+                          <h2>TAX</h2>
+                        </td>
+                        <td class="payment">
+                          <h2>[[ cart.taxTotal ]]</h2>
+                        </td>
+                        <td></td>
+                      </tr>
+        
+                      <tr class="tabletitle">
+                        <td class="Rate" style='font-size: 12px;'><h2>Total Inc. TAX</h2></td>
+                        <td class="payment" style='font-size: 12px;'><h2>[[ cart.cartTotal ]]</h2></td>
+                        <td></td>
+                      </tr>
+        
+                    </table>
+                  </div><!--End Table-->
+        
+                  <div style=" height: 0px; border-bottom:solid 0.4px #000;">
+                  </div>
+
+                  <div align="left" style='font-size: 11px;'>
+                    - Paid amount: [[ cart.paidAmount ]]
+                    <br/>
+        
+                    - Change: [[ cart.remainingAmount ]]
+                    <br/>
+                    <br/>
+        
+                    - Payment Method: [[ cart.inv.paymentMethod ]]
+                    <br/>
+                    - Cashier: [[ cart.inv.cashier ]]
+                      
+                  </div>
+
+                  <div id="legalcopy">
+                    <div style=" height: 0px; border-bottom:solid 3px #000;">
+                    </div>
+                    <p class="legal">
+                      <strong>Thank you for your Purchase!</strong>
+                    </p>
+                     QR CODE AREA
+                    <img :src="cart.inv.qrcodeURL" style="width: 100px; align-content: center;">
+        
+                  </div>
+            
+                </div><!--End InvoiceBot-->
+              </div><!--End Invoice-->
+              <!-- partial -->
+         
+            </div>
+            <!-- new invoice -->
+            <div class="d-grid gap-2 col-12 mx-auto mt-3">
+              <a href="/cart" class="btn btn-outline-success">New Invoice</a>
+            </div>
+              
+          </div>
 
   </div>
 
@@ -891,140 +890,5 @@
   })
 
 </script>
-
-<style>
-  body {
-    margin: center;
-    font-family: 'PT Sans', sans-serif;
-  }
-
-  @page {
-    size: 2.8in 11in;
-    margin-top: 0cm;
-    margin-left: 0cm;
-    margin-right: 0cm;
-  }
-
-  table {
-    width: 100%;
-  }
-
-  tr {
-    width: 100%;
-
-  }
-
-  h1 {
-    text-align: center;
-    vertical-align: middle;
-  }
-
-  #logo {
-    width: 60%;
-    text-align: center;
-    -webkit-align-content: center;
-    align-content: center;
-    padding: 5px;
-    margin: 2px;
-    display: block;
-    margin: 0 auto;
-  }
-
-  header {
-    width: 100%;
-    text-align: center;
-    -webkit-align-content: center;
-    align-content: center;
-    vertical-align: middle;
-  }
-
-  .items thead {
-    text-align: center;
-  }
-
-  .center-align {
-    text-align: center;
-  }
-
-  .bill-details td {
-    font-size: 12px;
-  }
-
-  .receipt {
-    font-size: medium;
-  }
-
-  .items .heading {
-    font-size: 12.5px;
-    text-transform: uppercase;
-    border-top:1px solid black;
-    margin-bottom: 4px;
-    border-bottom: 1px solid black;
-    vertical-align: middle;
-  }
-
-  .items thead tr th:first-child,
-  .items tbody tr td:first-child {
-    width: 47%;
-    min-width: 47%;
-    max-width: 47%;
-    word-break: break-all;
-    text-align: right;
-  }
-
-  .items td {
-    font-size: 12px;
-    text-align: right;
-    vertical-align: bottom;
-  }
-
-  .price::after {
-    font-family: Arial;
-    text-align: left;
-  }
-
-  .sum-up {
-    text-align: right !important;
-  }
-  .total {
-    font-size: 13px;
-    border-top:1px dashed black !important;
-    border-bottom:1px dashed black !important;
-  }
-  .total.text, .total.price {
-    text-align: right;
-  }
-  .total.price::before {
-    content: " \FDFC"; 
-  }
-  .line {
-    border-top:1px solid black !important;
-  }
-  .heading.Itemprice {
-    text-align:left;
-    width: 15%;
-  }
-  .heading.ItemTotal {
-    font-size: 12.5px;
-    text-align:left;
-    width: 15%;
-  }
-  .heading.qty {
-    text-align:left;
-    width: 5%;
-  }
-  .dashedline {
-    font-size: 13px;
-    border-top:1px dashed black !important;
-    border-bottom:1px dashed black !important;
-  }
-  p {
-    padding: 1px;
-    margin: 0;
-  }
-  section, footer {
-    font-size: 12px;
-  }
-</style>
 
 {% endblock %}
