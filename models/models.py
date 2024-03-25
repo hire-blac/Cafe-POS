@@ -77,6 +77,7 @@ class Transaction(Base):
 class Invoice(Base):
     __tablename__ = 'invoices'
     id = Column(Integer, primary_key=True)
+    uuid = Column(String, nullable=True)
     tax = Column(Numeric(precision=8, scale=2), nullable=False)
     total_price = Column(Numeric(precision=8, scale=2), nullable=False)
     order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
@@ -86,6 +87,7 @@ class Invoice(Base):
     payment_id = Column(String, nullable=True)
     cashier_id = Column(Integer, ForeignKey('users.id'))
     cashier_name = Column(String, nullable=True)
+    qrcode_url = Column(String, nullable=True)  # Column to store image URL
     created_at = Column(DateTime, server_default=func.now())
 
     # Define the relationships

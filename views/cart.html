@@ -311,6 +311,7 @@
                       <strong>Thank you for your Purchase!</strong>
                     </p>
                      QR CODE AREA
+                    <img :src="cart.inv.qrcodeURL" style="width: 100px; align-content: center;">
         
                   </div>
             
@@ -564,6 +565,7 @@
                   customerPNO: '',
                   paymentId: '-1',
                   paymentMethod: '',
+                  qrcodeURL: '',
                   store: ''
               },
             cart:{
@@ -732,7 +734,7 @@
                     total_price: this.cartLiveTotal,
                     tax: this.taxTotal,
                     amount_paid: this.paidAmount,
-                    costumer_PNO: customerPNO,
+                    customer_PNO: customerPNO,
                     payment_method: this.inv.paymentMethod,
                     payment_id: this.inv.paymentId,
                     cashier_id: cashierIdName
@@ -747,16 +749,13 @@
                     });
 
                   const result = await response.json();
-                    
-                  // this.inv.cashier = result['cashier_id']
-                  // this.inv.invoiceId = result['id']
-                  // this.cdateTime = result['created_at']
-
+                  
                   this.inv.cashier = cashierIdName
                   this.inv.invoiceId = invoiceId
                   this.cdateTime = result['created_at']
+                  this.inv.qrcodeURL = result['qrcode']
                   
-                 this.show_receipt = true
+                  this.show_receipt = true
               },
 
               async saveItemTransaction(){

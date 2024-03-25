@@ -107,6 +107,7 @@
 
                             </p>
                             QR CODE AREA
+                            <img :src="inv.qrcodeURL" >
                     </div>
                 </div><!--End InvoiceBot-->
             </div>
@@ -153,6 +154,7 @@
             paymentId: '-1',
             paymentMethod: '',
             paidAmount: '',
+            qrcodeURL: "io7.png",
             store: ''
           },
           remainingAmount:0,
@@ -163,6 +165,8 @@
        
             const response = await fetch("/api/invoices/" + this.invId );
             const invoice = await response.json();
+
+            console.log(invoice);
             const invoiceItems = invoice['transactions']
 
             invoiceItems.forEach(item => {
@@ -182,16 +186,18 @@
 
             let paymentId = invoice['payment_id']
             let customerPNO = invoice['customer_PNO']
-            let cashier = invoice['cashier_name']
+            let cashier = invoice['cashier_id']
             let paymentMethod = invoice['payment_method']
             let paidAmount = invoice['amount_paid']
+            let qrcodeURL = invoice['qrcode'].slice(7)
 
             this.inv.invoiceId = id
             this.inv.cashier = cashier
             this.wTaxTotal = parseFloat(total).toFixed(2)
             this.tax = parseFloat(tax).toFixed(2)
-            this.taxTotal = (parseFloat(this.wTaxTotal) + (parseFloat(this.tax) * parseFloat(this.wTaxTotal))).toFixed(2)
+            this.taxTotal = (parseFloat(this.wTaxTotal) + (parseFloat(this.tax))).toFixed(2)
             this.inv.paymentMethod = paymentMethod
+            this.inv.qrcodeURL = qrcodeURL
             this.inv.paidAmount = parseFloat(paidAmount)
             this.remainingAmount = parseFloat(this.inv.paidAmount) - parseFloat(this.taxTotal)
             this.remainingAmount = (Math.round((this.remainingAmount+Number.EPSILON)*100)/100)

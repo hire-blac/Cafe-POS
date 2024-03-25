@@ -1,9 +1,7 @@
-import math
 from sqlalchemy.orm import sessionmaker
 from bottle import Bottle, request
 from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
 from bottle import jinja2_template as template
-import POS
 import os
 from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, transaction_controller
 import posauth
@@ -16,7 +14,6 @@ import sqlite3
 import pandas as pd
 
 app = Bottle()
-
 
 @route("/")
 def home():
