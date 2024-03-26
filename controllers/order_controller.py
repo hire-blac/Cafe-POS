@@ -11,7 +11,7 @@ Session = sessionmaker(bind=engine)
         
 def all_orders():
     with Session() as session:
-        orders = session.query(Order).all()
+        orders = session.query(Order).order_by(Order.created_at.desc()).all()
         if orders:
             data = []
             for order in orders:

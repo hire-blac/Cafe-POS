@@ -35,7 +35,7 @@ def create_delivery(data):
 
 def all_deliveries():
     with Session() as session:
-        deliveries = session.query(Delivery).all()
+        deliveries = session.query(Delivery).order_by(Delivery.created_at.desc()).all()
         if deliveries:
             data = []
             for delivery in deliveries:

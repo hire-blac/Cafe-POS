@@ -23,7 +23,7 @@ def transaction_details(transaction):
 
 def all_transactions():
     with Session() as session:
-        transactions = session.query(Transaction).all()
+        transactions = session.query(Transaction).order_by(Transaction.created_at.desc()).all()
         data = []
         if transactions:
             for transaction in transactions:

@@ -111,15 +111,16 @@
             <p>
               Cashier ID: <span>[[ inv.cashier ]]</span>
             </p>
-  
-            <img :src="inv.qrcodeURL" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-            <p style="text-align:center">
+            
+            <img align="center" :src="inv.qrCode" alt="QRCode" style="width: 200px; align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+            <p align="center">
               Thank you for your visit!
             </p>
   
-            <p style="text-align:center">
+            <p align="center">
               <a href="/"> www.www.com </a>
             </p>
+
         </section>
           
       </div>
@@ -169,7 +170,7 @@
             paymentId: '-1',
             paymentMethod: '',
             paidAmount: '',
-            qrcodeURL: "io7.png",
+            qrCode: '',
             store: ''
           },
           remainingAmount:0,
@@ -204,7 +205,7 @@
             let cashier = invoice['cashier_id']
             let paymentMethod = invoice['payment_method']
             let paidAmount = invoice['amount_paid']
-            let qrcodeURL = invoice['qrcode']
+            let qrCode = invoice['qrcode']
 
             this.inv.invoiceId = id
             this.inv.cashier = cashier
@@ -212,7 +213,7 @@
             this.tax = parseFloat(tax).toFixed(2)
             this.taxTotal = (parseFloat(this.wTaxTotal) + (parseFloat(this.tax))).toFixed(2)
             this.inv.paymentMethod = paymentMethod
-            this.inv.qrcodeURL = qrcodeURL
+            this.inv.qrCode = qrCode
             this.inv.paidAmount = parseFloat(paidAmount)
             this.remainingAmount = parseFloat(this.inv.paidAmount) - parseFloat(this.taxTotal)
             this.remainingAmount = (Math.round((this.remainingAmount+Number.EPSILON)*100)/100)

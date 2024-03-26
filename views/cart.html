@@ -309,7 +309,7 @@
             Cashier ID: <span>[[ cart.inv.cashier ]]</span>
           </p>
 
-          <img :src="cart.inv.qrcodeURL" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+          <img :src="cart.inv.qrCode" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
           <p style="text-align:center">
             Thank you for your visit!
           </p>
@@ -566,7 +566,7 @@
                   customerPNO: '',
                   paymentId: '-1',
                   paymentMethod: '',
-                  qrcodeURL: '',
+                  qrCode: '',
                   store: ''
               },
             cart:{
@@ -754,7 +754,7 @@
                   this.inv.cashier = cashierIdName
                   this.inv.invoiceId = invoiceId
                   this.cdateTime = result['created_at']
-                  this.inv.qrcodeURL = result['qrcode']
+                  this.inv.qrCode = result['qrcode']
                   
                   this.show_receipt = true
               },

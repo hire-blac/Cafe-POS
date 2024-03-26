@@ -15,7 +15,7 @@ Session = sessionmaker(bind=engine)
         
 def all_invoices():
     with Session() as session:
-        invoices = session.query(Invoice).all()
+        invoices = session.query(Invoice).order_by(Invoice.created_at.desc()).all()
         if invoices:
             data = []
             for invoice in invoices:
@@ -68,7 +68,8 @@ def create_invoice(data):
             InvoiceTotal=str(invoice.total_price),
             TAX=str(invoice.tax)
         )
-        invoice.qrcode_url = invoice_qrcode[0]
+        
+        invoice.qrcode_url = invoice_qrcode
         session.add(invoice)
         session.commit()
 

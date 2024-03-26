@@ -23,7 +23,7 @@ def ordered_item_details(ordered_item):
 
 def all_ordered_items():
     with Session() as session:
-        ordered_items = session.query(OrderedItem).all()
+        ordered_items = session.query(OrderedItem).order_by(OrderedItem.created_at.desc()).all()
         data = []
         if ordered_items:
             for ordered_item in ordered_items:
