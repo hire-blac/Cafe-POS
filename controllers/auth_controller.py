@@ -39,7 +39,9 @@ def register_user(data):
                         name=data['name'],
                         username=data['username'],
                         password=password_hash,
-                        usertype = data['usertype']
+                        usertype = data['usertype'],
+                        company_id = data['company_id'],
+                        store_id = data['store_id']
                     )
 
                 session.add(user)
@@ -68,6 +70,8 @@ def login_user(data):
                     'name': user.name,
                     'username': user.username,
                     'usertype': user.usertype,
+                    'company_id': user.company_id,
+                    'store_id': user.store_id,
                     'auth_token': auth_token
                 }
             return {"error": "Login credentials are invalid."}
@@ -85,6 +89,8 @@ def get_user(username):
                 'name': user.name,
                 'username': user.username,
                 'usertype': user.usertype,
+                'company_id': user.company_id,
+                'store_id': user.store_id,
             }
         else:
             return {'message': 'user not found'}

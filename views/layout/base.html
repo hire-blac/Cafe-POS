@@ -333,6 +333,18 @@
                   <li><a class="dropdown-item" href="/categories">Manage Categories</a></li>
                 </ul>
               </li>
+
+              <li class="nav-item dropdown" v-show="isSuperUser">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Administration
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="/add_admin">Add Admin User</a></li>
+                  <li><a class="dropdown-item" href="/manage_user">Manage Users</a></li>
+                  <li><a class="dropdown-item" href="/company">Manage Company</a></li>
+                  <li><a class="dropdown-item" href="/stores">Manage Stores</a></li>
+                </ul>
+              </li>
               </ul>
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown" v-show="isLogin">
@@ -384,10 +396,13 @@
           delimiters : ['[[',']]'],
           el: "#lapp",
           data: {
-            name: window.localStorage.getItem("name")
+            name: window.localStorage.getItem("name"),
+            company_id: window.localStorage.getItem("companyId")
           },
           mounted : function(){
             if(!this.isLogin){
+              window.localStorage.setItem("companyId", 0)
+              window.localStorage.setItem("storeId", 0)
               window.location.href = "/login"
             }
           },
@@ -398,9 +413,12 @@
                 return window.localStorage.getItem("cashierId") != null
             },
             isAdminLogin(){
-                
               console.log("usertype:",localStorage.getItem("usertype"))
                 return localStorage.getItem("usertype") == "Administrator"
+            },
+            isSuperUser(){
+              console.log("usertype:",localStorage.getItem("usertype"))
+                return localStorage.getItem("usertype") == "Super user"
             }
           },
           methods: {

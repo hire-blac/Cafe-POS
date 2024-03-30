@@ -72,13 +72,17 @@
                       let cashierId = result['id']
                       let name = result['name']
                       let username = result['username']
+                      let companyId = result['company_id']
                       let usertype = result['usertype']
+                      let storeId = result['store_id']
 
                       //alert("Login: "+cashierId+ name+ username);
                       window.localStorage.setItem("cashierId", cashierId)
                       window.localStorage.setItem("name", name)
                       window.localStorage.setItem("username", username)
+                      window.localStorage.setItem("companyId", companyId)
                       window.localStorage.setItem("usertype", usertype)
+                      window.localStorage.setItem("storeId", storeId)
                       window.location.href = "/"
                       
                       auth_token = result["auth_token"]

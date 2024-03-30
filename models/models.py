@@ -7,14 +7,31 @@ Base = declarative_base()
 
 # Define SQLAlchemy models
 
-class StoreProfile(Base):
-    __tablename__ = 'store profiles'
+class CompanyProfile(Base):
+    __tablename__ = 'companies'
     id = Column(Integer, primary_key=True)
-    store_name = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    tax_id = Column(String, nullable=False)
-    phone = Column(String, nullable=False)
-    logo_url = Column(String, nullable=True)  # Column to store image URL
+    company_name = Column(String, nullable=False)
+    cr_number = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    street = Column(String, nullable=False)
+    zip_code = Column(String, nullable=True)
+    tax_number = Column(String, nullable=False)
+    phone_number = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    logo = Column(String, nullable=True)  # Column to store image URL
+
+
+class StoreProfile(Base):
+    __tablename__ = 'stores'
+    id = Column(Integer, primary_key=True)
+    shop_name = Column(String, nullable=False)
+    phone_number = Column(String, nullable=True)
+    zip_code = Column(String, nullable=True)
+    district = Column(String, nullable=True)
+    unit_number = Column(String, nullable=True)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
+    company = relationship('CompanyProfile', backref=backref('stores'))
 
 
 class User(Base):
@@ -24,6 +41,10 @@ class User(Base):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
     usertype = Column(String, nullable=False)
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
+    store = relationship('StoreProfile', backref=backref('store_user'))
+    company = relationship('CompanyProfile', backref=backref('company'))
 
 
 class Customer(Base):
@@ -31,6 +52,10 @@ class Customer(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
+    store = relationship('StoreProfile', backref=backref('store_customer'))
+    company = relationship('CompanyProfile', backref=backref('company_customer'))
 
 
 class Supplier(Base):
@@ -39,6 +64,10 @@ class Supplier(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     email = Column(String, nullable=True)
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
+    store = relationship('StoreProfile', backref=backref('store_supplier'))
+    company = relationship('CompanyProfile', backref=backref('company_supplier'))
 
 
 class Category(Base):
@@ -46,6 +75,8 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     items = relationship('Item', back_populates='category')
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
+    store = relationship('StoreProfile', backref=backref('store_category'))
 
 
 class Item(Base):
@@ -57,6 +88,8 @@ class Item(Base):
     quantity = Column(Integer, nullable=True)
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=True)
     category = relationship('Category', back_populates='items')
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
+    store = relationship('StoreProfile', backref=backref('store_item'))
 
 
 class Transaction(Base):
@@ -69,9 +102,11 @@ class Transaction(Base):
     quantity_sold = Column(String, nullable=False)
     subtotal = Column(Numeric(precision=8, scale=2), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationship with Item
     item = relationship('Item', backref=backref('transactions'), cascade="")
+    store = relationship('StoreProfile', backref=backref('store_transaction'))
 
 
 class Invoice(Base):
@@ -89,8 +124,10 @@ class Invoice(Base):
     cashier_name = Column(String, nullable=True)
     qrcode_url = Column(String, nullable=True)  # Column to store image URL
     created_at = Column(DateTime, server_default=func.now())
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
+    store = relationship('StoreProfile', backref=backref('store_invoice'))
     purchase_items = relationship('Transaction', backref=backref('transactions', uselist=False))
     cashier = relationship('User', backref=backref('cashier'))
     # customer = relationship('Customer', backref=backref('customer'))
@@ -108,8 +145,10 @@ class Order(Base):
     status = Column(String, nullable=False, default="Pending") # pending or fulfilled
     cashier_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, server_default=func.now())
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
+    store = relationship('StoreProfile', backref=backref('store_order'))
     ordered_items = relationship('OrderedItem', backref=backref('ordered_items', uselist=False))
     cashier = relationship('User', backref=backref('order_cashier'))
     # customer = relationship('Customer', backref=backref('orders'))
@@ -125,8 +164,10 @@ class OrderedItem(Base):
     quantity_ordered = Column(String, nullable=False)
     subtotal = Column(Numeric(precision=8, scale=2), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
-    # Define the relationship with Item
+    # Define the relationships
+    store = relationship('StoreProfile', backref=backref('store_ordered_item'))
     item = relationship('Item', backref=backref('orderd_items'))
 
 
@@ -139,8 +180,10 @@ class Delivery(Base):
     delivery_address = Column(String, nullable=False)
     status = Column(String, nullable=False, default="Pending") # pending, enroute, or delivered
     created_at = Column(DateTime, server_default=func.now())
+    store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
-    # Define the relationship with Item
+    # Define the relationships
+    store = relationship('StoreProfile', backref=backref('store_delivery'))
     order = relationship('Order', backref=backref('delivery'))
 
 

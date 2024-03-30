@@ -1,0 +1,167 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Shop {% endblock %}
+
+{% block content %}
+
+    <div class="container" id="app">
+       
+        <div class="row" style="margin-top: 2em;">
+            <div class="col-md-12">
+                <h5>Shop</h5>
+                <b-table striped hover :fields="fields" stacked :items="store">
+                    <template #cell(id)="data">
+                        [[data.item.id]]
+                    </template>
+              
+                    <template #cell(shopName)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopName]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopName" type="text" />
+                    </template>
+              
+                    <template #cell(shopPhoneNumber)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopPhoneNumber]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopPhoneNumber" type="text" />
+                    </template>
+              
+                    <template #cell(shopDistrict)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopDistrict]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopDistrict" type="text" />
+                    </template>
+              
+                    <template #cell(shopZipCode)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopZipCode]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopZipCode" type="text" />
+                    </template>
+              
+                    <template #cell(shopUnitNumber)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopUnitNumber]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopUnitNumber" type="text" />
+                    </template>
+                    
+                    <template #cell(show)="data">
+                        <b-link href="/item/9103"><i class="fas fa-chevron-right"></i></span></b-link>
+                    </template>
+        
+                </b-table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <b-button  variant="outline-primary" href="/company">Back</b-button>
+                <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
+                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success">Save Changes</b-button>
+            
+            </div>
+        </div>
+
+        </div>
+     
+        
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: "#app",
+            data: {
+                fields: [ 'id', 'shopName', 'shopPhoneNumber', 'shopDistrict', 'shopZipCode', 'shopUnitNumber'],
+                store: [],
+                shopCode : window.location.pathname.split("/")[2],
+                company_id : localStorage.getItem("companyId"),
+                filter: null,
+                filterOn: [],
+                currentPage: 1,
+                totalRows: 1,
+                perPage: 10,
+                isEditable: false
+            },
+            mounted: async function(){
+                if(!this.isSuperUser()){
+                    this.logout()
+                }
+                this.getStore()
+              
+            },
+            methods: {
+                async getStore(){
+                    const response = await fetch("/api/stores/" + this.shopCode);
+                    const data = await response.json();
+                    
+                    this.store.push({ 
+                      id: data["id"],
+                      shopName: data["shop_name"],
+                      shopPhoneNumber: data["phone_number"],
+                      shopDistrict: data["district"],
+                      shopZipCode: data["zip_code"],
+                      shopUnitNumber: data["unit_number"],
+                      editName: false, 
+                      editUsername: false, 
+                      editUserType: false, 
+                      show: 'test',
+                    })
+                },
+
+                isSuperUser : function(){
+                  return localStorage.getItem("usertype") == "Super user"
+                },
+
+                logout:function(){
+                  window.localStorage.clear()
+                  console.log("You don't have access to view this page")
+                  window.location.href = "/login"
+                },
+
+                async toggleEditMode(){
+                    this.isEditable = !this.isEditable
+                    if(!this.isEditable){
+                        this.Cancel()
+                    }
+
+                }, 
+
+                onFiltered(filteredItems) {
+                    // Trigger pagination to update the number of buttons/pages due to filtering
+                    this.totalRows = filteredItems.length
+                    this.currentPage = 1
+                },
+                async SaveChanges(){
+            
+                    data = this.store[0]
+                    id = data.id
+
+                    const newData = {
+                      shop_name: data.shopName,
+                      zip_code: data.shopZipCode,
+                      unit_number: data.shopUnitNumber,
+                      phone_number: data.shopPhoneNumber,
+                      district: data.shopDistrict,
+                    }
+                    
+                  const response = await fetch(`/api/stores/${id}/update`, {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(newData),
+                    });
+
+                  const result = await response.json();
+                  console.log(result);
+                  window.location.reload()
+                },
+                async Cancel(){
+                    console.log("cancell")
+                    if(!this.isSuperUser()){
+                         this.logout()
+                    }
+                    this.getStore()
+                },
+
+            }
+        })
+
+    </script>
+
+{% endblock %}s

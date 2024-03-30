@@ -3,7 +3,7 @@ from bottle import Bottle, request
 from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
 from bottle import jinja2_template as template
 import os
-from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, transaction_controller
+from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, store_controller, transaction_controller
 import posauth
 from models.models import Category, engine
 
@@ -391,8 +391,12 @@ def register_post():
 
 
 @route("/add_user")
-def cart():
+def create_user():
     return template('add_user')
+
+@route("/add_admin")
+def create_admin():
+    return template('add_admin')
 
 
 @route("/manage_user")
@@ -460,9 +464,6 @@ def deleteUser(user_id):
 
 
 # CUSTOMER ROUTES
-
-
-# ORDER ROUTES
 @get("/manage_customers")
 def manage_customers():
     return template( "customers" )
@@ -498,6 +499,79 @@ def single_customer(customer_id):
     customer = customer_controller.delete_customer(customer_id)
     return customer
 
+
+# COMPANY ROUTES
+@get("/company")
+def get_company():
+    return template("company")
+
+@get("/api/company/<company_id>")
+def get_company(company_id):
+    company = store_controller.get_company(company_id)
+    return company
+
+@get("/company/new-company")
+def new_company():
+    return template("new_company")
+
+@post("/company/new-company")
+def create_company():
+    data = {
+        'company_name': request.forms.get('companyName'),
+        'cr_number': request.forms.get('crNumber'),
+        'tax_number': request.forms.get('taxNumber'),
+        'city': request.forms.get('city'),
+        'street': request.forms.get('street'),
+        'zip_code': request.forms.get('zipCode'),
+        'phone_number': request.forms.get('phoneNumber'),
+        'email': request.forms.get('email'),
+        'website': request.forms.get('website'),
+        'logo': '',
+    }
+    company = store_controller.create_company(data)
+    return template("company", res_company_id=company['id'])
+
+@post("/api/company")
+def create_company():
+    data = request.json
+    data['logo'] = ''
+    company = store_controller.create_company(data)
+    return company
+
+@put("/api/company/<company_id>/update")
+def update_company(company_id):
+    data = request.json
+    company = store_controller.update_company(company_id, data)
+    return company
+
+# STORE ROUTES
+@get('/stores')
+def stores():
+    return template( "stores" )
+
+@get('/api/stores')
+def stores():
+    return store_controller.all_stores()
+
+@get('/stores/<store_id>')
+def get_store(store_id):
+    return template("get_store")
+
+@get('/api/stores/<store_id>')
+def get_store(store_id):
+    store = store_controller.get_store(store_id)
+    return store
+
+@put('/api/stores/<store_id>/update')
+def get_store(store_id):
+    data = request.json
+    store = store_controller.update_store(store_id, data)
+    return store
+
+@delete('/api/stores/<store_id>/delete')
+def get_store(store_id):
+    store = store_controller.delete_store(store_id)
+    return store
 
 
 @route('/test')

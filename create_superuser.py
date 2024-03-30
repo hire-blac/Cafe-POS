@@ -7,7 +7,7 @@ from passlib.hash import pbkdf2_sha256
 Session = sessionmaker(bind=engine)
 
 
-def create_admin_user():
+def create_super_user():
     with Session() as session:
         name = input("Enter your name: ")
         username = input("Enter your username: ")
@@ -22,7 +22,7 @@ def create_admin_user():
                     name=name,
                     username=username,
                     password=password_hash,
-                    usertype = 'Administrator'
+                    usertype = 'Super user'
                 )
 
             session.add(user)
@@ -38,6 +38,6 @@ def create_admin_user():
             return {'error': "An error occured"}
             
 if __name__ == '__main__':
-     admin = create_admin_user()
+     admin = create_super_user()
      print(admin)
-     print('Admin user created sucessfully')
+     print('Super user created sucessfully')
