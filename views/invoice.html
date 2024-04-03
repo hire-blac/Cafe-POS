@@ -19,7 +19,7 @@
     </div>
           
     <div class=" col-md-4">
-      <div dir="rtl" lang="ar" class="border shadow px-2" id="invoicediv">
+      <div dir="rtl" lang="ar" class="border shadow px-2" id="invoicediv" ref="invoice">
         <header>
           <div id="logo" class="media">
             <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
@@ -205,7 +205,7 @@
             let cashier = invoice['cashier_id']
             let paymentMethod = invoice['payment_method']
             let paidAmount = invoice['amount_paid']
-            let qrCode = invoice['qrcode']
+            let qrCode = invoice['qrcode_url'].slice(6)
 
             this.inv.invoiceId = id
             this.inv.cashier = cashier
@@ -238,7 +238,7 @@
                         top: 80,
                         bottom: 60,
                         left: 40,
-                        width: 522
+                        width: 200
                     };
 
                     doc.html(this.$refs.invoice, 

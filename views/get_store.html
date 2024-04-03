@@ -5,6 +5,8 @@
 {% block content %}
 
     <div class="container" id="app">
+
+      <div v-if="store_id">
        
         <div class="row" style="margin-top: 2em;">
             <div class="col-md-12">
@@ -13,30 +15,66 @@
                     <template #cell(id)="data">
                         [[data.item.id]]
                     </template>
-              
-                    <template #cell(shopName)="data">
-                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopName]]</span>
-                      <input v-show="isEditable" v-model="data.item.shopName" type="text" />
+                    
+                    <template #cell(companyName)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.companyName]]</span>
+                      <input v-show="isEditable" v-model="data.item.companyName" type="text" />
                     </template>
-              
-                    <template #cell(shopPhoneNumber)="data">
-                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopPhoneNumber]]</span>
-                      <input v-show="isEditable" v-model="data.item.shopPhoneNumber" type="text" />
+    
+                    <template #cell(CRNumber)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.CRNumber]]</span>
+                        <input v-show="isEditable" v-model="data.item.CRNumber" type="text" />
                     </template>
+    
+                    <template #cell(taxNumber)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.taxNumber]]</span>
+                      <input v-show="isEditable" v-model="data.item.taxNumber" type="text" />
+                  </template>
               
-                    <template #cell(shopDistrict)="data">
-                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopDistrict]]</span>
-                      <input v-show="isEditable" v-model="data.item.shopDistrict" type="text" />
+                  <template #cell(shopName)="data">
+                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopName]]</span>
+                    <input v-show="isEditable" v-model="data.item.shopName" type="text" />
+                  </template>
+            
+                  <template #cell(district)="data">
+                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.district]]</span>
+                    <input v-show="isEditable" v-model="data.item.district" type="text" />
+                  </template>
+            
+                  <template #cell(unitNumber)="data">
+                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.unitNumber]]</span>
+                    <input v-show="isEditable" v-model="data.item.unitNumber" type="text" />
+                  </template>
+
+                    <template #cell(city)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.city]]</span>
+                        <input v-show="isEditable" v-model="data.item.city" type="text" />
                     </template>
-              
-                    <template #cell(shopZipCode)="data">
-                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopZipCode]]</span>
-                      <input v-show="isEditable" v-model="data.item.shopZipCode" type="text" />
+    
+                    <template #cell(street)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.street]]</span>
+                        <input v-show="isEditable" v-model="data.item.street" type="text" />
                     </template>
-              
-                    <template #cell(shopUnitNumber)="data">
-                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopUnitNumber]]</span>
-                      <input v-show="isEditable" v-model="data.item.shopUnitNumber" type="text" />
+    
+                    <template #cell(zipCode)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.zipCode]]</span>
+                        <input v-show="isEditable" v-model="data.item.zipCode" type="text" />
+                    </template>
+    
+    
+                    <template #cell(phoneNumber)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.phoneNumber]]</span>
+                        <input v-show="isEditable" v-model="data.item.phoneNumber" type="text" />
+                    </template>
+    
+                    <template #cell(email)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.email]]</span>
+                        <input v-show="isEditable" v-model="data.item.email" type="text" />
+                    </template>
+    
+                    <template #cell(website)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.website]]</span>
+                        <input v-show="isEditable" v-model="data.item.website" type="text" />
                     </template>
                     
                     <template #cell(show)="data">
@@ -48,17 +86,21 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <b-button  variant="outline-primary" href="/company">Back</b-button>
+                <b-button  variant="outline-primary" href="/">Back</b-button>
                 <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
                 <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success">Save Changes</b-button>
             
             </div>
         </div>
+      </div>
 
-        </div>
-     
-        
+      <div v-if="!store_id" class="mt-3">
+        <h3>You haven't created a store yet </h3>
+        <a href="/store/new-store" class="btn btn-primary">New Store</a>
+      </div>
+
     </div>
+        
 
     <script type="application/javascript">
 
@@ -66,10 +108,24 @@
             delimiters : ['[[',']]'],
             el: "#app",
             data: {
-                fields: [ 'id', 'shopName', 'shopPhoneNumber', 'shopDistrict', 'shopZipCode', 'shopUnitNumber'],
+                fields: [ 'id',
+                  'companyName', 
+                  'CRNumber',
+                  'taxNumber',
+                  'shopName',
+                  'district',
+                  'unitNumber',
+                  'city', 
+                  'street',
+                  'zipCode',
+                  'phoneNumber',
+                  'logo',
+                  'email',
+                  'website'
+                ],
                 store: [],
                 shopCode : window.location.pathname.split("/")[2],
-                company_id : localStorage.getItem("companyId"),
+                store_id : localStorage.getItem("storeId"),
                 filter: null,
                 filterOn: [],
                 currentPage: 1,
@@ -78,24 +134,31 @@
                 isEditable: false
             },
             mounted: async function(){
-                if(!this.isSuperUser()){
+                if(!this.isAdminLogin()){
                     this.logout()
-                }
-                this.getStore()
-              
+                }               
+                this.getStore()              
             },
             methods: {
                 async getStore(){
-                    const response = await fetch("/api/stores/" + this.shopCode);
+                    const response = await fetch("/api/stores/" + this.store_id);
                     const data = await response.json();
                     
                     this.store.push({ 
                       id: data["id"],
+                      companyName: data["company_name"],
+                      CRNumber: data["cr_number"],
+                      city: data["city"],
+                      street: data["street"],
+                      taxNumber: data["tax_number"],
+                      logo: data["logo"],
+                      email: data["email"],
+                      website: data["website"],
                       shopName: data["shop_name"],
-                      shopPhoneNumber: data["phone_number"],
-                      shopDistrict: data["district"],
-                      shopZipCode: data["zip_code"],
-                      shopUnitNumber: data["unit_number"],
+                      phoneNumber: data["phone_number"],
+                      district: data["district"],
+                      zipCode: data["zip_code"],
+                      unitNumber: data["unit_number"],
                       editName: false, 
                       editUsername: false, 
                       editUserType: false, 
@@ -103,8 +166,8 @@
                     })
                 },
 
-                isSuperUser : function(){
-                  return localStorage.getItem("usertype") == "Super user"
+                isAdminLogin : function(){
+                  return localStorage.getItem("usertype") == "Administrator"
                 },
 
                 logout:function(){
@@ -132,11 +195,18 @@
                     id = data.id
 
                     const newData = {
+                      company_name: companyName, 
+                      cr_number: CRNumber, 
+                      city: city, 
+                      street: street,
+                      zip_code: zipCode,
+                      tax_number: taxNumber,
+                      phone_number: phoneNumber,
+                      email: email,
+                      website: website,
                       shop_name: data.shopName,
-                      zip_code: data.shopZipCode,
-                      unit_number: data.shopUnitNumber,
-                      phone_number: data.shopPhoneNumber,
-                      district: data.shopDistrict,
+                      unit_number: data.unitNumber,
+                      district: data.district,
                     }
                     
                   const response = await fetch(`/api/stores/${id}/update`, {
@@ -153,7 +223,7 @@
                 },
                 async Cancel(){
                     console.log("cancell")
-                    if(!this.isSuperUser()){
+                    if(!this.isAdminLogin()){
                          this.logout()
                     }
                     this.getStore()

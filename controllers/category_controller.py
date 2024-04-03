@@ -22,7 +22,10 @@ def all_categories():
             return {'message': 'no categories'}
 
 def create_category(data):
-    category = Category(name=data['name'])
+    category = Category(
+            name=data['name'],
+            store_id = data['store_id']
+        )
 
     with Session() as session:
         session.add(category)
@@ -35,7 +38,7 @@ def create_category(data):
 
 def get_category(category_id):
     with Session() as session:
-        category = session.query(Category).get(category_id)
+        category = session.get(Category, category_id)
         if category:
             # return category
             items = [{'id': item.id, 'name': item.name} for item in category.items]
@@ -46,7 +49,7 @@ def get_category(category_id):
 
 def update_category(category_id, data):
     with Session() as session:
-        category = session.query(Category).get(category_id)
+        category = session.get(Category, category_id)
         if category:
             category.name = data['name']
             session.add(category)
@@ -57,7 +60,7 @@ def update_category(category_id, data):
 
 def delete_category(category_id):
     with Session() as session:
-        category = session.query(Category).get(category_id)
+        category = session.get(Category, category_id)
         if category:
             session.delete(category)
             session.commit()

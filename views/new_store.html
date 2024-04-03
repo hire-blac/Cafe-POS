@@ -1,6 +1,6 @@
 {% extends 'layout/base.html' %}
 
-{% block title %} New Item {% endblock %}
+{% block title %} New Store {% endblock %}
 
 {% block content %}
 
@@ -8,18 +8,17 @@
         
         <div class="row" style="margin-top: 2em;" id="app">
             
-
             <div class="col-md-2"></div>
             <div class="col-md-8">
                 
                 {% if res == "success" %}
                     <div class="alert alert-success" role="alert">
-                        Company Created
+                        Store Created
                     </div>
                 {% endif %}
                 {% if res == "error" %}
                     <div class="alert alert-danger" role="alert">
-                        Error Creating Company
+                        Error Creating Store
                     </div>
                 {% endif %}
                 <!-- <form enctype="multipart/form-data" method="post" action="/company/new-company">     -->
@@ -39,6 +38,21 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="shopName" class="form-label">Shop Name</label>
+                        <input type="text" class="form-control" v-model="shopName" id="shopName" name="shopName" placeholder="Enter The Shop Name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="shopUnitNumber" class="form-label">Shop Unit Number</label>
+                        <input type="text" class="form-control" v-model="shopUnitNumber" id="shopUnitNumber" name="shopUnitNumber" placeholder="Enter The Shop Unit Number">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="shopDistrict" class="form-label">Shop District</label>
+                        <input type="text" class="form-control" v-model="shopDistrict" id="shopDistrict" name="shopDistrict" placeholder="Enter Shop District">
+                    </div>
+
+                    <div class="mb-3">
                         <label for="city" class="form-label">City</label>
                         <input type="text" class="form-control" v-model="city" id="city" name="city" placeholder="Enter City Name">
                     </div>
@@ -54,22 +68,22 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="phoneNumber" class="form-label">Company Phone Number</label>
+                        <label for="phoneNumber" class="form-label">Store Phone Number</label>
                         <input type="text" class="form-control" v-model="phoneNumber" id="phoneNumber" name="phoneNumber" placeholder="Enter Company Phone Number">
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">Company Email</label>
+                        <label for="email" class="form-label">Store Email</label>
                         <input type="email" class="form-control" v-model="email" id="email" name="email" placeholder="Enter Company Email">
                     </div>
 
                     <div class="mb-3">
-                        <label for="website" class="form-label">Company Website</label>
+                        <label for="website" class="form-label">Store Website</label>
                         <input type="text" class="form-control" v-model="website" id="website" name="website" placeholder="Enter Company Website">
                     </div>
     
                     <div class="d-grid gap-2">
-                      <button class="btn btn-success" @click="registerCompany()" type="button">Register Company</button>
+                      <button class="btn btn-success" @click="registerCompany()" type="button">Register New Store</button>
                     </div>
 
                   </div>
@@ -94,14 +108,12 @@
             phoneNumber: '',
             email: '',
             website: '',
-            shopName: companyName,
-            shopZipCOde: zipCode,
-            shopPhoneNumber: phoneNumber,
+            shopName: '',
             shopDistrict: '',
             shopUnitNumber: '',
           },
           mounted: async function(){
-            if(!this.isSuperUser()){
+            if(!this.isAdminLogin()){
               this.logout();
             }
             
@@ -109,7 +121,11 @@
           methods: {
             registerCompany: async function(){
 
-              let newCompany = {
+              if (this.shopName == ''){
+                this.shopName = this.companyName
+              }
+
+              let newStore = {
                 'company_name': this.companyName,
                 'cr_number': this.crNumber,
                 'tax_number': this.taxNumber,
@@ -120,34 +136,30 @@
                 'email': this.email,
                 'website': this.website,
                 'shop_name': this.shopName,
-                'shop_phone_number': this.shopPhoneNumber,
                 'unit_number': this.shopUnitNumber,
-                'shop_zip_code': this.shopZipCOde,
                 'district': this.shopDistrict,
-                'user': localStorage.getItem("username"),
+                'user': localStorage.getItem("cashierId"),
               }
               
-              const response = await fetch("/api/company", {
+              const response = await fetch("/api/store", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify(newCompany),
+                body: JSON.stringify(newStore),
               });
 
               const result = await response.json();
-              console.log(result);
 
               if(result['res']=='success'){
-
-                localStorage.setItem('companyId', result['id'])
-                window.location.href = "/company"
+                localStorage.setItem('storeId', result['id'])
+                window.location.href = "/stores/" + result['id']
               }
               
             },
 
-            isSuperUser : function(){
-              return localStorage.getItem("usertype") == "Super user"
+            isAdminLogin : function(){
+              return localStorage.getItem("usertype") == "Administrator"
             },
 
             logout:function(){

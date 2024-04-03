@@ -1,8 +1,10 @@
 from sqlalchemy.orm import sessionmaker
 from bottle import Bottle, request
-from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES
+from bottle import Bottle, template, route, run, static_file, request, get, post, put, delete, redirect, TEMPLATES, TEMPLATE_PATH
 from bottle import jinja2_template as template
 import os
+import sqlite3 
+import pandas as pd
 from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, store_controller, transaction_controller
 import posauth
 from models.models import Category, engine
@@ -10,10 +12,10 @@ from models.models import Category, engine
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
 
-import sqlite3 
-import pandas as pd
+TEMPLATE_PATH.append('./views')
 
 app = Bottle()
+
 
 @route("/")
 def home():
@@ -30,6 +32,17 @@ def home():
         invoices_count=invoices_count, 
         orders_count=orders_count,
         deliveries_count=deliveries_count,
+    )
+
+
+@route("/super")
+def home():
+    store_count = store_controller.all_stores()['store_count']
+    admin_count = auth_controller.all_admins()['admin_count']
+    return template(
+        'super_user_index', 
+        store_count=store_count, 
+        admin_count=admin_count
     )
 
 
@@ -97,12 +110,12 @@ def new_item():
 @post("/new_item")
 def new_item():
     form_data = {
-        'id': request.forms.get('id'),
-        'name': request.forms.get('name'),
-        'category_id': request.forms.get('category'),
-        'price': request.forms.get('price'),
-        'quantity': request.forms.get('quantity'),
-        'newcategory': request.forms.get('newcategory'),
+        'id': request.forms.getunicode('id'),
+        'name': request.forms.getunicode('name'),
+        'category_id': request.forms.getunicode('category'),
+        'price': request.forms.getunicode('price'),
+        'quantity': request.forms.getunicode('quantity'),
+        'newcategory': request.forms.getunicode('newcategory'),
         'image': ''
     }
 
@@ -376,6 +389,7 @@ def login():
 def login_post():
     data = request.json
     auth_user = auth_controller.login_user(data)
+    print(auth_user)
     return auth_user
 
 @get("/register")
@@ -386,6 +400,7 @@ def register():
 @post("/register")
 def register_post():
     data = request.json
+    print(data)
     user = auth_controller.register_user(data)
     return user
 
@@ -398,14 +413,27 @@ def create_user():
 def create_admin():
     return template('add_admin')
 
+@route("/admin-users")
+def manage_admin_users():
+    if posauth.isSuper(request):
+        users = auth_controller.all_admins()
+        return template("manage_admin_user", rows=users)
+    return {'error': "Unauthorized"}
+
 
 @route("/manage_user")
 def manage_usesr():
+    # print([{k: v} for k, v in request.headers.items()])
     if posauth.isAdmin(request):
         users = auth_controller.all_users()
         return template("manage_user", rows=users)
     return {'error': "Unauthorized"}
 
+
+@get('/api/admin-users')
+def getUsers():
+    users = auth_controller.all_admins()
+    return users
 
 @get('/api/users')
 def getUsers():
@@ -501,42 +529,45 @@ def single_customer(customer_id):
 
 
 # COMPANY ROUTES
-@get("/company")
+@get("/my-store")
 def get_company():
-    return template("company")
+    return template("get_store")
 
 @get("/api/company/<company_id>")
 def get_company(company_id):
     company = store_controller.get_company(company_id)
     return company
 
-@get("/company/new-company")
+@get("/store/new-store")
 def new_company():
-    return template("new_company")
+    return template("new_store")
 
-@post("/company/new-company")
-def create_company():
+@post("/store/new-store")
+def create_store():
     data = {
-        'company_name': request.forms.get('companyName'),
-        'cr_number': request.forms.get('crNumber'),
-        'tax_number': request.forms.get('taxNumber'),
-        'city': request.forms.get('city'),
-        'street': request.forms.get('street'),
-        'zip_code': request.forms.get('zipCode'),
-        'phone_number': request.forms.get('phoneNumber'),
-        'email': request.forms.get('email'),
-        'website': request.forms.get('website'),
+        'company_name': request.forms.getunicode('companyName'),
+        'cr_number': request.forms.getunicode('crNumber'),
+        'tax_number': request.forms.getunicode('taxNumber'),
+        'shop_name': request.forms.getunicode('shopName'),
+        'unit_number': request.forms.getunicode('unitNumber'),
+        'district': request.forms.getunicode('district'),
+        'city': request.forms.getunicode('city'),
+        'street': request.forms.getunicode('street'),
+        'zip_code': request.forms.getunicode('zipCode'),
+        'phone_number': request.forms.getunicode('phoneNumber'),
+        'email': request.forms.getunicode('email'),
+        'website': request.forms.getunicode('website'),
         'logo': '',
     }
-    company = store_controller.create_company(data)
-    return template("company", res_company_id=company['id'])
+    store = store_controller.create_store(data)
+    return template("company", res_company_id=store['id'])
 
-@post("/api/company")
-def create_company():
+@post("/api/store")
+def create_store():
     data = request.json
     data['logo'] = ''
-    company = store_controller.create_company(data)
-    return company
+    store = store_controller.create_store(data)
+    return store
 
 @put("/api/company/<company_id>/update")
 def update_company(company_id):

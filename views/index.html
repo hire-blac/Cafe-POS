@@ -156,6 +156,10 @@
           data: {th:''
           },
           mounted: async function(){
+
+            if(localStorage.getItem("usertype")=='SuperUser'){
+                window.location.href = "/super"
+            }
              
           },
           methods: {

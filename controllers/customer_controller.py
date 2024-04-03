@@ -22,7 +22,8 @@ def all_customers():
 def create_customer(data):
     customer = Customer(
         name=data['customer_name'],
-        phone=data['customer_phone']
+        phone=data['customer_phone'],
+        # store_id=data['store_id']
     )
 
     with Session() as session:
@@ -37,7 +38,7 @@ def create_customer(data):
 
 def get_customer(customer_id):
     with Session() as session:
-        customer = session.query(Customer).get(customer_id)
+        customer = session.get(Customer, customer_id)
         if customer:
             customer_orders = []
             orders = session.query(Order).filter_by(customer_name=customer.name).order_by(-Order.created_at).all()
@@ -65,7 +66,7 @@ def get_customer(customer_id):
 
 def update_customer(customer_id, data):
     with Session() as session:
-        customer = session.query(Customer).get(customer_id)
+        customer = session.get(Customer, customer_id)
         if customer:
             customer.name = data['name']
             customer.phone = data['phone']
@@ -77,7 +78,7 @@ def update_customer(customer_id, data):
 
 def delete_customer(customer_id):
     with Session() as session:
-        customer = session.query(Customer).get(customer_id)
+        customer = session.get(Customer, customer_id)
         if customer:
             session.delete(customer)
             session.commit()

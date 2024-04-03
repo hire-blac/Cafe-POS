@@ -49,7 +49,8 @@ def create_order(data):
         order_type=data['order_type'],
         payment_status=data['payment_status'],
         status=data['status'],
-        cashier_id=data['cashier_id']
+        cashier_id=data['cashier_id'],
+        # store_id=data['store_id'],
     )
 
     with Session() as session:
@@ -110,7 +111,7 @@ def create_order(data):
 
 def get_order(order_id):
     with Session() as session:
-        order = session.query(Order).get(order_id)
+        order = session.get(Order, order_id)
         if order:
             # get all ordered_items for each order
             ordered_items = [ordered_item_details(ordered_item) for ordered_item in order.ordered_items]
@@ -135,7 +136,7 @@ def get_order(order_id):
 
 def update_order(data, order_id):
     with Session() as session:
-        order = session.query(Order).get(order_id)
+        order = session.get(Order, order_id)
         if order:
             # edit order
             pass
@@ -145,7 +146,7 @@ def update_order(data, order_id):
 
 def delete_order(order_id):
     with Session() as session:
-        order = session.query(Order).get(order_id)
+        order = session.get(Order, order_id)
         if order:
             session.delete(order)
             session.commit()

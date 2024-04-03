@@ -214,110 +214,112 @@
       </div>       
     </div>
     
-    <div dir="rtl" lang="ar" class="invoice-container" style="float: right; width: 30%;" id="invoicediv" v-show="cart.show_receipt">
+    <div dir="rtl" lang="ar" class="invoice-container" style="float: right; width: 30%;" v-show="cart.show_receipt">
       <span><h4>Order Completed</h4></span>
 
-      <header>
-        <div id="logo" class="media">
-          <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-        </div>
+      <div id="invoicediv" ref="invoice">
+        <header>
+          <div id="logo" class="media">
+            <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+          </div>
 
-        <p align="center">SBISTechs Inc</p>
-        <p align="center">
-          TAX Number : 4910487129047124<br/>
-          JohnDoe@gmail.com, street city, state 0000, 555-555-5555.
-        </p></br>
+          <p align="center">SBISTechs Inc</p>
+          <p align="center">
+            TAX Number : 4910487129047124<br/>
+            JohnDoe@gmail.com, street city, state 0000, 555-555-5555.
+          </p></br>
 
-      </header>
+        </header>
 
-      <table class="bill-details">
-        <tbody align="center">
+        <table class="bill-details">
+          <tbody align="center">
+              <tr>
+                <td>
+                  Date :<span> </br>[[ cart.cdateTime ]] </span>
+                </td>
+                <td>
+                  Invoice ID :<span>[[ cart.inv.invoiceId ]]</span>
+                </td>
+              </tr>
+
+              <tr>
+              </tr>
+
+              <tr>
+                <th class="center-align" colspan="2">
+                  <span class="receipt">Order Number: 3 </span>
+                </th>
+              </tr>
+          </tbody>
+        </table>
+        <!--Invoice Body  -->
+        <table class="items">
+          <thead>
             <tr>
-              <td>
-                Date :<span> </br>[[ cart.cdateTime ]] </span>
-              </td>
-              <td>
-                Invoice ID :<span>[[ cart.inv.invoiceId ]]</span>
-              </td>
+              <th class="heading name">Item  الصنف</th>
+              <th class="heading Itemprice">Price  السعر</th>
+              <th class="heading qty">Qty  الكمية</th>
+              <th class="heading ItemTotal">Sub  اجمالي</th>                
+            </tr>
+          </thead>
+          
+          <tbody>          
+            <tr v-for="it in cart.items">
+              <td class="name">[[it.name]]</td>
+              <td class="price Itemprice">[[it.price]]</td>
+              <td class="qty">[[ it.quantity ]]</td>
+              <td class="price ItemTotal">[[ it.price * it.quantity ]]</td>
+            </tr>
+
+            <tr>
+              <td colspan="3" class="sum-up line">Total Before Tax الاجمالي قبل الضريبة</td>
+              <td class="line price" align="left">[[ cart.cartLiveTotal ]]</td>
+            </tr>
+
+            <tr>
+              <td colspan="3" class="sum-up">TAX الضريبة</td>
+              <td class="price" align="left">[[ cart.taxTotal ]]</td>
             </tr>
 
             <tr>
             </tr>
 
             <tr>
-              <th class="center-align" colspan="2">
-                <span class="receipt">Order Number: 3 </span>
-              </th>
+              <th colspan="3" class="total text">Grand Total الاجمالي</th>
+              <th class="total price" align="left">[[ cart.cartTotal ]]</th>
             </tr>
-        </tbody>
-      </table>
-      <!--Invoice Body  -->
-      <table class="items">
-        <thead>
-          <tr>
-            <th class="heading name">Item  الصنف</th>
-            <th class="heading Itemprice">Price  السعر</th>
-            <th class="heading qty">Qty  الكمية</th>
-            <th class="heading ItemTotal">Sub  اجمالي</th>                
-          </tr>
-        </thead>
-        
-        <tbody>          
-          <tr v-for="it in cart.items">
-            <td class="name">[[it.name]]</td>
-            <td class="price Itemprice">[[it.price]]</td>
-            <td class="qty">[[ it.quantity ]]</td>
-            <td class="price ItemTotal">[[ it.price * it.quantity ]]</td>
-          </tr>
 
-          <tr>
-            <td colspan="3" class="sum-up line">Total Before Tax الاجمالي قبل الضريبة</td>
-            <td class="line price" align="left">[[ cart.cartLiveTotal ]]</td>
-          </tr>
+            <tr>
+              <td colspan="3" class="sum-up">Paid المدفوع</td>
+              <td class="price" align="left">[[ cart.paidAmount ]]</td>
+            </tr>
 
-          <tr>
-            <td colspan="3" class="sum-up">TAX الضريبة</td>
-            <td class="price" align="left">[[ cart.taxTotal ]]</td>
-          </tr>
+            <tr>
+              <td colspan="3" class="sum-up">Reamining الباقي</td>
+              <td class="price" align="left">[[ cart.remainingAmount ]]</td>
+            </tr>
+          </tbody>
+        </table>
 
-          <tr>
-          </tr>
+        <section style="width: 360px;align-content: center;" align='center'>
+            <p>
+              Payment Method: <span>[[ cart.inv.paymentMethod ]]</span>
+            </p>
 
-          <tr>
-            <th colspan="3" class="total text">Grand Total الاجمالي</th>
-            <th class="total price" align="left">[[ cart.cartTotal ]]</th>
-          </tr>
+            <p>
+              Cashier ID: <span>[[ cart.inv.cashier ]]</span>
+            </p>
 
-          <tr>
-            <td colspan="3" class="sum-up">Paid المدفوع</td>
-            <td class="price" align="left">[[ cart.paidAmount ]]</td>
-          </tr>
+            <img :src="cart.inv.qrCode" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+            <p style="text-align:center">
+              Thank you for your visit!
+            </p>
 
-          <tr>
-            <td colspan="3" class="sum-up">Reamining الباقي</td>
-            <td class="price" align="left">[[ cart.remainingAmount ]]</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <section style="width: 360px;align-content: center;" align='center'>
-          <p>
-            Payment Method: <span>[[ cart.inv.paymentMethod ]]</span>
-          </p>
-
-          <p>
-            Cashier ID: <span>[[ cart.inv.cashier ]]</span>
-          </p>
-
-          <img :src="cart.inv.qrCode" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-          <p style="text-align:center">
-            Thank you for your visit!
-          </p>
-
-          <p style="text-align:center">
-            <a href="/"> www.www.com </a>
-          </p>
-      </section>
+            <p style="text-align:center">
+              <a href="/"> www.www.com </a>
+            </p>
+        </section>
+      </div>
 
       <!-- former invoice card -->
       
@@ -754,7 +756,7 @@
                   this.inv.cashier = cashierIdName
                   this.inv.invoiceId = invoiceId
                   this.cdateTime = result['created_at']
-                  this.inv.qrCode = result['qrcode']
+                  this.inv.qrCode = result['qrcode_url'].slice(6)
                   
                   this.show_receipt = true
               },

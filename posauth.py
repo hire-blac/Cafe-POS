@@ -8,5 +8,9 @@ def GetAuthToken(username):
     return AUTH_TOKEN + username
 
 def isAdmin(request):
-    user_type =  request.get_cookie('user_type')
+    user_type = request.get_cookie('user_type')
     return user_type == 'Administrator'
+
+def isSuper(request):
+    user_type = request.get_cookie('user_type')
+    return user_type == 'SuperUser'

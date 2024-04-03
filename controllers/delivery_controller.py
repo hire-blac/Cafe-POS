@@ -14,6 +14,7 @@ def create_delivery(data):
         customer_name=data['customer_name'],
         customer_phone=data['customer_phone'],
         delivery_address=data['delivery_address'],
+        # store_id=data['store_id'],
     )
 
     with Session() as session:
@@ -62,7 +63,7 @@ def all_deliveries():
 
 def get_Delivery(delivery_id):
     with Session() as session:
-        delivery = session.query(Delivery).get(delivery_id)
+        delivery = session.get(Delivery, delivery_id)
         if delivery:
             order = delivery.order
             # get all ordered_items for each order
@@ -97,7 +98,7 @@ def get_Delivery(delivery_id):
 
 def update_Delivery(delivery_id, data):
     with Session() as session:
-        delivery = session.query(Delivery).get(delivery_id)
+        delivery = session.get(Delivery, delivery_id)
         if delivery:
             delivery.customer_name=data['customer_name'],
             delivery.customer_phone=data['customer_phone'],
@@ -122,7 +123,7 @@ def update_Delivery(delivery_id, data):
 
 def delete_Delivery(delivery_id):
     with Session() as session:
-        delivery = session.query(Delivery).get(delivery_id)
+        delivery = session.get(Delivery, delivery_id)
         if delivery:
             session.delete(delivery)            
             session.commit()

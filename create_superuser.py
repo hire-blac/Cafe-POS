@@ -22,7 +22,7 @@ def create_super_user():
                     name=name,
                     username=username,
                     password=password_hash,
-                    usertype = 'Super user'
+                    usertype = 'SuperUser'
                 )
 
             session.add(user)

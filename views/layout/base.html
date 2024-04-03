@@ -331,6 +331,7 @@
                   <li><a class="dropdown-item" href="/manage_user">Manage Users</a></li>
                   <li><a class="dropdown-item" href="/manage_customers">Manage Customers</a></li>
                   <li><a class="dropdown-item" href="/categories">Manage Categories</a></li>
+                  <li><a class="dropdown-item" href="/my-store">Manage Store</a></li>
                 </ul>
               </li>
 
@@ -340,8 +341,7 @@
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <li><a class="dropdown-item" href="/add_admin">Add Admin User</a></li>
-                  <li><a class="dropdown-item" href="/manage_user">Manage Users</a></li>
-                  <li><a class="dropdown-item" href="/company">Manage Company</a></li>
+                  <li><a class="dropdown-item" href="/admin-users">Manage Admin Users</a></li>
                   <li><a class="dropdown-item" href="/stores">Manage Stores</a></li>
                 </ul>
               </li>
@@ -418,7 +418,7 @@
             },
             isSuperUser(){
               console.log("usertype:",localStorage.getItem("usertype"))
-                return localStorage.getItem("usertype") == "Super user"
+                return localStorage.getItem("usertype") == "SuperUser"
             }
           },
           methods: {

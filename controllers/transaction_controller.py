@@ -41,7 +41,7 @@ def all_transactions():
 
 def get_transaction(transaction_id):
     with Session() as session:
-        transaction = session.query(Transaction).get(transaction_id)
+        transaction = session.get(Transaction, transaction_id)
         if transaction:
             return transaction_details(transaction)
         else:
@@ -50,7 +50,7 @@ def get_transaction(transaction_id):
 
 def update_transaction(data, transaction_id):
     with Session() as session:
-        transaction = session.query(Transaction).get(transaction_id)
+        transaction = session.get(Transaction, transaction_id)
         if transaction:
             pass
         else:
@@ -59,7 +59,7 @@ def update_transaction(data, transaction_id):
 
 def delete_transaction(transaction_id):
     with Session() as session:
-        transaction = session.query(Transaction).get(transaction_id)
+        transaction = session.get(Transaction, transaction_id)
         if transaction:
             session.delete(transaction)
             session.commit()

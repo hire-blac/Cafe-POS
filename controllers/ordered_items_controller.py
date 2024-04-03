@@ -41,7 +41,7 @@ def all_ordered_items():
 
 def get_ordered_item(ordered_item_id):
     with Session() as session:
-        ordered_item = session.query(OrderedItem).get(ordered_item_id)
+        ordered_item = session.get(OrderedItem, ordered_item_id)
         if ordered_item:
             return ordered_item_details(ordered_item)
         else:
@@ -50,7 +50,7 @@ def get_ordered_item(ordered_item_id):
 
 def update_ordered_item(data, ordered_item_id):
     with Session() as session:
-        ordered_item = session.query(OrderedItem).get(ordered_item_id)
+        ordered_item = session.get(OrderedItem, ordered_item_id)
         if ordered_item:
             pass
         else:
@@ -59,7 +59,7 @@ def update_ordered_item(data, ordered_item_id):
 
 def delete_ordered_item(ordered_item_id):
     with Session() as session:
-        ordered_item = session.query(OrderedItem).get(ordered_item_id)
+        ordered_item = session.get(OrderedItem, ordered_item_id)
         if ordered_item:
             session.delete(ordered_item)
             session.commit()

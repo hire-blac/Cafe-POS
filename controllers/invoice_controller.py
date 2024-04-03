@@ -64,12 +64,15 @@ def create_invoice(data):
         # create invoice qrcode
         invoice_qrcode = InvoiceToQR(
             InvoiceID=invoice.id,
+            SellerName="Sayer",
+            TAX_ID="318765367897613",
             Time=invoice.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             InvoiceTotal=str(invoice.total_price),
             TAX=str(invoice.tax)
         )
         
-        invoice.qrcode_url = invoice_qrcode
+        invoice.qrcode_url = invoice_qrcode[0]
+        invoice.qrcode = invoice_qrcode[1]
         session.add(invoice)
         session.commit()
 
@@ -86,7 +89,8 @@ def create_invoice(data):
                 item_name=item['item_name'],
                 item_price=item['item_price'],
                 quantity_sold=item['quantity_sold'],
-                subtotal=item['subtotal']
+                subtotal=item['subtotal'],
+                # store_id=item['store_id']
             )
             # save transaction
             session.add(transaction)
@@ -116,7 +120,8 @@ def create_invoice(data):
             'payment_method': str(invoice.payment_method),
             'customer_PNO': invoice.costumer_PNO,
             'cashier_id': invoice.cashier_id,
-            'qrcode': invoice.qrcode_url,
+            'qrcode_url': invoice.qrcode_url,
+            'qrcode': invoice.qrcode,
             'invoice_json': invoice_json,
             'invoice_xml': dom.toprettyxml(),
             # 'cashier_name': invoice.cashier.name,
@@ -129,7 +134,7 @@ def create_invoice(data):
 
 def get_invoice(invoice_id):
     with Session() as session:
-        invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.get(Invoice, invoice_id)
         if invoice:
             # get all transactions for each invoice
             purchase_items = [transaction_details(transaction) for transaction in invoice.purchase_items]
@@ -143,7 +148,8 @@ def get_invoice(invoice_id):
                 'amount_paid': str(invoice.amount_paid),
                 'payment_method': str(invoice.payment_method),
                 'customer_PNO': invoice.costumer_PNO,
-                'qrcode': invoice.qrcode_url,
+                'qrcode_url': invoice.qrcode_url,
+                'qrcode': invoice.qrcode,
                 'cashier_id': invoice.cashier_id,
                 # 'cashier_name': invoice.cashier.name,
                 'created_at': invoice.created_at.strftime("%Y-%m-%d %H:%M:%S")
@@ -155,7 +161,7 @@ def get_invoice(invoice_id):
 
 def update_invoice(data, invoice_id):
     with Session() as session:
-        invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.get(Invoice, invoice_id)
         if invoice:
             # edit invoice
             pass
@@ -165,7 +171,7 @@ def update_invoice(data, invoice_id):
 
 def delete_invoice(invoice_id):
     with Session() as session:
-        invoice = session.query(Invoice).get(invoice_id)
+        invoice = session.get(Invoice, invoice_id)
         if invoice:
             session.delete(invoice)
             session.commit()

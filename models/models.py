@@ -1,38 +1,28 @@
 # from enum import Enum
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Numeric, Float, Enum, DateTime, func
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Numeric, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 
 Base = declarative_base()
 
 # Define SQLAlchemy models
-
-class CompanyProfile(Base):
-    __tablename__ = 'companies'
+class Store(Base):
+    __tablename__ = 'stores'
     id = Column(Integer, primary_key=True)
     company_name = Column(String, nullable=False)
     cr_number = Column(String, nullable=False)
+    tax_number = Column(String, nullable=False)
+    shop_name = Column(String, nullable=False)
     city = Column(String, nullable=False)
     street = Column(String, nullable=False)
     zip_code = Column(String, nullable=True)
-    tax_number = Column(String, nullable=False)
+    district = Column(String, nullable=True)
+    unit_number = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
     email = Column(String, nullable=True)
     website = Column(String, nullable=True)
-    logo = Column(String, nullable=True)  # Column to store image URL
-
-
-class StoreProfile(Base):
-    __tablename__ = 'stores'
-    id = Column(Integer, primary_key=True)
-    shop_name = Column(String, nullable=False)
-    phone_number = Column(String, nullable=True)
-    zip_code = Column(String, nullable=True)
-    district = Column(String, nullable=True)
-    unit_number = Column(String, nullable=True)
-    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
-    company = relationship('CompanyProfile', backref=backref('stores'))
-
+    logo = Column(String, nullable=True)
+    
 
 class User(Base):
     __tablename__ = 'users'
@@ -42,9 +32,7 @@ class User(Base):
     password = Column(String, nullable=False)
     usertype = Column(String, nullable=False)
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
-    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
-    store = relationship('StoreProfile', backref=backref('store_user'))
-    company = relationship('CompanyProfile', backref=backref('company'))
+    store = relationship('Store', backref=backref('store_user'))
 
 
 class Customer(Base):
@@ -53,9 +41,7 @@ class Customer(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
-    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
-    store = relationship('StoreProfile', backref=backref('store_customer'))
-    company = relationship('CompanyProfile', backref=backref('company_customer'))
+    store = relationship('Store', backref=backref('store_customer'))
 
 
 class Supplier(Base):
@@ -65,9 +51,7 @@ class Supplier(Base):
     phone = Column(String, nullable=False)
     email = Column(String, nullable=True)
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
-    company_id = Column(Integer, ForeignKey('companies.id'), nullable=True)
-    store = relationship('StoreProfile', backref=backref('store_supplier'))
-    company = relationship('CompanyProfile', backref=backref('company_supplier'))
+    store = relationship('Store', backref=backref('store_supplier'))
 
 
 class Category(Base):
@@ -76,7 +60,7 @@ class Category(Base):
     name = Column(String, nullable=False)
     items = relationship('Item', back_populates='category')
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
-    store = relationship('StoreProfile', backref=backref('store_category'))
+    store = relationship('Store', backref=backref('store_category'))
 
 
 class Item(Base):
@@ -89,7 +73,7 @@ class Item(Base):
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=True)
     category = relationship('Category', back_populates='items')
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
-    store = relationship('StoreProfile', backref=backref('store_item'))
+    store = relationship('Store', backref=backref('store_item'))
 
 
 class Transaction(Base):
@@ -106,7 +90,7 @@ class Transaction(Base):
 
     # Define the relationship with Item
     item = relationship('Item', backref=backref('transactions'), cascade="")
-    store = relationship('StoreProfile', backref=backref('store_transaction'))
+    store = relationship('Store', backref=backref('store_transaction'))
 
 
 class Invoice(Base):
@@ -123,11 +107,12 @@ class Invoice(Base):
     cashier_id = Column(Integer, ForeignKey('users.id'))
     cashier_name = Column(String, nullable=True)
     qrcode_url = Column(String, nullable=True)  # Column to store image URL
+    qrcode = Column(String, nullable=True)  # Column to store b64 code
     created_at = Column(DateTime, server_default=func.now())
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
-    store = relationship('StoreProfile', backref=backref('store_invoice'))
+    store = relationship('Store', backref=backref('store_invoice'))
     purchase_items = relationship('Transaction', backref=backref('transactions', uselist=False))
     cashier = relationship('User', backref=backref('cashier'))
     # customer = relationship('Customer', backref=backref('customer'))
@@ -148,7 +133,7 @@ class Order(Base):
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
-    store = relationship('StoreProfile', backref=backref('store_order'))
+    store = relationship('Store', backref=backref('store_order'))
     ordered_items = relationship('OrderedItem', backref=backref('ordered_items', uselist=False))
     cashier = relationship('User', backref=backref('order_cashier'))
     # customer = relationship('Customer', backref=backref('orders'))
@@ -167,7 +152,7 @@ class OrderedItem(Base):
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
-    store = relationship('StoreProfile', backref=backref('store_ordered_item'))
+    store = relationship('Store', backref=backref('store_ordered_item'))
     item = relationship('Item', backref=backref('orderd_items'))
 
 
@@ -183,7 +168,7 @@ class Delivery(Base):
     store_id = Column(Integer, ForeignKey('stores.id'), nullable=True)
 
     # Define the relationships
-    store = relationship('StoreProfile', backref=backref('store_delivery'))
+    store = relationship('Store', backref=backref('store_delivery'))
     order = relationship('Order', backref=backref('delivery'))
 
 

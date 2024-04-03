@@ -29,6 +29,7 @@ def create_item(data):
         image_url=data['image'],
         quantity=data['quantity'],
         category_id=data['category_id'],
+        # store_id=data['store_id'],
     )
 
     with Session() as session:
@@ -60,7 +61,7 @@ def all_items():
 
 def get_item(item_id):
     with Session() as session:
-        item = session.query(Item).get(item_id)
+        item = session.get(Item, item_id)
         if item:
             transactions = [transaction_details(trans) for trans in item.transactions]
             
@@ -74,7 +75,7 @@ def get_item(item_id):
 
 def update_item(item_id, data):
     with Session() as session:
-        item = session.query(Item).get(item_id)
+        item = session.get(Item, item_id)
         if item:
             category = session.query(Category).filter_by(name=data['category']).first()
             item.name = data['name']
@@ -90,7 +91,7 @@ def update_item(item_id, data):
 
 def reduce_quantity(item_id, quantity):
     with Session() as session:
-        item = session.query(Item).get(item_id)
+        item = session.get(Item, item_id)
         if item:
             item.quantity -= quantity
             session.add(item)
@@ -101,7 +102,7 @@ def reduce_quantity(item_id, quantity):
 
 def delete_item(item_id):
     with Session() as session:
-        item = session.query(Item).get(item_id)
+        item = session.get(Item, item_id)
         if item:
             session.delete(item)            
             session.commit()

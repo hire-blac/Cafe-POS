@@ -22,6 +22,7 @@
                         Error Creating Item(s)
                     </div>
                 {% endif %}
+
                 <form method="post" action="/new_item">
 
                     <div class="mb-3">
@@ -31,7 +32,7 @@
     
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" name='name' id="name" placeholder="Enter Item name">
+                        <input type="text" class="form-control" name='name' id="name" v-model="itemName" placeholder="Enter Item name" lang="ar">
                     </div>
     
                     <div class="mb-3">
@@ -54,7 +55,7 @@
                     </div>
     
                     <div class="mb-3">
-                        <input type="submit" value="Add Item" class="btn btn-primary" v-on:click="submitForm()"/>
+                        <input type="submit" value="Add Item" class="btn btn-primary"/>
                     </div>
 
                 </form>
@@ -119,32 +120,32 @@
             },
             
             async submitForm() {
-              const response = fetch("/api/categories" + this.customCategory);
-              const data =  response.json();
-              console.log(data)
-              alert("New category added!");
+              // const response = fetch("/api/categories" + this.customCategory);
+              // const data =  response.json();
+              // console.log(data)
+              // alert("New category added!");
 
-              const category = {
-                name: this.customCategory
-              }
+              // const category = {
+              //   name: this.customCategory
+              // }
 
-              try {
-                const response = await fetch("/api/categories", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(category),
-                });
+              // try {
+              //   const response = await fetch("/api/categories", {
+              //     method: "POST",
+              //     headers: {
+              //       "Content-Type": "application/json",
+              //     },
+              //     body: JSON.stringify(category),
+              //   });
 
-                const result = await response.json();
-                console.log(result);
+              //   const result = await response.json();
+              //   console.log(result);
                 
-                alert("New category added!");
+              //   alert("New category added!");
 
-              } catch (error) {
-                console.log(error);
-              }
+              // } catch (error) {
+              //   console.log(error);
+              // }
             },
 
             goBack(){

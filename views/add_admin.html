@@ -5,7 +5,7 @@
 {% block content %}
 
     <div class="container">
-        <div class="row" style="margin-top: 2em;" id="users">
+        <div class="row my-3" style="margin-top: 2em;" id="users">
           <h3 class="text-center mb-2">Create New Admin User</h3>
             <div class="col-md-2"></div>
             <div class="col-md-8">
@@ -17,13 +17,6 @@
               <div class="mb-3">
                 <label for="id" class="form-label">User ID</label>
                 <input type="text" class="form-control" name='id'  v-model="id" id="id" placeholder="Enter user ID">
-              </div>
-                
-              <div class="mb-3">
-                  <label for="store_id" class="form-label">Select Store</label>
-                  <select class="form-select" aria-label="Default select" name="store_id"  v-model="store_id" id="store_id">
-                    <option v-for="store in storesOptions" :key="store_id" :value="store.id">[[store.name]]</option>  
-                  </select>
               </div>
 
               <div class="mb-3">
@@ -62,27 +55,14 @@
             name: '',
             username: '',
             password: '',
-            store_id: '',
-            company_id : localStorage.getItem("companyId"),
-            storesOptions: [],
             error: ''              
            },
            mounted : async function(){
             if(!this.isSuperUser()){
                this.logout();
-            }  
-            const response = await fetch("/api/company/" + this.company_id);
-            const data = await response.json();
-            
-            let stores = data["stores"]
-            stores.forEach(store => {
-
-              this.storesOptions.push({
-                id: store['id'],
-                name: store['shop_name'],
-              })
-            })            
+            }        
            },
+
            computed: {
            
            },
@@ -95,9 +75,9 @@
                 name: this.name,
                 username: this.username,
                 password: this.password,
-                store_id: this.store_id,
-                company_id: this.company_id
+                store_id: '',
               }
+              console.log(credentials);
               try {
                 const response = await fetch("/register", {
                   method: "POST",
@@ -113,7 +93,7 @@
                 if(result["error"]){
                   this.error = result['error']
                 } else {
-                  window.location.href = "/manage_user"
+                  window.location.href = "/admin-users"
 
                 }
 
@@ -123,7 +103,7 @@
 
             },
             isSuperUser : function(){
-              return localStorage.getItem("usertype") == "Super user"
+              return localStorage.getItem("usertype") == "SuperUser"
             },
             logout:function(){
                 window.localStorage.clear()

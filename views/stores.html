@@ -1,0 +1,168 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Stores {% endblock %}
+
+{% block content %}
+
+   
+    <div class="container" id="app">
+
+        <div style="margin-top: 2em;">
+
+            <b-table striped hover 
+              :fields="fields" 
+              :items="stores"
+              :filter="filter"
+              :filter-included-fields="filterOn"
+              @filtered="onFiltered"
+              :current-page="currentPage"
+              :per-page="perPage"
+              :sort-by.sync="sortBy"
+            >          
+          
+              <template #cell(companyName)="data">
+                [[data.item.companyName]]
+              </template>
+
+              <template #cell(shopName)="data">
+                  [[data.item.shopName]]
+                </template>
+        
+              <template #cell(CRNumber)="data">
+                [[ data.item.CRNumber ]]
+              </template>
+  
+              <template #cell(phoneNumber)="data">
+                [[ data.item.phoneNumber]]
+              </template>
+              
+              <template #cell(edit)="data">
+                  <b-link><i class="fas fa-edit"></i></span></b-link>
+              </template>
+              <template #cell(del)="data">
+                  <b-link v-on:click="removeItem(data.index, data.item.id)"><i class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i></span></b-link>
+              </template>
+  
+              <template #cell(show)="data">
+                  <b-link :href=" '/item/' + data.item.id "><i class="fa fa-eye" aria-hidden="true"></i></span></b-link>
+              </template>
+    
+            </b-table>
+
+            <b-row>
+                <b-col sm="5" md="6"></b-col>
+                <b-col sm="7" md="6" class="my-1">
+                  <b-pagination
+                    v-model="currentPage"
+                    :total-rows="totalRows"
+                    :per-page="perPage"
+                    align="fill"
+                    size="sm"
+                    class="my-0"
+                    v-show="totalRows > perPage"
+                  >
+                    </b-pagination>
+                </b-col>
+            </b-row>
+
+            <b-modal v-model="modalShow" @ok="handleOk" title="Delete Item">Are you sure you want to delete this Store?</b-modal>
+
+        </div>
+
+    </div>
+
+    <script type="application/javascript">
+
+        new Vue({
+            delimiters : ['[[',']]'],
+            el: '#app',
+            data: {
+              fields: [
+                {key:'id',sortable: true},
+                {key:'companyName', label: "Company Name"},
+                {key:'shopName', label: "Shop Name"},
+                {key:'CRNumber', label: "CR Number"},
+                {key:'phoneNumber', label: "Phone Number"},
+                {key: 'del', label: ''},
+                {key: 'show', label: ''},
+              ],
+              stores: [],
+              allItems: [],
+              currentDeleteId: -1,
+              currentDeleteIndex: -1,
+              modalShow: false,
+              filter: null,
+              filterOn: [],
+              currentPage: 1,
+              totalRows: 1,
+              perPage: 10,
+              sortBy: '',              
+            },
+
+            mounted: async function(){
+                if(!this.isSuperUser()){
+                    this.logout();
+                }
+                const response = await fetch("/api/stores");
+                const data = await response.json();
+               
+                let stores = data["stores"]
+
+                stores.forEach(store => {
+                  this.stores.push({
+                    id: store['id'],
+                    companyName: store['company_name'],
+                    shopName: store['shop_name'],
+                    CRNumber: store['cr_number'],
+                    phoneNumber: store['phone_number'],
+                    show: 'test',
+                    del: 'test'
+                  })
+                })
+
+                this.totalRows = this.items.length
+
+                this.categoryOptions = [...new Set(this.categoryOptions)]
+                this.selectedCategory = this.categoryOptions[0]
+            },
+            methods: {
+              removeItem : function(index, id){
+                  this.modalShow = !this.modalShow
+                  this.currentDeleteId = id
+                  this.currentDeleteIndex = index
+              },
+
+              handleOk: async function(){
+                  let id = this.currentDeleteId
+                  let index = this.currentDeleteIndex
+                  this.items.splice(index,1)
+
+                  const response = await fetch("/api/stores/"+ id +"/delete", {
+                      method: "DELETE",
+                      headers: {
+                        "Content-Type": "application/json",
+                      }
+                    });
+
+                  const result = await response.json();
+                  console.log(result);
+                  window.location.reload()
+
+              },
+
+              isSuperUser : function(){
+                return localStorage.getItem("usertype") == "SuperUser"
+              },
+
+              logout:function(){
+                window.localStorage.clear()
+                console.log("You don't have access to view this page")
+                window.location.href = "/login"
+
+              }
+            }
+        })
+
+    </script>
+    
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'layout/base.html' %}
+
+{% block title %} Super Admin Home {% endblock %}
+
+{% block content %}
+
+   
+<div class="container">
+        <div class="row" style="margin-top:3em;">
+          <div class="card col-md-4" style="max-width: 340px;">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <i class="fas fa-shopping-cart fa-3x"></i>
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h2 class="card-title">{{ store_count }}</h2>
+                  <p class="card-text">Total Stores</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card col-md-4" style="max-width: 340px;margin-left: 1em;">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <i class="fas fa-cart-arrow-down fa-3x"></i>  
+               
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h2 class="card-title">{{ admin_count }}</h2>
+                  <p class="card-text">Total Admin Users</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <div id="admin">
+            <div class="row" style="margin-top: 2em;" v-show="isAdminLogin()">
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/admin-users" class="btn btn-outline-success">Admin Users</a>
+                </div>
+              </div>
+    
+              <div class="col-md-6" v-show="isAdminLogin()">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/add_admin" class="btn btn-outline-success">New Admin User</a>
+                </div>
+              </div>
+              
+            </div>
+
+            <div class="row" style="margin-top: 2em;" >
+              
+              <div class="col-md-6">
+                <div class="d-grid gap-2 col-12 mx-auto">
+                  <a href="/stores" class="btn btn-outline-success">Stores</a>
+                </div>
+              </div>
+              
+            </div>
+  
+        </div>
+    </container>
+
+    <script type="application/javascript">
+
+      new Vue({
+          delimiters : ['[[',']]'],
+          el: "#admin",
+          data: {th:''
+          },
+          mounted: async function(){
+             
+          },
+          methods: {
+            
+            isAdminLogin : function(){
+              console.log("You don't have access to view this page")
+              return localStorage.getItem("usertype") == "SuperUser"
+            },
+            logout:function(){
+              window.localStorage.clear()
+              console.log("You don't have access to view this page")
+              window.location.href = "/login"
+ 
+            },
+          }
+      })
+
+  </script>
+
+{% endblock %}
