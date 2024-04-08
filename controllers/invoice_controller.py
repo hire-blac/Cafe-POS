@@ -13,9 +13,10 @@ from . transaction_controller import transaction_details
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
         
-def all_invoices():
+def all_invoices(store_id):
+    print('store id: ', store_id)
     with Session() as session:
-        invoices = session.query(Invoice).order_by(Invoice.created_at.desc()).all()
+        invoices = session.query(Invoice).order_by(Invoice.created_at.desc()).filter_by(store_id=store_id).all()
         if invoices:
             data = []
             for invoice in invoices:
@@ -54,7 +55,8 @@ def create_invoice(data):
         payment_method=data['payment_method'],
         payment_id=data['payment_id'],
         costumer_PNO=data['customer_PNO'],
-        cashier_id=data['cashier_id']
+        cashier_id=data['cashier_id'],
+        store_id=data['store_id']
     )
 
     with Session() as session:
@@ -90,7 +92,7 @@ def create_invoice(data):
                 item_price=item['item_price'],
                 quantity_sold=item['quantity_sold'],
                 subtotal=item['subtotal'],
-                # store_id=item['store_id']
+                store_id=data['store_id']
             )
             # save transaction
             session.add(transaction)

@@ -28,23 +28,23 @@
     
                     <template #cell(taxNumber)="data">
                       <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.taxNumber]]</span>
-                      <input v-show="isEditable" v-model="data.item.taxNumber" type="text" />
-                  </template>
+                      <input v-show="isEditable" @keydown="validateTax" v-model="data.item.taxNumber" type="text" />
+                    </template>
               
-                  <template #cell(shopName)="data">
-                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopName]]</span>
-                    <input v-show="isEditable" v-model="data.item.shopName" type="text" />
-                  </template>
-            
-                  <template #cell(district)="data">
-                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.district]]</span>
-                    <input v-show="isEditable" v-model="data.item.district" type="text" />
-                  </template>
-            
-                  <template #cell(unitNumber)="data">
-                    <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.unitNumber]]</span>
-                    <input v-show="isEditable" v-model="data.item.unitNumber" type="text" />
-                  </template>
+                    <template #cell(shopName)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.shopName]]</span>
+                      <input v-show="isEditable" v-model="data.item.shopName" type="text" />
+                    </template>
+              
+                    <template #cell(district)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.district]]</span>
+                      <input v-show="isEditable" v-model="data.item.district" type="text" />
+                    </template>
+              
+                    <template #cell(unitNumber)="data">
+                      <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.unitNumber]]</span>
+                      <input v-show="isEditable" v-model="data.item.unitNumber" type="text" />
+                    </template>
 
                     <template #cell(city)="data">
                         <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.city]]</span>
@@ -95,7 +95,7 @@
       </div>
 
       <div v-if="!store_id" class="mt-3">
-        <h3>You haven't created a store yet </h3>
+        <h4>You haven't registered a store yet </h4>
         <a href="/store/new-store" class="btn btn-primary">New Store</a>
       </div>
 
@@ -124,6 +124,7 @@
                   'website'
                 ],
                 store: [],
+                validTaxNumber: '',
                 shopCode : window.location.pathname.split("/")[2],
                 store_id : localStorage.getItem("storeId"),
                 filter: null,
@@ -164,6 +165,12 @@
                       editUserType: false, 
                       show: 'test',
                     })
+                },
+
+                validateTax: function(e){
+
+                  const inputValue = e.key;
+                  console.log("Input Value:", inputValue);
                 },
 
                 isAdminLogin : function(){

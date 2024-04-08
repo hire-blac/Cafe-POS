@@ -8,6 +8,8 @@ import pandas as pd
 from controllers import auth_controller, category_controller, customer_controller, delivery_controller, invoice_controller, item_controller, order_controller, store_controller, transaction_controller
 import posauth
 from models.models import Category, engine
+from routes.invoice_routes import invoice_routes
+from routes.item_routes import item_app
 
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
@@ -19,12 +21,13 @@ app = Bottle()
 
 @route("/")
 def home():
+    store_id = request.get_cookie('store_id')
     #return "Home"
-    items_count = item_controller.all_items()['items_count']
-    transaction_count = transaction_controller.all_transactions()['transaction_count']
-    invoices_count = invoice_controller.all_invoices()['invoices_count']
-    orders_count = order_controller.all_orders()['orders_count']
-    deliveries_count = delivery_controller.all_deliveries()['deliveries_count']
+    items_count = item_controller.all_items(store_id)['items_count']
+    transaction_count = transaction_controller.all_transactions(store_id)['transaction_count']
+    invoices_count = invoice_controller.all_invoices(store_id)['invoices_count']
+    orders_count = order_controller.all_orders(store_id)['orders_count']
+    deliveries_count = delivery_controller.all_deliveries(store_id)['deliveries_count']
     return template(
         'index', 
         items_count=items_count, 
@@ -50,7 +53,8 @@ def home():
 # get all categories
 @get("/category_api")
 def category_api():
-    categories = category_controller.all_categories()
+    store_id = request.get_cookie('store_id')
+    categories = category_controller.all_categories(store_id)
     return categories
 
 @route('/categories')
@@ -59,7 +63,8 @@ def categories():
 
 @get("/api/categories")
 def categories():
-    categories = category_controller.all_categories()
+    store_id = request.get_cookie('store_id')
+    categories = category_controller.all_categories(store_id)
     return categories
 
 @get("/api/delete_category/<id>")
@@ -74,16 +79,19 @@ def new_categories():
     category = category_controller.create_category(data)
     return category
 
+
 # ITEM ROUTES
-# get all items
+# # get all items
 @get("/items")
 def items():
-    items = item_controller.all_items()
+    store_id = request.get_cookie('store_id')
+    items = item_controller.all_items(store_id)
     return template("items", rows=items.items)
 
 @get("/api/items")
 def items():
-    items = item_controller.all_items()
+    store_id = request.get_cookie('store_id')
+    items = item_controller.all_items(store_id)
     return items
 
 # add new item from api
@@ -116,6 +124,7 @@ def new_item():
         'price': request.forms.getunicode('price'),
         'quantity': request.forms.getunicode('quantity'),
         'newcategory': request.forms.getunicode('newcategory'),
+        'store_id': request.forms.getunicode('store_id'),
         'image': ''
     }
 
@@ -127,7 +136,7 @@ def new_item():
         form_data['image'] = image_filename
 
     if(form_data['category_id'] == "New Category"):
-        new_cat = {'name': form_data['newcategory']}
+        new_cat = {'name': form_data['newcategory'], 'store_id': form_data['store_id']}
         new_category = category_controller.create_category(new_cat)
         form_data['category_id'] = new_category['id']
     item = item_controller.create_item(form_data)
@@ -158,6 +167,7 @@ def delete_item(id_code):
 # upload items from file
 @route('/upload_item', method='POST')
 def do_upload():
+    store_id = request.get_cookie('store_id')
     upload = request.files.get('itemsfile') #request.POST['itemfile']
     name, ext = os.path.splitext(upload.filename)
     #print("Name: {}, Ext: {}".format(name, ext))
@@ -181,11 +191,11 @@ def do_upload():
                 category_id = ''
                 if category and isinstance(category, str):
                     with Session() as session:
-                        cat = session.query(Category).filter_by(name=category).first()
+                        cat = session.query(Category).filter_by(name=category, store_id=store_id).first()
                         if cat:
                             category_id = cat.id
                         else:
-                            cat = category_controller.create_category({'name': category})
+                            cat = category_controller.create_category({'name': category, 'store_id': store_id})
                             category_id = cat.id
 
                 item_dict = {
@@ -193,6 +203,7 @@ def do_upload():
                     'name': name,
                     'price': price,
                     'quantity': quantity,
+                    'store_id': store_id,
                     'category_id': category_id,
                     'image': '',
                 }
@@ -213,11 +224,11 @@ def do_upload():
                 category_id = ''
                 if category and isinstance(category, str):
                     with Session() as session:
-                        cat = session.query(Category).filter_by(name=category).first()
+                        cat = session.query(Category).filter_by(name=category, store_id=store_id).first()
                         if cat:
                             category_id = cat.id
                         else:
-                            cat = category_controller.create_category({'name': category})
+                            cat = category_controller.create_category({'name': category, 'store_id': store_id})
                             category_id = cat['id']
                     
                 item_dict = {
@@ -225,6 +236,7 @@ def do_upload():
                     'name': name,
                     'price': price,
                     'quantity': quantity,
+                    'store_id': store_id,
                     'category_id': category_id,
                     'image': '',
                 }
@@ -252,11 +264,11 @@ def do_upload():
                 category_id = ''
                 if category and isinstance(category, str):
                     with Session() as session:
-                        cat = session.query(Category).filter_by(name=category).first()
+                        cat = session.query(Category).filter_by(name=category, store_id=store_id).first()
                         if cat:
                             category_id = cat.id
                         else:
-                            cat = category_controller.create_category({'name': category})
+                            cat = category_controller.create_category({'name': category, 'store_id': store_id})
                             category_id = cat.id
                     
                 item_dict = {
@@ -264,6 +276,7 @@ def do_upload():
                     'name': name,
                     'price': price,
                     'quantity': quantity,
+                    'store_id': store_id,
                     'category_id': category_id,
                     'image': '',
                 }
@@ -286,7 +299,8 @@ def get_order(order_id):
 
 @get("/api/orders")
 def all_order():
-    orders = order_controller.all_orders()
+    store_id = request.get_cookie('store_id')
+    orders = order_controller.all_orders(store_id)
     return orders
 
 @post("/api/orders")
@@ -312,7 +326,8 @@ def get_order(delivery_id):
 
 @get("/api/deliveries")
 def all_order():
-    deliveries = delivery_controller.all_deliveries()
+    store_id = request.get_cookie('store_id')
+    deliveries = delivery_controller.all_deliveries(store_id)
     return deliveries
 
 @get("/api/deliveries/<delivery_id>")
@@ -324,12 +339,14 @@ def single_delivery(delivery_id):
 # TRANSACTION ROUTES
 @get("/transactions")
 def get_transactions():
-    transactions = transaction_controller.all_transactions()
+    store_id = request.get_cookie('store_id')
+    transactions = transaction_controller.all_transactions(store_id)
     return template("transactions", transactions=transactions)
 
 @get('/api/transactions')
 def transactions():
-    transactions = transaction_controller.all_transactions()
+    store_id = request.get_cookie('store_id')
+    transactions = transaction_controller.all_transactions(store_id)
     return transactions
 
 @get('/api/transactions/<transaction_id>')
@@ -338,14 +355,15 @@ def transactions(transaction_id):
     return transaction
 
 
-# INVOICE ROUTES
+# # INVOICE ROUTES
 @route("/invoices")
 def invoices():
     return template('invoices')
 
 @get('/api/invoices')
 def all_invoices():
-    invoices = invoice_controller.all_invoices()
+    store_id = request.get_cookie('store_id')
+    invoices = invoice_controller.all_invoices(store_id)
     return invoices
 
 @route("/cart")
@@ -423,9 +441,9 @@ def manage_admin_users():
 
 @route("/manage_user")
 def manage_usesr():
-    # print([{k: v} for k, v in request.headers.items()])
+    store_id = request.get_cookie('store_id')
     if posauth.isAdmin(request):
-        users = auth_controller.all_users()
+        users = auth_controller.all_users(store_id)
         return template("manage_user", rows=users)
     return {'error': "Unauthorized"}
 
@@ -437,7 +455,8 @@ def getUsers():
 
 @get('/api/users')
 def getUsers():
-    users = auth_controller.all_users()
+    store_id = request.get_cookie('store_id')
+    users = auth_controller.all_users(store_id)
     return users
 
 @get("/api/user/<username>")
@@ -502,7 +521,8 @@ def get_customer(customer_id):
 
 @get("/api/customers")
 def all_customers():
-    customers = customer_controller.all_customers()
+    store_id = request.get_cookie('store_id')
+    customers = customer_controller.all_customers(store_id)
     return customers
 
 @post("/api/customers")

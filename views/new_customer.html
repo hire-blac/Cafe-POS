@@ -88,6 +88,7 @@
             itemPrice: '',
             category: null,
             customCategory: '',
+            store_id : localStorage.getItem("storeId"),
             categoryOptions: []//'Coffee', 'Snacks', 'Sandwiches', 'Salads', 'Wraps', 'Soups', 'Burgers', 'New Category'],
           },
           mounted: async function(){
@@ -126,6 +127,7 @@
 
               const category = {
                 name: this.customCategory
+                store_id: this.store_id
               }
 
               try {

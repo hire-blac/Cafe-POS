@@ -21,9 +21,9 @@ def ordered_item_details(ordered_item):
 }
 
 
-def all_ordered_items():
+def all_ordered_items(store_id):
     with Session() as session:
-        ordered_items = session.query(OrderedItem).order_by(OrderedItem.created_at.desc()).all()
+        ordered_items = session.query(OrderedItem).filter_by(store_id=store_id).order_by(OrderedItem.created_at.desc()).all()
         data = []
         if ordered_items:
             for ordered_item in ordered_items:

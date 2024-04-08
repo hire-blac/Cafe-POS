@@ -4,9 +4,9 @@ from models.models import Customer, Order, engine
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
 
-def all_customers():
+def all_customers(store_id):
     with Session() as session:
-        customers = session.query(Customer).all()
+        customers = session.query(Customer).filter_by(store_id=store_id).all()
         if customers:
             data = []
             for cat in customers:
@@ -19,11 +19,12 @@ def all_customers():
         else:
             return {'message': 'no customers'}
 
+
 def create_customer(data):
     customer = Customer(
         name=data['customer_name'],
         phone=data['customer_phone'],
-        # store_id=data['store_id']
+        store_id=data['store_id']
     )
 
     with Session() as session:

@@ -21,9 +21,9 @@ def transaction_details(transaction):
 }
 
 
-def all_transactions():
+def all_transactions(store_id):
     with Session() as session:
-        transactions = session.query(Transaction).order_by(Transaction.created_at.desc()).all()
+        transactions = session.query(Transaction).filter_by(store_id=store_id).order_by(Transaction.created_at.desc()).all()
         data = []
         if transactions:
             for transaction in transactions:

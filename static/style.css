@@ -9,10 +9,12 @@
   background: #f31544;
   color: #FFF;
 }
+
 #invoice-POS ::moz-selection {
   background: #f31544;
   color: #FFF;
 }
+
 #invoice-POS h1 {
   font-size: 1.5em;
   color: #222;

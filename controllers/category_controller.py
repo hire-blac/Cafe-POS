@@ -5,9 +5,9 @@ from models.models import Category, engine
 Session = sessionmaker(bind=engine)
 
 
-def all_categories():
+def all_categories(store_id):
     with Session() as session:
-        categories = session.query(Category).all()
+        categories = session.query(Category).filter_by(store_id=store_id).all()
         if categories:
             data = []
             for cat in categories:
@@ -20,6 +20,7 @@ def all_categories():
             return {'categories': data}
         else:
             return {'message': 'no categories'}
+        
 
 def create_category(data):
     category = Category(

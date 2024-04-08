@@ -14,7 +14,7 @@ def create_delivery(data):
         customer_name=data['customer_name'],
         customer_phone=data['customer_phone'],
         delivery_address=data['delivery_address'],
-        # store_id=data['store_id'],
+        store_id=data['store_id'],
     )
 
     with Session() as session:
@@ -34,9 +34,9 @@ def create_delivery(data):
     #     return {'message': "error"}
 
 
-def all_deliveries():
+def all_deliveries(store_id):
     with Session() as session:
-        deliveries = session.query(Delivery).order_by(Delivery.created_at.desc()).all()
+        deliveries = session.query(Delivery).order_by(Delivery.created_at.desc()).filter_by(store_id=store_id).all()
         if deliveries:
             data = []
             for delivery in deliveries:

@@ -29,7 +29,7 @@ def create_item(data):
         image_url=data['image'],
         quantity=data['quantity'],
         category_id=data['category_id'],
-        # store_id=data['store_id'],
+        store_id=data['store_id'],
     )
 
     with Session() as session:
@@ -40,9 +40,9 @@ def create_item(data):
     #     return {'message': "error"}
 
 
-def all_items():
+def all_items(store_id):
     with Session() as session:
-        items = session.query(Item).all()
+        items = session.query(Item).filter_by(store_id=store_id).all()
         if items:
             data = []
             for item in items:

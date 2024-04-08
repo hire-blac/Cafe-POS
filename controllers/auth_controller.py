@@ -8,9 +8,9 @@ from posauth import GetAuthToken
 Session = sessionmaker(bind=engine)
 
 
-def all_users():
+def all_users(store_id):
     with Session() as session:
-        users = session.query(User).all()
+        users = session.query(User).filter_by(store_id=store_id).all()
         if users:
             data = []
             for user in users:

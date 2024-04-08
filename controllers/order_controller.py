@@ -9,9 +9,9 @@ from . ordered_items_controller import ordered_item_details
 # Create SQLAlchemy session
 Session = sessionmaker(bind=engine)
         
-def all_orders():
+def all_orders(store_id):
     with Session() as session:
-        orders = session.query(Order).order_by(Order.created_at.desc()).all()
+        orders = session.query(Order).order_by(Order.created_at.desc()).filter_by(store_id=store_id).all()
         if orders:
             data = []
             for order in orders:
@@ -50,7 +50,7 @@ def create_order(data):
         payment_status=data['payment_status'],
         status=data['status'],
         cashier_id=data['cashier_id'],
-        # store_id=data['store_id'],
+        store_id=data['store_id'],
     )
 
     with Session() as session:

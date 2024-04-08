@@ -77,260 +77,260 @@
     </div>
   </div>
           
-    <div class="cart-section" style="float: right; width: 30%;" id ="cart" >
-      <!-- Cart Section -->
-      <div class="section half" v-show="!show_receipt">
-      
-        <div class="cart-head">
-          <p>Cart</p>
-          <b-alert v-if="cartErrorMsg" show variant="danger">[[cartErrorMsg]]</b-alert>
-        </div>
+  <div class="cart-section" style="float: right; width: 30%;" id="cart" >
+    <!-- Cart Section -->
+    <div class="section half" v-show="!show_receipt">
+    
+      <div class="cart-head">
+        <p>Cart</p>
+        <b-alert v-if="cartErrorMsg" show variant="danger">[[cartErrorMsg]]</b-alert>
+      </div>
+
+      <div v-show="cart.length <= 0">
+      </div>
+
+      <div v-show="cart.length > 0">
+
+        <div id="carttable" >
+          <b-table striped hover responsive sticky-header head-variant="light"
+            :fields="fields" 
+            :items="items"
+            :filter="filter"
+            :filter-included-fields="filterOn"
+            :current-page="currentPage"
+            :per-page="perPage"
+            :sort-by.sync="sortBy"
+          >
   
-        <div v-show="cart.length <= 0">
-        </div>
-
-        <div v-show="cart.length > 0">
-
-          <div id="carttable" >
-            <b-table striped hover responsive sticky-header head-variant="light"
-              :fields="fields" 
-              :items="items"
-              :filter="filter"
-              :filter-included-fields="filterOn"
-              :current-page="currentPage"
-              :per-page="perPage"
-              :sort-by.sync="sortBy"
-            >
-    
-              <template #cell(name)="data" >
-                [[data.item.name]]
-              </template>
-    
-              <template #cell(quantity)="data">
-                <i v-on:click="DecQuantity(data.index, data.item.id)" class="fas fa-minus"></i>  
-                <span style="float:none 10px;">  [[data.item.quantity]]</span>
-                <i v-on:click="IncQuantity(data.index, data.item.id)" class="fas fa-plus"></i>
-              </template>
-        
-              <template #cell(price)="data">
-                [[ data.item.price ]]
-              </template>
-
-              <template #cell(del)="data">
-                <span>
-                  <i v-on:click="removeCartItem(data.index, data.item.id)" class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i>
-                </span>
-              </template>
-
-            </b-table>
-          </div>
-
-          <div id ="cartprices" >
-            <div class="row">
-              <div class="col-md-8">
-                <h6>Live Total:</h6>
-              </div>
-              <div class="col-md-4">
-                <label for="cartLiveTotal" class="form-label" >[[cartLiveTotal]]</label>
-              </div> 
-            </div>
-
-            <div class="row">
-          
-              <div class="col-md-8">
-                <h6>Tax:</h6>
-              </div>
-              <div class="col-md-4">
-                <label for="taxTotal" class="form-label" >[[taxTotal]]</label>
-              </div> 
-            </div>
-
-            <div class="row">
-              <div class="col-md-8">
-                <h6>Total (includingTax):</h6>
-              </div>
-
-              <div class="col-md-4">
-                <label for="cartTotal" class="form-label" >[[cartTotal]]</label>
-              </div> 
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <label for="paidAmount" class="form-label">Paid Amount</label>
-              </div>
-              <div class="col-md-6">
-                <input type="text" required class="form-control form-control-sm" id="paidAmount" @input="checkPaidAmount()" v-model="paidAmount" name="paidAmount" placeholder="Enter Paid Amount" />
-                <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
-              </div> 
-              <div class="col-md-6">
-                <label for="remainingAmount" class="form-label">Remaining Amount</label>
-              </div>
-              <div class="col-md-6">
-                <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />                  
-              </div> 
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <label for="customerPNO" class="form-label">Customer PNO</label>
-              </div>
-              <div class="col-md-6">
-                <input type="text" required class="form-control form-control-sm" id="customerPNO" v-model="inv.customerPNO" name="customerPNO" placeholder="" />
-              </div> 
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <label for="payment" class="form-label">Payment Method</label>
-              </div>
-              <div class="col-md-6">
-                <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
-                  <option selected>Select Payment Method</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Visa">Visa</option>
-                  <option value="Mada">Mada</option>
-                </select>
-              </div> 
-            </div>
-
-            <div class="row">
-              <div class="col-md-6">
-                <label for="paymentId" class="form-label">Payment Id</label>
-              </div>
-              <div class="col-md-6">
-                <input type="text" class="form-control form-control-sm" id="paymentId" v-model="inv.paymentId" name="paymentId" placeholder="Enter Payment Id" />
-              </div> 
-            </div>
-            
-            <div class="row" v-show="cart.length > 0">
-              <div class="d-grid gap-2">
-                <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal" type="button">Complete Order</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>       
-    </div>
-    
-    <div dir="rtl" lang="ar" class="invoice-container" style="float: right; width: 30%;" v-show="cart.show_receipt">
-      <span><h4>Order Completed</h4></span>
-
-      <div id="invoicediv" ref="invoice">
-        <header>
-          <div id="logo" class="media">
-            <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-          </div>
-
-          <p align="center">SBISTechs Inc</p>
-          <p align="center">
-            TAX Number : 4910487129047124<br/>
-            JohnDoe@gmail.com, street city, state 0000, 555-555-5555.
-          </p></br>
-
-        </header>
-
-        <table class="bill-details">
-          <tbody align="center">
-              <tr>
-                <td>
-                  Date :<span> </br>[[ cart.cdateTime ]] </span>
-                </td>
-                <td>
-                  Invoice ID :<span>[[ cart.inv.invoiceId ]]</span>
-                </td>
-              </tr>
-
-              <tr>
-              </tr>
-
-              <tr>
-                <th class="center-align" colspan="2">
-                  <span class="receipt">Order Number: 3 </span>
-                </th>
-              </tr>
-          </tbody>
-        </table>
-        <!--Invoice Body  -->
-        <table class="items">
-          <thead>
-            <tr>
-              <th class="heading name">Item  الصنف</th>
-              <th class="heading Itemprice">Price  السعر</th>
-              <th class="heading qty">Qty  الكمية</th>
-              <th class="heading ItemTotal">Sub  اجمالي</th>                
-            </tr>
-          </thead>
-          
-          <tbody>          
-            <tr v-for="it in cart.items">
-              <td class="name">[[it.name]]</td>
-              <td class="price Itemprice">[[it.price]]</td>
-              <td class="qty">[[ it.quantity ]]</td>
-              <td class="price ItemTotal">[[ it.price * it.quantity ]]</td>
-            </tr>
-
-            <tr>
-              <td colspan="3" class="sum-up line">Total Before Tax الاجمالي قبل الضريبة</td>
-              <td class="line price" align="left">[[ cart.cartLiveTotal ]]</td>
-            </tr>
-
-            <tr>
-              <td colspan="3" class="sum-up">TAX الضريبة</td>
-              <td class="price" align="left">[[ cart.taxTotal ]]</td>
-            </tr>
-
-            <tr>
-            </tr>
-
-            <tr>
-              <th colspan="3" class="total text">Grand Total الاجمالي</th>
-              <th class="total price" align="left">[[ cart.cartTotal ]]</th>
-            </tr>
-
-            <tr>
-              <td colspan="3" class="sum-up">Paid المدفوع</td>
-              <td class="price" align="left">[[ cart.paidAmount ]]</td>
-            </tr>
-
-            <tr>
-              <td colspan="3" class="sum-up">Reamining الباقي</td>
-              <td class="price" align="left">[[ cart.remainingAmount ]]</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <section style="width: 360px;align-content: center;" align='center'>
-            <p>
-              Payment Method: <span>[[ cart.inv.paymentMethod ]]</span>
-            </p>
-
-            <p>
-              Cashier ID: <span>[[ cart.inv.cashier ]]</span>
-            </p>
-
-            <img :src="cart.inv.qrCode" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
-            <p style="text-align:center">
-              Thank you for your visit!
-            </p>
-
-            <p style="text-align:center">
-              <a href="/"> www.www.com </a>
-            </p>
-        </section>
-      </div>
-
-      <!-- former invoice card -->
+            <template #cell(name)="data" >
+              [[data.item.name]]
+            </template>
+  
+            <template #cell(quantity)="data">
+              <i v-on:click="DecQuantity(data.index, data.item.id)" class="fas fa-minus"></i>  
+              <span style="float:none 10px;">  [[data.item.quantity]]</span>
+              <i v-on:click="IncQuantity(data.index, data.item.id)" class="fas fa-plus"></i>
+            </template>
       
-      <!-- new invoice -->
-      <div class="d-grid gap-2 col-12 mx-auto mt-3">
-        <a href="/cart" class="btn btn-outline-success">New Invoice</a>
-      </div>
+            <template #cell(price)="data">
+              [[ data.item.price ]]
+            </template>
+
+            <template #cell(del)="data">
+              <span>
+                <i v-on:click="removeCartItem(data.index, data.item.id)" class="fa fa-trash" style="color: #ee2e2e;" aria-hidden="true"></i>
+              </span>
+            </template>
+
+          </b-table>
+        </div>
+
+        <div id ="cartprices" >
+          <div class="row">
+            <div class="col-md-8">
+              <h6>Live Total:</h6>
+            </div>
+            <div class="col-md-4">
+              <label for="cartLiveTotal" class="form-label" >[[cartLiveTotal]]</label>
+            </div> 
+          </div>
+
+          <div class="row">
         
+            <div class="col-md-8">
+              <h6>Tax:</h6>
+            </div>
+            <div class="col-md-4">
+              <label for="taxTotal" class="form-label" >[[taxTotal]]</label>
+            </div> 
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <h6>Total (includingTax):</h6>
+            </div>
+
+            <div class="col-md-4">
+              <label for="cartTotal" class="form-label" >[[cartTotal]]</label>
+            </div> 
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="paidAmount" class="form-label">Paid Amount</label>
+            </div>
+            <div class="col-md-6">
+              <input type="text" required class="form-control form-control-sm" id="paidAmount" @input="checkPaidAmount()" v-model="paidAmount" name="paidAmount" placeholder="Enter Paid Amount" />
+              <b-alert v-if="paid_amount_check == true" show variant="danger">Paid Amount must be greater than total</b-alert>
+            </div> 
+            <div class="col-md-6">
+              <label for="remainingAmount" class="form-label">Remaining Amount</label>
+            </div>
+            <div class="col-md-6">
+              <input type="text" required class="form-control form-control-sm" id="remainingAmount" v-model="remainingAmount" name="remainingAmount" placeholder="" />                  
+            </div> 
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="customerPNO" class="form-label">Customer PNO</label>
+            </div>
+            <div class="col-md-6">
+              <input type="text" required class="form-control form-control-sm" id="customerPNO" v-model="inv.customerPNO" name="customerPNO" placeholder="" />
+            </div> 
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="payment" class="form-label">Payment Method</label>
+            </div>
+            <div class="col-md-6">
+              <select class="form-select form-select-sm" v-model="inv.paymentMethod" name="paymentMethod">
+                <option selected>Select Payment Method</option>
+                <option value="Cash">Cash</option>
+                <option value="Visa">Visa</option>
+                <option value="Mada">Mada</option>
+              </select>
+            </div> 
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <label for="paymentId" class="form-label">Payment Id</label>
+            </div>
+            <div class="col-md-6">
+              <input type="text" class="form-control form-control-sm" id="paymentId" v-model="inv.paymentId" name="paymentId" placeholder="Enter Payment Id" />
+            </div> 
+          </div>
+          
+          <div class="row" v-show="cart.length > 0">
+            <div class="d-grid gap-2">
+              <button class="btn btn-success" @click="saveItemAndInvoice()" :disabled="inv.paymentMethod == '' || paidAmount < taxTotal" type="button">Complete Order</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>       
+  </div>
+    
+  <div id="invoicediv" dir="rtl" lang="ar" v-show="cart.show_receipt" class="invoice-container" style="float: right; width: 30%;">
+    <span><h4>Order Completed</h4></span>
+
+    <div ref="invoice">
+      <header>
+        <div id="logo" class="media">
+          <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+        </div>
+
+        <p align="center">SBISTechs Inc</p>
+        <p align="center">
+          TAX Number : 4910487129047124<br/>
+          JohnDoe@gmail.com, street city, state 0000, 555-555-5555.
+        </p></br>
+
+      </header>
+
+      <table class="bill-details">
+        <tbody align="center">
+            <tr>
+              <td>
+                Date :<span> </br>[[ cart.cdateTime ]] </span>
+              </td>
+              <td>
+                Invoice ID :<span>[[ cart.inv.invoiceId ]]</span>
+              </td>
+            </tr>
+
+            <tr>
+            </tr>
+
+            <tr>
+              <th class="center-align" colspan="2">
+                <span class="receipt">Order Number: 3 </span>
+              </th>
+            </tr>
+        </tbody>
+      </table>
+      <!--Invoice Body  -->
+      <table class="items">
+        <thead>
+          <tr>
+            <th class="heading name">Item  الصنف</th>
+            <th class="heading Itemprice">Price  السعر</th>
+            <th class="heading qty">Qty  الكمية</th>
+            <th class="heading ItemTotal">Sub  اجمالي</th>                
+          </tr>
+        </thead>
+        
+        <tbody>          
+          <tr v-for="it in cart.items">
+            <td class="name">[[it.name]]</td>
+            <td class="price Itemprice">[[it.price]]</td>
+            <td class="qty">[[ it.quantity ]]</td>
+            <td class="price ItemTotal">[[ it.price * it.quantity ]]</td>
+          </tr>
+
+          <tr>
+            <td colspan="3" class="sum-up line">Total Before Tax الاجمالي قبل الضريبة</td>
+            <td class="line price" align="left">[[ cart.cartLiveTotal ]]</td>
+          </tr>
+
+          <tr>
+            <td colspan="3" class="sum-up">TAX الضريبة</td>
+            <td class="price" align="left">[[ cart.taxTotal ]]</td>
+          </tr>
+
+          <tr>
+          </tr>
+
+          <tr>
+            <th colspan="3" class="total text">Grand Total الاجمالي</th>
+            <th class="total price" align="left">[[ cart.cartTotal ]]</th>
+          </tr>
+
+          <tr>
+            <td colspan="3" class="sum-up">Paid المدفوع</td>
+            <td class="price" align="left">[[ cart.paidAmount ]]</td>
+          </tr>
+
+          <tr>
+            <td colspan="3" class="sum-up">Reamining الباقي</td>
+            <td class="price" align="left">[[ cart.remainingAmount ]]</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section style="width: 360px;align-content: center;" align='center'>
+          <p>
+            Payment Method: <span>[[ cart.inv.paymentMethod ]]</span>
+          </p>
+
+          <p>
+            Cashier ID: <span>[[ cart.inv.cashier ]]</span>
+          </p>
+
+          <img :src="cart.inv.qrCode" alt="QRCode" style="width: 200px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
+          <p style="text-align:center">
+            Thank you for your visit!
+          </p>
+
+          <p style="text-align:center">
+            <a href="/"> www.www.com </a>
+          </p>
+      </section>
     </div>
 
+    <!-- former invoice card -->
+    
+    <!-- new invoice -->
+    <div class="d-grid gap-2 col-12 mx-auto mt-3">
+      <a href="/cart" class="btn btn-outline-success">New Invoice</a>
+    </div>
+      
   </div>
+
+</div>
 
     <script type="application/javascript">
 
@@ -542,12 +542,12 @@
           el: '#cart',
           data: {
             fields: [
-            {key:'id'},
+              {key:'id'},
               {key:'name'},
               {key:'quantity'},
               {key:'price'},
               {key:'del', label: ''},
-                    ],
+            ],
             items: [],
             currentDeleteId: -1,
             currentDeleteIndex: -1,
@@ -562,27 +562,28 @@
             cartTotal:0,
             paidAmount:0,
             remainingAmount:0,
+            store_id : localStorage.getItem("storeId"),
             inv: {
-                  invoiceId: '',
-                  cashier: '',
-                  customerPNO: '',
-                  paymentId: '-1',
-                  paymentMethod: '',
-                  qrCode: '',
-                  store: ''
+              invoiceId: '',
+              cashier: '',
+              customerPNO: '',
+              paymentId: '-1',
+              paymentMethod: '',
+              qrCode: '',
+              store: ''
               },
             cart:{
               length:0,
               orderCompleted:false
             },
             cdateTime: '',
-              download_invoice: true,
-              show_receipt: false,
-              paidAmount: 0,
-              quantity_check: false,
-              paid_amount_check: false,
-              cartErrorMsg:'',
-            
+            download_invoice: true,
+            show_receipt: false,
+            paidAmount: 0,
+            quantity_check: false,
+            paid_amount_check: false,
+            cartErrorMsg:'',
+          
           }
             ,
           mounted: async function(){
@@ -596,7 +597,6 @@
         },
           methods: {
                addToCart(itm) {
-                
                   let item = itm.name                  
                   let id = itm.id
                   let name = itm.name
@@ -740,7 +740,8 @@
                     customer_PNO: customerPNO,
                     payment_method: this.inv.paymentMethod,
                     payment_id: this.inv.paymentId,
-                    cashier_id: cashierIdName
+                    cashier_id: cashierIdName,
+                    store_id: this.store_id
                   }
 
                   const response = await fetch("/api/invoices", {

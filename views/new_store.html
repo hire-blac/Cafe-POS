@@ -34,7 +34,8 @@
 
                     <div class="mb-3">
                         <label for="taxNumber" class="form-label">Company Tax Number</label>
-                        <input type="text" class="form-control" v-model="taxNumber" id="taxNumber" name="taxNumber" placeholder="Enter Company Tax Number">
+                        <input type="text" @keyup="checkTaxInput" class="form-control" v-model="taxNumber" id="taxNumber" name="taxNumber" placeholder="Enter Company Tax Number">
+                        <b-alert v-if="taxError" show variant="danger">[[taxError]]</b-alert>
                     </div>
 
                     <div class="mb-3">
@@ -83,7 +84,7 @@
                     </div>
     
                     <div class="d-grid gap-2">
-                      <button class="btn btn-success" @click="registerCompany()" type="button">Register New Store</button>
+                      <button class="btn btn-success" @click="registerCompany()" type="button" :disabled="validTaxNumber === false" >Register New Store</button>
                     </div>
 
                   </div>
@@ -102,6 +103,9 @@
             companyName: '',
             crNumber: '',
             taxNumber: '',
+            taxError: '',
+            validTaxNumber: false,
+            tempValid: '',
             city: '',
             street: '',
             zipCode: '',
@@ -119,6 +123,46 @@
             
           },
           methods: {
+            validateTaxNumber : function(value){
+              if (typeof Number(value) === 'number' && !isNaN(value) && value.length === 15 && value[0]==='3' && value[14]==='3'){
+                this.taxError = ''
+                return true;
+              }
+              return false
+            },
+
+            checkTaxInput: function(e){
+              const inputValue = e.key;
+
+              if (this.taxNumber.length === 1){
+                if(inputValue != '3'){
+                  this.taxNumber = ''
+                  this.taxError = "Tax number must begin and end with 3"
+                } else {
+                  this.validTaxNumber = this.validateTaxNumber(this.taxNumber)
+                }
+              } else if(this.taxNumber.length === 15){
+                if(inputValue != '3'){
+                this.taxNumber = this.taxNumber.slice(0, 14)
+                  this.taxError = "Tax number must begin and end with 3"
+                } else {
+                  this.validTaxNumber = this.validateTaxNumber(this.taxNumber)
+                }
+
+              } else if(this.taxNumber.length > 15){
+                this.taxNumber = this.taxNumber.slice(0, 15)
+                this.validTaxNumber = this.validateTaxNumber(this.taxNumber)
+              } else {
+                // check if input value is a number
+                if(!Number(inputValue)){
+                  if (inputValue != 'ArrowUp' && inputValue != 'ArrowDown' && inputValue != 'ArrowLeft' && inputValue != 'ArrowRight' && inputValue != 'Control' && inputValue != 'Alt' && inputValue != 'Backspace'  && inputValue != 'CapsLock'  && inputValue != 'Shift' ){
+                    this.taxNumber = this.taxNumber.slice(0, -1)
+                    this.taxError = "Tax number cannot be a letter"
+                  }
+                }
+              }
+            },
+
             registerCompany: async function(){
 
               if (this.shopName == ''){
@@ -154,6 +198,7 @@
               if(result['res']=='success'){
                 localStorage.setItem('storeId', result['id'])
                 window.location.href = "/stores/" + result['id']
+                this.setCookie('store_id', result['id'], 86000)
               }
               
             },
