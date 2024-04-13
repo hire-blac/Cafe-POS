@@ -739,8 +739,11 @@
               this.inv.qrCode = result['qrcode_url'].slice(6)
               
               this.show_receipt = true
-
-              invoice.printInvoice()
+                
+              // Call printInvoice after 10 seconds
+              setTimeout(() => {
+                  invoice.printInvoice();
+              }, 2000) 
           },
 
           async saveItemTransaction(){
@@ -838,50 +841,62 @@
       mounted: async function(){
           
       },
-      methods: {
+      methods: {        
+        printInvoice1() {
+          const { jsPDF } = window.jspdf;
+          var self = this;
+          var doc = new jsPDF('p', 'pt', 'A4');
 
-        testfun(item) {
-          console.log("Hello::",alert("test?"))
+          if (jsPDF.API.events) {
+              jsPDF.API.events.forEach(event => {
+                  if (event[0] === 'addFonts') {
+                      event[1].call(doc);  // Apply custom font addition
+                  }
+              });
+          }
+
+          doc.setFont('Amiri-Regular', 'normal');
+
+          doc.html(self.$refs.invoice, {
+            callback: function(doc) {
+                // Print the PDF
+                doc.autoPrint();
+
+                // Open print dialog
+                doc.output('dataurlnewwindow');
+
+                // doc.save(new Date().getTime() + '.pdf');
+            },
+            x: 100,
+            y: 10
+          });
         },
         
         printInvoice() {
-    const { jsPDF } = window.jspdf;
-    var self = this; // Save reference to 'this'
-    // WebFont.load({
-    //     google: {
-    //         families: ['Amiri']
-    //     },
-    //     active: function() {
-            var doc = new jsPDF('p', 'pt', 'A4');
-            // doc.setFont('Amiri-Regular', 'normal');
-            doc.addFileToVFS("Amiri-Regular.ttf", "Amiri");
-            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-            doc.setFont("Amiri");
+          const element = this.$refs.invoice;  // Reference to the invoice element
 
-            doc.html(self.$refs.invoice, {
-                callback: function(doc) {
-                    // Print the PDF
-                    doc.autoPrint();
+          html2canvas(element).then(canvas => {
+            // Create an image element
+            var img = document.createElement('img');
+            img.src = canvas.toDataURL();
 
-                    // Open print dialog
-                    doc.output('dataurlnewwindow');
+            console.log("after canvas: ", canvas.toDataURL());
 
-                    // doc.save(new Date().getTime() + '.pdf');
-                },
-                x: 100,
-                y: 10,
-                // font: 'Amiri', // Specify font explicitly
-                // useDefaultFont: false // Don't use default font as fallback
-            });
-        // },
-        // inactive: function() {
-        //     console.error("Font loading failed.");
+            img.style.display = 'block';  // Ensure the image is visible
+            img.style.maxWidth = '100%';  // Optional: Scale the image to fit the page
+
+            // Prepare the new tab and the HTML content
+            var newTab = window.open('', '_blank'); // Opens a new tab
+            newTab.document.open();
+            newTab.document.write('<html><head><title>Print Invoice</title></head><body onload="window.print(); window.close();">');
+            newTab.document.write('<img src="' + img.src + '">'); // Append the image
+            newTab.document.write('</body></html>');
+            // newTab.document.close();
+          });
         }
-      }
+      },
+          
     });
-// }
-// }
-// })
 
 </script>
 

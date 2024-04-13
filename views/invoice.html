@@ -231,22 +231,44 @@
         },
         methods: {
             printInvoice(){
-                    const { jsPDF } = window.jspdf;
-                    var doc = new jsPDF('p', 'pt', 'A4');
+                    // const { jsPDF } = window.jspdf;
+                    // var doc = new jsPDF('p', 'pt', 'A4');
 
-                    doc.html(this.$refs.invoice, {callback: function(doc){
-                          // Print the PDF
-                          doc.autoPrint();
+                    // doc.html(this.$refs.invoice, {callback: function(doc){
+                    //       // Print the PDF
+                    //       doc.autoPrint();
 
-                          // Open print dialog
-                          doc.output('dataurlnewwindow');
+                    //       // Open print dialog
+                    //       doc.output('dataurlnewwindow');
 
-                          // save invoice
-                          // doc.save(new Date().getTime() + '.pdf');
-                        },
-                      x: 100,
-                      y: 10
+                    //       // save invoice
+                    //       // doc.save(new Date().getTime() + '.pdf');
+                    //     },
+                    //   x: 100,
+                    //   y: 10
+                    // });
+                    
+                    const element = this.$refs.invoice;  // Reference to the invoice element
+
+                    html2canvas(element).then(canvas => {
+                      // Create an image element
+                      var img = document.createElement('img');
+                      img.src = canvas.toDataURL();
+
+                      console.log("after canvas: ", canvas.toDataURL());
+
+                      img.style.display = 'block';  // Ensure the image is visible
+                      img.style.maxWidth = '100%';  // Optional: Scale the image to fit the page
+
+                      // Create and open a new window for printing
+                      var printWindow = window.open('', '_blank', 'width=800,height=600');
+                      printWindow.document.open();
+                      printWindow.document.write('<html><head><title>Print Invoice</title></head><body onload="window.print()">');
+                      printWindow.document.write('<img src="' + img.src + '">'); // Append the image
+                      printWindow.document.write('</body></html>');
+                      // printWindow.document.close();
                     });
+
                 },
                 
                 isAdminLogin : function(){
