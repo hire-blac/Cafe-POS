@@ -641,11 +641,6 @@ def stylesheets(filename):
 def stylesheets(filename):
     return static_file('{}.js'.format(filename), root='static/js')
 
-@route('/<filename>.ttf')
-def stylesheets(filename):
-    return static_file('{}.js'.format(filename), root='static/fonts')
-
-
 TEMPLATES.clear()
 #print("OS Env: {} Port: {}".format(os.environ.get('DYNO'), os.environ.get("PORT")))
 #if os.environ.get('DYNO') != None:

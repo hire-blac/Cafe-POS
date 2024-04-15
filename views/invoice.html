@@ -230,57 +230,56 @@
             })
         },
         methods: {
-            printInvoice(){
-                    // const { jsPDF } = window.jspdf;
-                    // var doc = new jsPDF('p', 'pt', 'A4');
+          printInvoice(){                    
+            const element = this.$refs.invoice;  // Reference to the invoice element
 
-                    // doc.html(this.$refs.invoice, {callback: function(doc){
-                    //       // Print the PDF
-                    //       doc.autoPrint();
+            html2canvas(element).then(canvas => {
+            const invoiceData = canvas.toDataURL("image/png", 1.0);
 
-                    //       // Open print dialog
-                    //       doc.output('dataurlnewwindow');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4", true);
 
-                    //       // save invoice
-                    //       // doc.save(new Date().getTime() + '.pdf');
-                    //     },
-                    //   x: 100,
-                    //   y: 10
-                    // });
-                    
-                    const element = this.$refs.invoice;  // Reference to the invoice element
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-                    html2canvas(element).then(canvas => {
-                      // Create an image element
-                      var img = document.createElement('img');
-                      img.src = canvas.toDataURL();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
 
-                      console.log("after canvas: ", canvas.toDataURL());
+            const ratio = Math.min(
+              pdfWidth / imgWidth,
+              pdfHeight / imgHeight
+            );
 
-                      img.style.display = 'block';  // Ensure the image is visible
-                      img.style.maxWidth = '100%';  // Optional: Scale the image to fit the page
+            const imgX = (pdfWidth - imgWidth * ratio) / 2;
+            const imgY = 30;
 
-                      // Create and open a new window for printing
-                      var printWindow = window.open('', '_blank', 'width=800,height=600');
-                      printWindow.document.open();
-                      printWindow.document.write('<html><head><title>Print Invoice</title></head><body onload="window.print()">');
-                      printWindow.document.write('<img src="' + img.src + '">'); // Append the image
-                      printWindow.document.write('</body></html>');
-                      // printWindow.document.close();
-                    });
+            pdf.addImage(
+              invoiceData,
+              "PNG",
+              imgX,
+              0,
+              imgWidth * ratio,
+              imgHeight * ratio
+            );
+            
+            // Use autoPrint to trigger print dialog when the PDF is opened
+            pdf.autoPrint();
 
-                },
-                
-                isAdminLogin : function(){
-                   
-                   return localStorage.getItem("usertype") == "Administrator"
-               },
-               logout:function(){
-                      window.localStorage.clear()
-                      console.log("You don't have access to view this page")
-                      window.location.href = "/login"
-   
-                   }
+            // Output the PDF to a new window. The print dialog should appear.
+            pdf.output('dataurlnewwindow');
+            })
+
+          },
+          
+          isAdminLogin : function(){
+            return localStorage.getItem("usertype") == "Administrator"
+          },
+          logout:function(){
+            window.localStorage.clear()
+            console.log("You don't have access to view this page")
+            window.location.href = "/login"
+
+          }
         }
     })
 

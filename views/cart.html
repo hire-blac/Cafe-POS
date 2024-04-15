@@ -740,7 +740,6 @@
               
               this.show_receipt = true
                 
-              // Call printInvoice after 10 seconds
               setTimeout(() => {
                 invoice.printInvoice();
               }, 200) 
@@ -827,6 +826,8 @@
 </script>
 
 <script type="application/javascript">
+  
+  // import {font} from '../static/fonts/Amiri-Regular-normal'
 
   invoice = new Vue({
       delimiters : ['[[',']]'],
@@ -847,28 +848,42 @@
           const element = this.$refs.invoice;  // Reference to the invoice element
 
           html2canvas(element).then(canvas => {
-            // Create an image element
-            var img = document.createElement('img');
-            img.src = canvas.toDataURL();
+            const invoiceData = canvas.toDataURL("image/png", 1.0);
 
-            console.log("after canvas: ", canvas.toDataURL());
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF("p", "mm", "a4", true);
 
-            img.style.display = 'block';  // Ensure the image is visible
-            img.style.maxWidth = '100%';  // Optional: Scale the image to fit the page
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            // Prepare the new tab and the HTML content
-            var newTab = window.open('', '_blank'); // Opens a new tab
-            newTab.document.open();
-            newTab.document.write('<html><head><title>Print Invoice</title></head><body onload="window.print(); window.close();">');
-            newTab.document.write('<img src="' + img.src + '">'); // Append the image
-            newTab.document.write('</body></html>');
-            // newTab.document.close();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
 
-          // Delay the print command slightly to ensure the image is loaded
-          setTimeout(() => {
-            newTab.window.print();
-          }, 500);
-          });
+            const ratio = Math.min(
+              pdfWidth / imgWidth,
+              pdfHeight / imgHeight
+            );
+
+            const imgX = (pdfWidth - imgWidth * ratio) / 2;
+            const imgY = 30;
+
+            pdf.addImage(
+              invoiceData,
+              "PNG",
+              imgX,
+              0,
+              imgWidth * ratio,
+              imgHeight * ratio
+            );
+            
+            // Use autoPrint to trigger print dialog when the PDF is opened
+            pdf.autoPrint();
+
+            // Output the PDF to a new window. The print dialog should appear.
+            pdf.output('dataurlnewwindow');
+            }
+          );
+
         }
       },
           
