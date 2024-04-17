@@ -83,6 +83,14 @@
                       window.localStorage.setItem("username", username)
                       window.localStorage.setItem("usertype", usertype)
                       window.localStorage.setItem("storeId", storeId)
+                      window.localStorage.setItem("shopName", result['shop_name'])
+                      window.localStorage.setItem("taxNumber", result['tax_number'])
+                      window.localStorage.setItem("shopCity", result['shop_city'])
+                      window.localStorage.setItem("shopStreet", result['shop_street'])
+                      window.localStorage.setItem("shopEmail", result['shop_email'])
+                      window.localStorage.setItem("shopZipCode", result['shop_zip_code'])
+                      window.localStorage.setItem("shopPhoneNumber", result['shop_phone_number'])
+                      
                       if(usertype=='SuperUser'){
                           window.location.href = "/super"
                       }

@@ -223,11 +223,11 @@
           <img src="logo.png" style="width: 150px;align-content: center;"> <!--Insert Generated QR code image for each Invoice  -->
         </div>
 
-        <p align="center">SBISTechs Inc</p>
+        <p align="center">[[cart.shopName]]</p>
         <p align="center">
-          TAX Number : 4910487129047124<br/>
-          JohnDoe@gmail.com, street city, state 0000,<br>
-          555-555-5555.
+          TAX Number : [[cart.taxNumber]]<br/>
+          [[cart.shopEmail]], [[cart.shopStreet]] [[cart.shopCity]], [[cart.shopZipCode]],<br>
+          [[cart.shopPhoneNumber]].
         </p></br>
 
       </header>
@@ -563,6 +563,13 @@
         paidAmount:0,
         remainingAmount:0,
         store_id : localStorage.getItem("storeId"),
+        shopName : localStorage.getItem("shopName"),
+        taxNumber : localStorage.getItem("taxNumber"),
+        shopCity : localStorage.getItem("shopCity"),
+        shopStreet : localStorage.getItem("shopStreet"),
+        shopEmail : localStorage.getItem("shopEmail"),
+        shopZipCode : localStorage.getItem("shopZipCode"),
+        shopPhoneNumber : localStorage.getItem("shopPhoneNumber"),
         inv: {
           invoiceId: '',
           cashier: '',

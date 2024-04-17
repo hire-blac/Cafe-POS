@@ -28,7 +28,8 @@
     
                     <template #cell(taxNumber)="data">
                       <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.taxNumber]]</span>
-                      <input v-show="isEditable" @keydown="validateTax" v-model="data.item.taxNumber" type="text" />
+                      <input v-show="isEditable" @keyup="checkTaxInput" v-model="data.item.taxNumber" type="text" />
+                      <b-alert v-if="taxError" show variant="danger">[[taxError]]</b-alert>
                     </template>
               
                     <template #cell(shopName)="data">
@@ -86,9 +87,9 @@
         </div>
         <div class="row mb-3">
             <div class="col-md-12">
-                <b-button  variant="outline-primary" href="/">Back</b-button>
+                <b-button variant="outline-primary" href="/">Back</b-button>
                 <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
-                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success">Save Changes</b-button>
+                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success" :disabled="validTaxNumber === false" >Save Changes</b-button>
             
             </div>
         </div>
@@ -108,7 +109,8 @@
             delimiters : ['[[',']]'],
             el: "#app",
             data: {
-                fields: [ 'id',
+                fields: [ 
+                  'id',
                   'companyName', 
                   'CRNumber',
                   'taxNumber',
@@ -123,8 +125,9 @@
                   'email',
                   'website'
                 ],
+                taxError: '',
                 store: [],
-                validTaxNumber: '',
+                validTaxNumber: false,
                 shopCode : window.location.pathname.split("/")[2],
                 store_id : localStorage.getItem("storeId"),
                 filter: null,
@@ -167,10 +170,45 @@
                     })
                 },
 
-                validateTax: function(e){
+                validateTaxNumber : function(value){
+                  if (typeof Number(value) === 'number' && !isNaN(value) && value.length === 15 && value[0]==='3' && value[14]==='3'){
+                    this.taxError = ''
+                    return true;
+                  }
+                  return false
+                },
 
+                checkTaxInput: function(e){
+                  taxNumber = this.store[0].taxNumber
                   const inputValue = e.key;
-                  console.log("Input Value:", inputValue);
+
+                  if (taxNumber.length === 1){
+                    if(inputValue != '3'){
+                      this.store[0].taxNumber = ''
+                      this.taxError = "Tax number must begin and end with 3"
+                    } else {
+                      this.validTaxNumber = this.validateTaxNumber(taxNumber)
+                    }
+                  } else if(taxNumber.length === 15){
+                    if(inputValue != '3'){
+                      this.store[0].taxNumber = taxNumber.slice(0, 14)
+                      this.taxError = "Tax number must begin and end with 3"
+                    } else {
+                      this.validTaxNumber = this.validateTaxNumber(taxNumber)
+                    }
+
+                  } else if(taxNumber.length > 15){
+                    this.store[0].taxNumber = taxNumber.slice(0, 15)
+                    this.validTaxNumber = this.validateTaxNumber(taxNumber)
+                  } else {
+                    // check if input value is a number
+                    if(!Number(inputValue)){
+                      if (inputValue != 'ArrowUp' && inputValue != 'ArrowDown' && inputValue != 'ArrowLeft' && inputValue != 'ArrowRight' && inputValue != 'Control' && inputValue != 'Alt' && inputValue != 'Backspace'  && inputValue != 'CapsLock'  && inputValue != 'Shift' ){
+                        this.store[0].taxNumber = taxNumber.slice(0, -1)
+                        this.taxError = "Tax number cannot be a letter"
+                      }
+                    }
+                  }
                 },
 
                 isAdminLogin : function(){
@@ -202,15 +240,15 @@
                     id = data.id
 
                     const newData = {
-                      company_name: companyName, 
-                      cr_number: CRNumber, 
-                      city: city, 
-                      street: street,
-                      zip_code: zipCode,
-                      tax_number: taxNumber,
-                      phone_number: phoneNumber,
-                      email: email,
-                      website: website,
+                      company_name: data.companyName, 
+                      cr_number: data.CRNumber, 
+                      city: data.city, 
+                      street: data.street,
+                      zip_code: data.zipCode,
+                      tax_number: data.taxNumber,
+                      phone_number: data.phoneNumber,
+                      email: data.email,
+                      website: data.website,
                       shop_name: data.shopName,
                       unit_number: data.unitNumber,
                       district: data.district,
@@ -233,7 +271,8 @@
                     if(!this.isAdminLogin()){
                          this.logout()
                     }
-                    this.getStore()
+                    // this.getStore()
+                  window.location.reload()
                 },
 
             }

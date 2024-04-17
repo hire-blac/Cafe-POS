@@ -69,6 +69,13 @@ def login_user(data):
                     'username': user.username,
                     'usertype': user.usertype,
                     'store_id': user.store_id,
+                    'shop_name': user.store.shop_name,
+                    'tax_number': user.store.tax_number,
+                    'shop_city': user.store.city,
+                    'shop_street': user.store.street,
+                    'shop_email': user.store.email,
+                    'shop_zip_code': user.store.zip_code,
+                    'shop_phone_number': user.store.phone_number,
                     'auth_token': auth_token
                 }
             
