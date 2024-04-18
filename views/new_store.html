@@ -30,6 +30,7 @@
                     <div class="mb-3">
                         <label for="crNumber" class="form-label">Company Registration Number</label>
                         <input type="text" class="form-control" v-model="crNumber" id="crNumber" name="crNumber" placeholder="Enter Company Registration Number">
+                        <b-alert v-if="crError" show variant="danger">[[crError]]</b-alert>
                     </div>
 
                     <div class="mb-3">
@@ -102,6 +103,8 @@
           data: {
             companyName: '',
             crNumber: '',
+            crError: '',
+            validCRNumber: false,
             taxNumber: '',
             taxError: '',
             validTaxNumber: false,
@@ -123,6 +126,16 @@
             
           },
           methods: {
+            validateCRNumber : function(){
+              if (!isNaN(CRNumber)){
+                this.crError = ''
+                this.validCRNumber = true;
+              } else {
+                this.validCRNumber = false
+                this.crError = 'Company Registration number should only contain numbers.'
+              }
+            },
+
             validateTaxNumber : function(value){
               if (typeof Number(value) === 'number' && !isNaN(value) && value.length === 15 && value[0]==='3' && value[14]==='3'){
                 this.taxError = ''

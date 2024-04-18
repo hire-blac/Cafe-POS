@@ -23,7 +23,8 @@
     
                     <template #cell(CRNumber)="data">
                         <span @click="toggleEditMode" v-show="!isEditable">[[ data.item.CRNumber]]</span>
-                        <input v-show="isEditable" v-model="data.item.CRNumber" type="text" />
+                        <input v-show="isEditable" @input="validateCRNumber" v-model="data.item.CRNumber" type="text" />
+                        <b-alert v-if="crError" show variant="danger">[[crError]]</b-alert>
                     </template>
     
                     <template #cell(taxNumber)="data">
@@ -89,7 +90,7 @@
             <div class="col-md-12">
                 <b-button variant="outline-primary" href="/">Back</b-button>
                 <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
-                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success" :disabled="validTaxNumber === false" >Save Changes</b-button>
+                <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success" :disabled="validTaxNumber === false || validCRNumber === false " >Save Changes</b-button>
             
             </div>
         </div>
@@ -126,8 +127,11 @@
                   'website'
                 ],
                 taxError: '',
+                crError: '',
+                CRNumber: '',
                 store: [],
-                validTaxNumber: false,
+                validTaxNumber: true,
+                validCRNumber: true,
                 shopCode : window.location.pathname.split("/")[2],
                 store_id : localStorage.getItem("storeId"),
                 filter: null,
@@ -168,6 +172,17 @@
                       editUserType: false, 
                       show: 'test',
                     })
+                },
+
+                validateCRNumber : function(){
+                  CRNumber = this.store[0].CRNumber
+                  if (!isNaN(CRNumber)){
+                    this.crError = ''
+                    this.validCRNumber = true;
+                  } else {
+                    this.validCRNumber = false
+                    this.crError = 'Company Registration number should only contain numbers.'
+                  }
                 },
 
                 validateTaxNumber : function(value){
