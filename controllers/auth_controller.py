@@ -61,7 +61,23 @@ def login_user(data):
         if user:
             if pbkdf2_sha256.verify(data['password'], user.password):
                 auth_token = GetAuthToken(user.username)
-
+                if user.store:
+                    return {
+                        'res': 'success',
+                        'id': user.id,
+                        'name': user.name,
+                        'username': user.username,
+                        'usertype': user.usertype,
+                        'store_id': user.store_id,
+                        'shop_name': user.store.shop_name,
+                        'tax_number': user.store.tax_number,
+                        'shop_city': user.store.city,
+                        'shop_street': user.store.street,
+                        'shop_email': user.store.email,
+                        'shop_zip_code': user.store.zip_code,
+                        'shop_phone_number': user.store.phone_number,
+                        'auth_token': auth_token
+                    }
                 return {
                     'res': 'success',
                     'id': user.id,
@@ -69,14 +85,6 @@ def login_user(data):
                     'username': user.username,
                     'usertype': user.usertype,
                     'store_id': user.store_id,
-                    'shop_name': user.store.shop_name,
-                    'tax_number': user.store.tax_number,
-                    'shop_city': user.store.city,
-                    'shop_street': user.store.street,
-                    'shop_email': user.store.email,
-                    'shop_zip_code': user.store.zip_code,
-                    'shop_phone_number': user.store.phone_number,
-                    'auth_token': auth_token
                 }
             
             return {"error": "Login credentials are invalid."}
