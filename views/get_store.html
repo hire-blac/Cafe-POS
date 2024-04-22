@@ -278,7 +278,15 @@
                     });
 
                   const result = await response.json();
-                  console.log(result);
+                  
+                  window.localStorage.setItem("shopName", result['shop_name'])
+                  window.localStorage.setItem("taxNumber", result['tax_number'])
+                  window.localStorage.setItem("shopCity", result['city'])
+                  window.localStorage.setItem("shopStreet", result['street'])
+                  window.localStorage.setItem("shopEmail", result['email'])
+                  window.localStorage.setItem("shopZipCode", result['zip_code'])
+                  window.localStorage.setItem("shopPhoneNumber", result['phone_number'])
+
                   window.location.reload()
                 },
                 async Cancel(){
