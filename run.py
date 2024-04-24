@@ -470,6 +470,11 @@ def get_user(username):
     # get user info
     return template('get_user')
 
+@get("/admin-user/<username>")
+def get_user(username):
+    # get user info
+    return template('get_admin_user')
+
 @put('/api/user/<user_id>/update')
 def updateUsers(user_id):
     data = request.json

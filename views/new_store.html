@@ -120,7 +120,7 @@
             shopUnitNumber: '',
           },
           mounted: async function(){
-            if(!this.isAdminLogin()){
+            if(!this.isSuperUser()){
               this.logout();
             }
             
@@ -209,15 +209,13 @@
               const result = await response.json();
 
               if(result['res']=='success'){
-                localStorage.setItem('storeId', result['id'])
                 window.location.href = "/stores/" + result['id']
-                this.setCookie('store_id', result['id'], 86000)
               }
               
             },
-
-            isAdminLogin : function(){
-              return localStorage.getItem("usertype") == "Administrator"
+            
+            isSuperUser : function(){
+              return localStorage.getItem("usertype") == "SuperUser"
             },
 
             logout:function(){

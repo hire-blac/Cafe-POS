@@ -34,9 +34,11 @@
            
         </div>
 
-       
-    
-        
+        <div class="float-end mt-0 mb-2">
+          <span><a href="/add_admin" class="btn btn-primary">New Admin User</a></span>
+        </div>
+
+            
         <b-table hover 
                 :fields="fields" 
                 :items="items"
@@ -60,12 +62,15 @@
             <template #cell(username)="data">
                 [[data.item.username]]
             </template>
+
             <template #cell(userType)="data">
                 [[data.item.userType]]
             </template>
+            
+            <template #cell(store)="data">
+                [[data.item.store]]
+            </template>
 
-   
-      
             <template #cell(edit)="data">
                 <b-link :href=" '/user/' + data.item.username"><i class="fas fa-edit"></i></span></b-link>
             </template>
@@ -74,7 +79,7 @@
             </template>
 
             <template #cell(show)="data">
-                <b-link :href=" '/user/' + data.item.username"><i class="fa fa-eye" aria-hidden="true"></i></span></b-link>
+                <b-link :href=" '/admin-user/' + data.item.username"><i class="fa fa-eye" aria-hidden="true"></i></span></b-link>
             </template>
 
         </b-table>
@@ -93,10 +98,6 @@
                 </b-pagination>
             </b-col>
         </b-row>
-        <div class="float-end">
-            <span><a href="/add_admin" class="btn btn-primary">New Admin User</a></span>
-      
-        </div>
 
         <b-modal v-model="modalShow" @ok="handleOk" title="Delete User">Are you sure you want to delete this User?</b-modal>
 
@@ -115,6 +116,7 @@
             {key:'name'}, 
             {key:'username', sortable: true}, 
             {key:'userType', sortable: true}, 
+            {key:'store'}, 
             {key: 'delete', label: ''},
             {key: 'show', label: ''}
           ],
@@ -142,10 +144,11 @@
             items.forEach(user => {
               let id = user.id
               let name = user.name
+              let store = user.store
               let username = user.username
               let userType = user.usertype
 
-              this.items.push({id: id, name: name, username: username, userType: userType,
+              this.items.push({id: id, name: name, username: username, userType: userType, store: store,
                 show: 'test', edit: 'test', delete: 'test'})
             })
             this.totalRows = this.items.length
@@ -184,9 +187,11 @@
                 this.totalRows = filteredItems.length
                 this.currentPage = 1
             },
+
             isSuperUser : function(){
                 return localStorage.getItem("usertype") == "SuperUser"
             },
+            
             logout:function(){
                    window.localStorage.clear()
                    console.log("You don't have access to view this page")

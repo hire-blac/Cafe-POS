@@ -97,12 +97,16 @@ def get_user(username):
     with Session() as session:
         user = session.query(User).filter_by(username=username).first()
         if user:
+            shop_name = 'N/A'
+            if user.store:
+                shop_name  = user.store.shop_name
             return {
                 'id': user.id, 
                 'name': user.name,
                 'username': user.username,
                 'usertype': user.usertype,
                 'store_id': user.store_id,
+                'shop_name': shop_name,
             }
         else:
             return {'message': 'user not found'}
@@ -115,6 +119,7 @@ def update_user(data, user_id):
             user.name = data['name']
             user.username = data['username']
             user.usertype = data['usertype']
+            user.store_id = data['store_id']
 
             session.add(user)
             session.commit()
@@ -124,6 +129,8 @@ def update_user(data, user_id):
                 'name': user.name,
                 'username': user.username,
                 'usertype': user.usertype,
+                'store_id': user.store_id,
+                'store': user.store.shop_name,
             }
         else:
             return {'message': 'user not found'}
@@ -160,9 +167,14 @@ def all_admins():
         if users:
             data = []
             for user in users:
+                store_name = 'No store assigned'
+                if user.store:
+                    store_name = user.store.shop_name
+
                 data.append({
                     'id': user.id,
                     'name': user.name,
+                    'store': store_name,
                     'username': user.username,
                     'usertype': user.usertype,
                 })

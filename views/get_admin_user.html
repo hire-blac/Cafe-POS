@@ -28,11 +28,11 @@
                         
                     </template>
               
-                    <template #cell(usertype)="data">
-                        <span @click="toggleEditMode" v-show="!isEditable"> [[ data.item.usertype ]]</span>
+                    <template #cell(store)="data">
+                        <span @click="toggleEditMode" v-show="!isEditable"> [[ data.item.store ]]</span>
                         
-                        <b-select  v-model="data.item.usertype"  class="b-form-select" v-show="isEditable">
-                            <option v-for="usertype in usertypeOptions" :key="usertype" :value="usertype">[[usertype]]</option>
+                        <b-select  v-model="data.item.store_id"  class="b-form-select" v-show="isEditable">
+                            <option v-for="store in storeOptions" :key="store.id" :value="store.id">[[store.shopName]]</option>
                         </b-select>
             
                     </template>
@@ -47,7 +47,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <b-button  variant="outline-primary" href="/manage_user">Back</b-button>
+                <b-button  variant="outline-primary" href="/admin-users">Back</b-button>
                 <b-button @click="toggleEditMode" variant="primary">[[ isEditable ? 'Cancel' : 'Edit' ]]</b-button>
                 <b-button  @click="SaveChanges" v-if="isEditable" type="submit" variant="success">Save Changes</b-button>
             
@@ -65,22 +65,35 @@
             delimiters : ['[[',']]'],
             el: "#app",
             data: {
-                fields: [ 'id', 'name', 'username', 'userType',],
+                fields: [ 'id', 'name', 'username', 'store', 'store_id'],
                 items: [],
                 usercode : window.location.pathname.split("/")[2],
                 filter: null,
                 filterOn: [],
+                storeOptions: [],
                 currentPage: 1,
                 totalRows: 1,
                 perPage: 10,
                 isEditable: false,
-                usertypeOptions: ['Administrator', 'Cashier','Staff'],
             },
             mounted: async function(){
-                if(!this.isAdminLogin()){
+                if(!this.isSuperUser()){
                     this.logout()
                 }
                 this.getUser()
+
+
+                const response = await fetch("/api/stores");
+                const data = await response.json();
+                
+                let stores = data["stores"]
+
+                stores.forEach(store => {
+                  this.storeOptions.push({
+                    id: store['id'],
+                    shopName: store['shop_name'],
+                  })
+                }) 
               
             },
             methods: {
@@ -98,6 +111,7 @@
                     let username = data["username"]
                     let usertype = data["usertype"]
                     let store_id = data["store_id"]
+                    let store = data["shop_name"]
                     
                     this.items.push({ 
                       id: id, 
@@ -105,17 +119,19 @@
                       username: username, 
                       usertype: usertype, 
                       store_id: store_id, 
+                      store: store, 
                       editName: false, 
                       editUsername: false, 
                       editUserType: false, 
+                      editStore: false, 
                       show: 'test',
                     })
                 },
 
-                isAdminLogin : function(){
-                   
-                   return localStorage.getItem("usertype") == "Administrator"
+                isSuperUser : function(){
+                  return localStorage.getItem("usertype") == "SuperUser"
                 },
+
                 logout:function(){
                       window.localStorage.clear()
                       console.log("You don't have access to view this page")
@@ -148,8 +164,8 @@
                     const newData = {
                       name: data.name,
                       username: data.username,
-                      usertype: data.usertype,
                       store_id: data.store_id,
+                      usertype: data.usertype
                     }
                     
                   const response = await fetch(`/api/user/${id}/update`, {
@@ -171,7 +187,7 @@
                 },
                 async Cancel(){
                     console.log("cancell")
-                    if(!this.isAdminLogin()){
+                    if(!this.isSuperUser()){
                          this.logout()
                     }
                     this.getUser()

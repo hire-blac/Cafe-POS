@@ -144,7 +144,7 @@ def delete_store(store_id):
     with Session() as session:
         store = session.query(Store).get(store_id)
         if store:
-            store.delete(store)
+            session.delete(store)
             session.commit()
             return f'store with ID {store_id} deleted successfully'
         

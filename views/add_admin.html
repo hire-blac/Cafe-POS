@@ -13,6 +13,14 @@
               <div class="alert alert-danger" v-if="error" role="alert">
                 [[error]]
               </div>
+    
+              <div class="mb-3">
+   
+                <label for="store_id">Store:</label>
+                <select v-model="store_id" name="store_id" class="form-select">
+                    <option v-for="store in storeOptions" :key="store.id" :value="store.id">[[store.shopName]]</option>                                
+                </select>
+              </div>
 
               <div class="mb-3">
                 <label for="id" class="form-label">User ID</label>
@@ -54,13 +62,27 @@
             userType: 'Administrator',
             name: '',
             username: '',
+            store_id: '',
             password: '',
+            storeOptions: [],
             error: ''              
            },
            mounted : async function(){
             if(!this.isSuperUser()){
                this.logout();
-            }        
+            }
+
+            const response = await fetch("/api/stores");
+            const data = await response.json();
+            
+            let stores = data["stores"]
+
+            stores.forEach(store => {
+              this.storeOptions.push({
+                id: store['id'],
+                shopName: store['shop_name'],
+              })
+            })     
            },
 
            computed: {
