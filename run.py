@@ -554,9 +554,9 @@ def single_customer(customer_id):
 
 
 # COMPANY ROUTES
-@get("/my-store")
-def get_company():
-    return template("get_store")
+# @get("/my-store")
+# def get_company():
+#     return template("get_store")
 
 @get("/api/company/<company_id>")
 def get_company(company_id):
