@@ -607,6 +607,10 @@ def stores():
 def stores():
     return store_controller.all_stores()
 
+@get('/stores/manage-store')
+def get_store():
+    return template("get_store")
+
 @get('/stores/<store_id>')
 def get_store(store_id):
     return template("get_store")

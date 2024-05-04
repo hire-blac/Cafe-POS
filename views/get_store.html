@@ -125,7 +125,7 @@
                 validTaxNumber: true,
                 validCRNumber: true,
                 shopCode : window.location.pathname.split("/")[2],
-                // store_id : localStorage.getItem("storeId"),
+                store_id : localStorage.getItem("storeId"),
                 filter: null,
                 filterOn: [],
                 currentPage: 1,
@@ -134,14 +134,25 @@
                 isEditable: false
             },
             mounted: async function(){
-                if(!this.isSuperUser()){
-                    this.logout()
-                }               
-                this.getStore()              
+                
+                if(this.isSuperUser() || this.isAdminLogin()){
+                  this.getStore()  
+                } else {
+                  this.logout()
+                }                    
             },
             methods: {
                 async getStore(){
-                    const response = await fetch("/api/stores/" + this.shopCode);
+                  let store
+
+                  if(this.isAdminLogin()){
+                    store = this.store_id
+                  } else if(this.isSuperUser()){
+                    store = this.shopCode
+                  }
+
+                    // const response = await fetch("/api/stores/" + this.shopCode);
+                    const response = await fetch("/api/stores/" + store);
                     const data = await response.json();
                     
                     this.store.push({ 
@@ -217,6 +228,10 @@
                     }
                   }
                 },
+
+                isAdminLogin : function(){
+                    return localStorage.getItem("usertype") == "Administrator"
+                },
                 
                 isSuperUser : function(){
                   return localStorage.getItem("usertype") == "SuperUser"
@@ -271,23 +286,25 @@
 
                   const result = await response.json();
                   
-                  // window.localStorage.setItem("shopName", result['shop_name'])
-                  // window.localStorage.setItem("taxNumber", result['tax_number'])
-                  // window.localStorage.setItem("shopCity", result['city'])
-                  // window.localStorage.setItem("shopStreet", result['street'])
-                  // window.localStorage.setItem("shopEmail", result['email'])
-                  // window.localStorage.setItem("shopZipCode", result['zip_code'])
-                  // window.localStorage.setItem("shopPhoneNumber", result['phone_number'])
+                  if (this.isAdminLogin()){
+                    window.localStorage.setItem("shopName", result['shop_name'])
+                    window.localStorage.setItem("taxNumber", result['tax_number'])
+                    window.localStorage.setItem("shopCity", result['city'])
+                    window.localStorage.setItem("shopStreet", result['street'])
+                    window.localStorage.setItem("shopEmail", result['email'])
+                    window.localStorage.setItem("shopZipCode", result['zip_code'])
+                    window.localStorage.setItem("shopPhoneNumber", result['phone_number'])
+                  }
 
                   window.location.reload()
                 },
                 async Cancel(){
-                    console.log("cancell")
-                    if(!this.isSuperUser()){
-                         this.logout()
+                    if(this.isSuperUser() || this.isAdminLogin()){
+                      window.location.reload()
+                    } else {
+                      this.logout()
                     }
                     // this.getStore()
-                  window.location.reload()
                 },
 
             }
