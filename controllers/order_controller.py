@@ -10,6 +10,9 @@ from . ordered_items_controller import ordered_item_details
 Session = sessionmaker(bind=engine)
         
 def all_orders(store_id):
+    if not store_id:
+        return {'message': 'no orders', 'orders_count': 0}
+    
     with Session() as session:
         orders = session.query(Order).order_by(Order.created_at.desc()).filter_by(store_id=store_id).all()
         if orders:

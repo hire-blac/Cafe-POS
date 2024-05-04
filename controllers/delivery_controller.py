@@ -35,6 +35,11 @@ def create_delivery(data):
 
 
 def all_deliveries(store_id):
+    if not store_id:
+        return {'message': 'no deliveries',
+                'deliveries_count': 0
+                }
+    
     with Session() as session:
         deliveries = session.query(Delivery).order_by(Delivery.created_at.desc()).filter_by(store_id=store_id).all()
         if deliveries:

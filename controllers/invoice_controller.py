@@ -14,7 +14,9 @@ from . transaction_controller import transaction_details
 Session = sessionmaker(bind=engine)
         
 def all_invoices(store_id):
-    print('store id: ', store_id)
+    if not store_id:
+        return {'message': "no invoices found", 'invoices_count': 0}
+    
     with Session() as session:
         invoices = session.query(Invoice).order_by(Invoice.created_at.desc()).filter_by(store_id=store_id).all()
         if invoices:

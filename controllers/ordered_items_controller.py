@@ -22,6 +22,12 @@ def ordered_item_details(ordered_item):
 
 
 def all_ordered_items(store_id):
+    if not store_id:
+        return {
+            'message': 'no ordered items',
+            'ordered_item_count': 0
+        }
+    
     with Session() as session:
         ordered_items = session.query(OrderedItem).filter_by(store_id=store_id).order_by(OrderedItem.created_at.desc()).all()
         data = []

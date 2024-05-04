@@ -6,6 +6,9 @@ Session = sessionmaker(bind=engine)
 
 
 def all_categories(store_id):
+    if not store_id:
+        return {'message': 'no categories'}
+    
     with Session() as session:
         categories = session.query(Category).filter_by(store_id=store_id).all()
         if categories:

@@ -15,10 +15,9 @@
               </div>
     
               <div class="mb-3">
-   
                 <label for="store_id">Store:</label>
                 <select v-model="store_id" name="store_id" class="form-select">
-                    <option v-for="store in storeOptions" :key="store.id" :value="store.id">[[store.shopName]]</option>                                
+                    <option v-for="store in storeOptions" :key="store.id" :value="store.id">[[store.shopName]]</option>                            
                 </select>
               </div>
 
@@ -43,7 +42,7 @@
               </div>
 
               <div class="mb-3">
-                  <button @click="addUser" class="btn btn-primary">Create Account</button>
+                  <button @click="addUser" class="btn btn-primary" :disabled="store_id == '' " >Create User</button>
               </div>
                 
             </div>
@@ -82,7 +81,8 @@
                 id: store['id'],
                 shopName: store['shop_name'],
               })
-            })     
+            })
+           
            },
 
            computed: {
@@ -97,9 +97,9 @@
                 name: this.name,
                 username: this.username,
                 password: this.password,
-                store_id: '',
+                store_id: this.store_id,
               }
-              console.log(credentials);
+              
               try {
                 const response = await fetch("/register", {
                   method: "POST",

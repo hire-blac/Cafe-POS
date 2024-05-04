@@ -41,6 +41,12 @@ def create_item(data):
 
 
 def all_items(store_id):
+    if not store_id:
+        return {
+            'message': "No items found",
+            'items_count': 0
+        }
+        
     with Session() as session:
         items = session.query(Item).filter_by(store_id=store_id).all()
         if items:

@@ -9,6 +9,9 @@ Session = sessionmaker(bind=engine)
 
 
 def all_users(store_id):
+    if not store_id:
+        return {'message': 'no users'}
+    
     with Session() as session:
         users = session.query(User).filter_by(store_id=store_id).all()
         if users:

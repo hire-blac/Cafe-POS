@@ -5,6 +5,9 @@ from models.models import Customer, Order, engine
 Session = sessionmaker(bind=engine)
 
 def all_customers(store_id):
+    if not store_id:
+        return {'message': 'no customers'}
+    
     with Session() as session:
         customers = session.query(Customer).filter_by(store_id=store_id).all()
         if customers:

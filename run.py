@@ -179,7 +179,7 @@ def do_upload():
     if ext == ".csv":
         fname = name + '.csv'
         df = pd.read_csv(upload.file)
-        print("DataFrame: {}".format(df))
+        # print("DataFrame: {}".format(df))
         for index,item in df.iterrows():
             item_code =item['Item ID']
             name = item['Item Name']
@@ -407,7 +407,6 @@ def login():
 def login_post():
     data = request.json
     auth_user = auth_controller.login_user(data)
-    print(auth_user)
     return auth_user
 
 @get("/register")
@@ -418,7 +417,6 @@ def register():
 @post("/register")
 def register_post():
     data = request.json
-    print(data)
     user = auth_controller.register_user(data)
     return user
 

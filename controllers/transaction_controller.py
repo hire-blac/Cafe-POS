@@ -22,6 +22,12 @@ def transaction_details(transaction):
 
 
 def all_transactions(store_id):
+    if not store_id:
+        return {
+            'message': 'no transactions',
+            'transaction_count': 0
+        }
+        
     with Session() as session:
         transactions = session.query(Transaction).filter_by(store_id=store_id).order_by(Transaction.created_at.desc()).all()
         data = []
