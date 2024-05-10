@@ -167,7 +167,7 @@
                 this.validTaxNumber = this.validateTaxNumber(this.taxNumber)
               } else {
                 // check if input value is a number
-                if(!Number(inputValue)){
+                if(!Number(inputValue) && inputValue != '0'){
                   if (inputValue != 'ArrowUp' && inputValue != 'ArrowDown' && inputValue != 'ArrowLeft' && inputValue != 'ArrowRight' && inputValue != 'Control' && inputValue != 'Alt' && inputValue != 'Backspace'  && inputValue != 'CapsLock'  && inputValue != 'Shift' ){
                     this.taxNumber = this.taxNumber.slice(0, -1)
                     this.taxError = "Tax number cannot be a letter"
