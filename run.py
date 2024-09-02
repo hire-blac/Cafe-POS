@@ -21,6 +21,9 @@ app = Bottle()
 
 @route("/")
 def home():
+    if posauth.isSuper(request):
+        return redirect("/super")
+    
     store_id = request.get_cookie('store_id')
     #return "Home"
     items_count = item_controller.all_items(store_id)['items_count']

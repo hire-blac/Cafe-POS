@@ -1,7 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from models.models import User, engine
 from passlib.hash import pbkdf2_sha256
-
 from posauth import GetAuthToken
 
 # Create SQLAlchemy session
